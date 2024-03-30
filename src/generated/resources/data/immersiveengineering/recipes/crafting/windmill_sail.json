@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "tag": "forge:fabric_hemp"
@@ -12,5 +13,6 @@
   ],
   "result": {
     "item": "immersiveengineering:windmill_sail"
-  }
+  },
+  "show_notification": true
 }

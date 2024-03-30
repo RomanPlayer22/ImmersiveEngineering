@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "s": {
       "item": "immersiveengineering:slab_insulating_glass"
@@ -11,5 +12,6 @@
   ],
   "result": {
     "item": "immersiveengineering:insulating_glass"
-  }
+  },
+  "show_notification": true
 }

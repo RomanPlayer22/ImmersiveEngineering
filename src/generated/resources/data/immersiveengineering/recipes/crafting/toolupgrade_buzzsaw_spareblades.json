@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "h": {
       "tag": "forge:fiber_hemp"
@@ -17,5 +18,6 @@
   ],
   "result": {
     "item": "immersiveengineering:toolupgrade_buzzsaw_spareblades"
-  }
+  },
+  "show_notification": true
 }

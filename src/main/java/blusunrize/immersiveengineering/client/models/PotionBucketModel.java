@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.client.models;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
@@ -7,7 +15,6 @@ import blusunrize.immersiveengineering.client.utils.ModelUtils;
 import blusunrize.immersiveengineering.common.register.IEFluids;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -34,26 +41,25 @@ import net.minecraftforge.fluids.FluidUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 public final class PotionBucketModel implements IUnbakedGeometry<PotionBucketModel>
 {
 	private final IQuadTransformer recolorTransformer;
-	private final IUnbakedGeometry<?> baseGeometry = new DynamicFluidContainerModel(
-			IEFluids.POTION.get(), false, true, true
-	);
+	private final IUnbakedGeometry<?> baseGeometry;
 
 	public PotionBucketModel(int color)
 	{
 		this.recolorTransformer = QuadTransformer.color($ -> color);
+		JsonObject baseModelJSON = new JsonObject();
+		baseModelJSON.addProperty("fluid", IEFluids.POTION.getId().toString());
+		this.baseGeometry = DynamicFluidContainerModel.Loader.INSTANCE.read(baseModelJSON, null);
 	}
 
 	@Override
 	public BakedModel bake(
-			IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter,
+			IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter,
 			ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation
 	)
 	{
@@ -80,7 +86,7 @@ public final class PotionBucketModel implements IUnbakedGeometry<PotionBucketMod
 				for(BakedQuad baseQuad : baseQuads)
 				{
 					BakedQuad newQuad;
-					if(baseQuad.getSprite().getName().equals(fluidMaskLocation))
+					if(baseQuad.getSprite().contents().name().equals(fluidMaskLocation))
 						newQuad = recolorTransformer.process(baseQuad);
 					else
 						newQuad = baseQuad;
@@ -89,14 +95,6 @@ public final class PotionBucketModel implements IUnbakedGeometry<PotionBucketMod
 			}
 		}
 		return builder.build();
-	}
-
-	@Override
-	public Collection<Material> getMaterials(
-			IGeometryBakingContext owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors
-	)
-	{
-		return baseGeometry.getMaterials(owner, modelGetter, missingTextureErrors);
 	}
 
 	public static class Loader implements IGeometryLoader<PotionBucketModel>
@@ -117,13 +115,13 @@ public final class PotionBucketModel implements IUnbakedGeometry<PotionBucketMod
 	{
 		private final Int2ObjectMap<BakedModel> coloredModels = new Int2ObjectOpenHashMap<>();
 		private final ItemOverrides nested;
-		private final ModelBakery bakery;
+		private final ModelBaker bakery;
 		private final IGeometryBakingContext owner;
 		private final Function<Material, TextureAtlasSprite> textureGetter;
 
 		private OverrideHandler(
 				ItemOverrides nested,
-				ModelBakery bakery,
+				ModelBaker bakery,
 				IGeometryBakingContext owner,
 				Function<Material, TextureAtlasSprite> textureGetter
 		)

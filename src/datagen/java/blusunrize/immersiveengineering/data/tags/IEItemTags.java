@@ -22,30 +22,38 @@ import blusunrize.immersiveengineering.common.register.IEBlocks.Connectors;
 import blusunrize.immersiveengineering.common.register.IEBlocks.MetalDevices;
 import blusunrize.immersiveengineering.common.register.IEItems.*;
 import com.google.common.base.Preconditions;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.tags.BlockTagsProvider;
+import net.minecraft.core.HolderLookup.Provider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlot.Type;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.ExistingFileHelper;
+
+import java.util.concurrent.CompletableFuture;
 
 public class IEItemTags extends ItemTagsProvider
 {
 
-	public IEItemTags(DataGenerator gen, BlockTagsProvider blocks, ExistingFileHelper existingFileHelper)
+	public IEItemTags(
+			PackOutput output,
+			CompletableFuture<Provider> lookupProvider,
+			CompletableFuture<TagLookup<Block>> blocks,
+			ExistingFileHelper existingFileHelper
+	)
 	{
-		super(gen, blocks, Lib.MODID, existingFileHelper);
+		super(output, lookupProvider, blocks, Lib.MODID, existingFileHelper);
 	}
 
 	@Override
-	protected void addTags()
+	protected void addTags(Provider p_256380_)
 	{
 		IETags.forAllBlocktags(this::copy);
 		for(EnumMetals metal : EnumMetals.values())
@@ -76,7 +84,8 @@ public class IEItemTags extends ItemTagsProvider
 		tag(IETags.clay).add(Items.CLAY_BALL);
 		tag(IETags.charCoal).add(Items.CHARCOAL);
 
-		tag(net.minecraft.tags.ItemTags.LECTERN_BOOKS).add(Tools.MANUAL.get());
+		tag(ItemTags.LECTERN_BOOKS).add(Tools.MANUAL.get());
+		tag(ItemTags.BOOKSHELF_BOOKS).add(Tools.MANUAL.get());
 		tag(Tags.Items.SEEDS).add(Misc.HEMP_SEEDS.get());
 		tag(IETags.seedsHemp).add(Misc.HEMP_SEEDS.get());
 		tag(Tags.Items.RODS_WOODEN).add(Ingredients.STICK_TREATED.get());
@@ -140,24 +149,27 @@ public class IEItemTags extends ItemTagsProvider
 		tag(IETags.hoes).add(Tools.STEEL_HOE.get());
 		tag(IETags.axes).add(Tools.STEEL_AXE.get());
 		tag(IETags.swords).add(Tools.STEEL_SWORD.get());
+		tag(Tags.Items.TOOLS_SHIELDS).add(Misc.SHIELD.get());
 
-		for(EquipmentSlot slot : EquipmentSlot.values())
-			if(slot.getType()==Type.ARMOR)
-				tag(Tags.Items.ARMORS)
-						.add(Tools.STEEL_ARMOR.get(slot).asItem())
-						.add(Misc.FARADAY_SUIT.get(slot).asItem());
+		for(var slot : ArmorItem.Type.values())
+		{
+			tag(Tags.Items.ARMORS)
+					.add(Tools.STEEL_ARMOR.get(slot).asItem())
+					.add(Misc.FARADAY_SUIT.get(slot).asItem());
+			tag(ItemTags.TRIMMABLE_ARMOR).add(Tools.STEEL_ARMOR.get(slot).asItem());
+		}
 		tag(Tags.Items.ARMORS_HELMETS)
-				.add(Tools.STEEL_ARMOR.get(EquipmentSlot.HEAD).asItem())
-				.add(Misc.FARADAY_SUIT.get(EquipmentSlot.HEAD).asItem());
+				.add(Tools.STEEL_ARMOR.get(ArmorItem.Type.HELMET).asItem())
+				.add(Misc.FARADAY_SUIT.get(ArmorItem.Type.HELMET).asItem());
 		tag(Tags.Items.ARMORS_CHESTPLATES)
-				.add(Tools.STEEL_ARMOR.get(EquipmentSlot.CHEST).asItem())
-				.add(Misc.FARADAY_SUIT.get(EquipmentSlot.CHEST).asItem());
+				.add(Tools.STEEL_ARMOR.get(ArmorItem.Type.CHESTPLATE).asItem())
+				.add(Misc.FARADAY_SUIT.get(ArmorItem.Type.CHESTPLATE).asItem());
 		tag(Tags.Items.ARMORS_LEGGINGS)
-				.add(Tools.STEEL_ARMOR.get(EquipmentSlot.LEGS).asItem())
-				.add(Misc.FARADAY_SUIT.get(EquipmentSlot.LEGS).asItem());
+				.add(Tools.STEEL_ARMOR.get(ArmorItem.Type.LEGGINGS).asItem())
+				.add(Misc.FARADAY_SUIT.get(ArmorItem.Type.LEGGINGS).asItem());
 		tag(Tags.Items.ARMORS_BOOTS)
-				.add(Tools.STEEL_ARMOR.get(EquipmentSlot.FEET).asItem())
-				.add(Misc.FARADAY_SUIT.get(EquipmentSlot.FEET).asItem());
+				.add(Tools.STEEL_ARMOR.get(ArmorItem.Type.BOOTS).asItem())
+				.add(Misc.FARADAY_SUIT.get(ArmorItem.Type.BOOTS).asItem());
 
 		tag(IETags.recyclingIgnoredComponents)
 				// Ignore bricks for outputting
@@ -194,13 +206,13 @@ public class IEItemTags extends ItemTagsProvider
 				.add(Misc.EARMUFFS.asItem())
 				.add(Misc.SKYHOOK.asItem())
 				.addTag(IETags.tools)
-				.addOptionalTag(new ResourceLocation("forge", "buckets/empty"))
-				.addOptionalTag(new ResourceLocation("forge", "tools/wrench"))
 				.add(Items.SPYGLASS)
 				.add(Items.CLOCK)
 				.add(Items.COMPASS)
 				.add(Items.FLINT_AND_STEEL)
 				.add(Items.FISHING_ROD)
+				.addOptionalTag(new ResourceLocation("forge", "buckets/empty"))
+				.addOptionalTag(new ResourceLocation("forge", "tools/wrench"))
 		;
 		for(ItemRegObject<WireCoilItem> wirecoil : Misc.WIRE_COILS.values())
 			tag(IETags.toolboxWiring).add(wirecoil.asItem());

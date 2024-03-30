@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "s": {
       "item": "immersiveengineering:slab_steel_scaffolding_wooden_top"
@@ -11,5 +12,6 @@
   ],
   "result": {
     "item": "immersiveengineering:steel_scaffolding_wooden_top"
-  }
+  },
+  "show_notification": true
 }

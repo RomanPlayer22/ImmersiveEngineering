@@ -14,6 +14,8 @@ import blusunrize.immersiveengineering.api.crafting.IERecipeTypes;
 import blusunrize.immersiveengineering.api.crafting.IngredientWithSize;
 import blusunrize.immersiveengineering.api.excavator.ExcavatorHandler;
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockBEHelperDummy;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockBEHelperMaster;
 import blusunrize.immersiveengineering.api.shader.CapabilityShader.ShaderWrapper;
 import blusunrize.immersiveengineering.api.shader.ShaderRegistry;
 import blusunrize.immersiveengineering.api.tool.BulletHandler;
@@ -38,7 +40,8 @@ import blusunrize.immersiveengineering.common.blocks.metal.ConveyorBeltBlockEnti
 import blusunrize.immersiveengineering.common.blocks.metal.FluidPipeBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.metal.conveyors.*;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
-import blusunrize.immersiveengineering.common.blocks.multiblocks.StaticTemplateManager;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.blockimpl.MultiblockBEHelperDummy;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.blockimpl.MultiblockBEHelperMaster;
 import blusunrize.immersiveengineering.common.config.IECommonConfig;
 import blusunrize.immersiveengineering.common.config.IEServerConfig;
 import blusunrize.immersiveengineering.common.crafting.DefaultAssemblerAdapter;
@@ -64,7 +67,6 @@ import blusunrize.immersiveengineering.common.util.fakeworld.TemplateWorld;
 import blusunrize.immersiveengineering.common.util.loot.GrassDropModifier;
 import blusunrize.immersiveengineering.common.util.loot.IELootFunctions;
 import blusunrize.immersiveengineering.common.wires.IEWireTypes;
-import blusunrize.immersiveengineering.common.world.IEWorldGen;
 import blusunrize.immersiveengineering.common.world.Villages;
 import blusunrize.immersiveengineering.mixin.accessors.ConcretePowderBlockAccess;
 import blusunrize.immersiveengineering.mixin.accessors.ItemEntityAccess;
@@ -80,6 +82,7 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
@@ -89,8 +92,10 @@ import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.NewRegistryEvent;
 
-import java.io.IOException;
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static blusunrize.immersiveengineering.ImmersiveEngineering.MODID;
 import static blusunrize.immersiveengineering.api.tool.assembler.AssemblerHandler.defaultAdapter;
@@ -99,6 +104,8 @@ import static blusunrize.immersiveengineering.common.fluids.IEFluid.BUCKET_DISPE
 @Mod.EventBusSubscriber(modid = MODID, bus = Bus.MOD)
 public class IEContent
 {
+	private static CompletableFuture<?> lastOnThreadFuture;
+
 	public static void modConstruction()
 	{
 		/*BULLETS*/
@@ -126,14 +133,16 @@ public class IEContent
 		ShaderRegistry.rarityWeightMap.put(Rarity.EPIC, 3);
 		ShaderRegistry.rarityWeightMap.put(Lib.RARITY_MASTERWORK, 1);
 
-		IEFluids.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEFluids.TYPE_REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEPotions.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEParticles.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEBlockEntities.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEEntityTypes.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEMenuTypes.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
-		IEEntityDataSerializers.REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
+		final IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+		IEFluids.REGISTER.register(modBus);
+		IEFluids.TYPE_REGISTER.register(modBus);
+		IEPotions.REGISTER.register(modBus);
+		IEParticles.REGISTER.register(modBus);
+		IEBlockEntities.REGISTER.register(modBus);
+		IEEntityTypes.REGISTER.register(modBus);
+		IEMenuTypes.REGISTER.register(modBus);
+		IECreativeTabs.REGISTER.register(modBus);
+		IEEntityDataSerializers.REGISTER.register(modBus);
 		IEStats.modConstruction();
 		IEItems.init();
 		IESounds.init();
@@ -143,7 +152,6 @@ public class IEContent
 		IELootFunctions.init();
 		IEArgumentTypes.init();
 		IEBannerPatterns.init();
-		TemplateWorld.init();
 
 		BulletHandler.emptyCasing = Ingredients.EMPTY_CASING;
 		BulletHandler.emptyShell = Ingredients.EMPTY_SHELL;
@@ -152,6 +160,7 @@ public class IEContent
 
 		IEShaders.commonConstruction();
 		IEMultiblocks.init();
+		IEMultiblockLogic.init(modBus);
 		populateAPI();
 	}
 
@@ -183,8 +192,6 @@ public class IEContent
 	{
 		IEWireTypes.setup();
 		IEStats.setup();
-		/*WORLDGEN*/
-		ev.enqueueWork(IEWorldGen::initLate);
 
 		ShaderRegistry.itemShader = IEItems.Misc.SHADER.get();
 		ShaderRegistry.itemShaderBag = IEItems.Misc.SHADER_BAG;
@@ -196,8 +203,7 @@ public class IEContent
 
 		/*ASSEMBLER RECIPE ADAPTERS*/
 		//Fluid Ingredients
-		AssemblerHandler.registerSpecialIngredientConverter((o, remain) ->
-		{
+		AssemblerHandler.registerSpecialIngredientConverter((o, remain) -> {
 			if(o instanceof IngredientFluidStack)
 				return new FluidTagRecipeQuery(((IngredientFluidStack)o).getFluidTagInput());
 			else
@@ -206,33 +212,37 @@ public class IEContent
 		// Buckets
 		// TODO add "duplicates" of the fluid-aware recipes that only use buckets, so that other mods using similar
 		//  code don't need explicit compat?
-		AssemblerHandler.registerSpecialIngredientConverter((o, remain) ->
-		{
-			final ItemStack[] matching = o.getItems();
-			if(!o.isVanilla()||matching.length!=1)
+		AssemblerHandler.registerSpecialIngredientConverter((o, remain) -> {
+			// Must be a vanilla ingredient, which returns an empty bucket
+			if(!o.isVanilla()||remain.getItem()!=Items.BUCKET)
 				return null;
-			final Item potentialBucket = matching[0].getItem();
-			if(!(potentialBucket instanceof BucketItem))
+			// Find bucket out of available items
+			Optional<ItemStack> potentialBucket = Arrays.stream(o.getItems())
+					.filter(stack -> stack.getItem() instanceof BucketItem)
+					.findFirst();
+			if(potentialBucket.isEmpty())
 				return null;
-			// bucket was consumed in recipe
-			if(remain.getItem()!=Items.BUCKET)
-				return null;
+			final Item bucketItem = potentialBucket.get().getItem();
 			//Explicitly check for vanilla-style non-dynamic container items
 			//noinspection deprecation
-			if(!potentialBucket.hasCraftingRemainingItem()||potentialBucket.getCraftingRemainingItem()!=Items.BUCKET)
+			if(!bucketItem.hasCraftingRemainingItem()||bucketItem.getCraftingRemainingItem()!=Items.BUCKET)
 				return null;
-			final Fluid contained = ((BucketItem)potentialBucket).getFluid();
+			final Fluid contained = ((BucketItem)bucketItem).getFluid();
 			return new FluidStackRecipeQuery(new FluidStack(contained, FluidType.BUCKET_VOLUME));
 		});
 		// Milk is a weird special case
 		AssemblerHandler.registerSpecialIngredientConverter((o, remain) -> {
-			final ItemStack[] matching = o.getItems();
-			if(!o.isVanilla()||matching.length!=1)
+			// Only works when the milk fluid is enabled
+			if(!ForgeMod.MILK.isPresent())
 				return null;
-			if(matching[0].getItem()!=Items.MILK_BUCKET||!ForgeMod.MILK.isPresent())
+			// Must be a vanilla ingredient, which returns an empty bucket
+			if(!o.isVanilla()||remain.getItem()!=Items.BUCKET)
 				return null;
-			// bucket was consumed in recipe
-			if(remain.getItem()!=Items.BUCKET)
+			// Find milk bucket out of available items
+			Optional<ItemStack> potentialBucket = Arrays.stream(o.getItems())
+					.filter(stack -> stack.getItem()==Items.MILK_BUCKET)
+					.findFirst();
+			if(potentialBucket.isEmpty())
 				return null;
 			return new FluidStackRecipeQuery(new FluidStack(ForgeMod.MILK.get(), FluidType.BUCKET_VOLUME));
 		});
@@ -255,7 +265,7 @@ public class IEContent
 		LocalNetworkHandler.register(RedstoneNetworkHandler.ID, RedstoneNetworkHandler::new);
 		LocalNetworkHandler.register(WireDamageHandler.ID, WireDamageHandler::new);
 
-		ev.enqueueWork(IEContent::onThreadCommonSetup);
+		setFuture(ev.enqueueWork(IEContent::onThreadCommonSetup));
 	}
 
 	private static void onThreadCommonSetup()
@@ -283,15 +293,6 @@ public class IEContent
 		ExcavatorHandler.setSetDirtyCallback(IESaveData::markInstanceDirty);
 		TemplateMultiblock.setCallbacks(
 				Utils::getPickBlock,
-				(loc, server) -> {
-					try
-					{
-						return StaticTemplateManager.loadStaticTemplate(loc, server);
-					} catch(IOException e)
-					{
-						throw new RuntimeException(e);
-					}
-				},
 				template -> ((TemplateAccess)template).getPalettes()
 		);
 		defaultAdapter = new DefaultAssemblerAdapter();
@@ -318,8 +319,30 @@ public class IEContent
 		TemplateWorldCreator.CREATOR.setValue(TemplateWorld::new);
 		ConveyorHandler.CONVEYOR_BLOCKS.setValue(rl -> MetalDevices.CONVEYORS.get(rl).get());
 		ConveyorHandler.BLOCK_ENTITY_TYPES.setValue(rl -> ConveyorBeltBlockEntity.BE_TYPES.get(rl).get());
+		IMultiblockBEHelperMaster.MAKE_HELPER.setValue(MultiblockBEHelperMaster::new);
+		IMultiblockBEHelperDummy.MAKE_HELPER.setValue(MultiblockBEHelperDummy::new);
 		SetRestrictedField.lock(false);
 		ShieldDisablingHandler.registerDisablingFunction(Player.class, player -> player.disableShield(true));
 		ShieldDisablingHandler.registerDisablingFunction(EngineerIllager.class, EngineerIllager::disableShield);
+	}
+
+	public static void clearLastFuture()
+	{
+		if(lastOnThreadFuture==null)
+			return;
+		try
+		{
+			lastOnThreadFuture.get();
+		} catch(InterruptedException|ExecutionException e)
+		{
+			throw new RuntimeException(e);
+		}
+		lastOnThreadFuture = null;
+	}
+
+	public static void setFuture(CompletableFuture<?> next)
+	{
+		clearLastFuture();
+		lastOnThreadFuture = next;
 	}
 }

@@ -16,7 +16,7 @@ import blusunrize.immersiveengineering.common.entities.RevolvershotEntity;
 import blusunrize.immersiveengineering.common.items.BulletItem;
 import blusunrize.immersiveengineering.common.network.MessageBlockEntitySync;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.IESounds;
 import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.inventory.IEInventoryHandler;
@@ -98,7 +98,7 @@ public class TurretGunBlockEntity extends TurretBlockEntity<TurretGunBlockEntity
 			if(bullet!=null&&bullet.isValidForTurret())
 			{
 				ItemStack casing = bullet.getCasing(bulletStack);
-				if(expelCasings||casing.isEmpty()||inventory.get(1).isEmpty()||(ItemStack.isSame(casing, inventory.get(1))&&
+				if(expelCasings||casing.isEmpty()||inventory.get(1).isEmpty()||(ItemStack.isSameItem(casing, inventory.get(1))&&
 						inventory.get(1).getCount()+casing.getCount() <= inventory.get(1).getMaxStackSize()))
 				{
 					this.energyStorage.extractEnergy(energy, false);
@@ -234,7 +234,7 @@ public class TurretGunBlockEntity extends TurretBlockEntity<TurretGunBlockEntity
 	}
 
 	@Override
-	public BEContainer<TurretGunBlockEntity, ?> getContainerType()
+	public ArgContainer<TurretGunBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.GUN_TURRET;
 	}

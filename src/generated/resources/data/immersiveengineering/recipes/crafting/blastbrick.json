@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "tag": "forge:ingots/nether_brick"
@@ -19,5 +20,6 @@
   "result": {
     "count": 3,
     "item": "immersiveengineering:blastbrick"
-  }
+  },
+  "show_notification": true
 }

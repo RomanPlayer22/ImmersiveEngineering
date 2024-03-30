@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "a": {
       "tag": "forge:plates/aluminum"
@@ -26,5 +27,6 @@
   ],
   "result": {
     "item": "immersiveengineering:capacitor_hv"
-  }
+  },
+  "show_notification": true
 }

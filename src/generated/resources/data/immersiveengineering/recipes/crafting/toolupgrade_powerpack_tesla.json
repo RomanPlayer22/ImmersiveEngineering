@@ -1,9 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
-    "c": {
-      "tag": "forge:wires/electrum"
-    },
     "e": {
       "item": "immersiveengineering:component_electronic_adv"
     },
@@ -12,14 +10,18 @@
     },
     "i": {
       "tag": "forge:plates/aluminum"
+    },
+    "w": {
+      "item": "immersiveengineering:wirecoil_electrum"
     }
   },
   "pattern": [
     "iii",
-    "cfc",
-    "cec"
+    "wfw",
+    "wew"
   ],
   "result": {
     "item": "immersiveengineering:toolupgrade_powerpack_tesla"
-  }
+  },
+  "show_notification": true
 }

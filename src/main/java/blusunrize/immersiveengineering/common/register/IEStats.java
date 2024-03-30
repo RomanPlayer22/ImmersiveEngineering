@@ -10,6 +10,7 @@ package blusunrize.immersiveengineering.common.register;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.StatFormatter;
 import net.minecraft.stats.Stats;
@@ -23,7 +24,7 @@ import java.util.List;
 public class IEStats
 {
 	private static final DeferredRegister<ResourceLocation> REGISTER = DeferredRegister.create(
-			Registry.CUSTOM_STAT_REGISTRY, ImmersiveEngineering.MODID
+			Registries.CUSTOM_STAT, ImmersiveEngineering.MODID
 	);
 	private static final List<Runnable> RUN_IN_SETUP = new ArrayList<>();
 

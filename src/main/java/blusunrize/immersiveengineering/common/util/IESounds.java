@@ -9,7 +9,7 @@
 package blusunrize.immersiveengineering.common.util;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -20,7 +20,7 @@ import static blusunrize.immersiveengineering.ImmersiveEngineering.MODID;
 public class IESounds
 {
 	private static final DeferredRegister<SoundEvent> REGISTER = DeferredRegister.create(
-			Registry.SOUND_EVENT_REGISTRY, MODID
+			Registries.SOUND_EVENT, MODID
 	);
 	public static final RegistryObject<SoundEvent> metalpress_piston = registerSound("metal_press_piston");
 	public static final RegistryObject<SoundEvent> metalpress_smash = registerSound("metal_press_smash");
@@ -50,6 +50,14 @@ public class IESounds
 	public static final RegistryObject<SoundEvent> mixer = registerSound("mixer");
 	public static final RegistryObject<SoundEvent> fermenter = registerSound("fermenter");
 	public static final RegistryObject<SoundEvent> preheater = registerSound("preheater");
+	public static final RegistryObject<SoundEvent> arcFurnace = registerSound("arc_furnace");
+	public static final RegistryObject<SoundEvent> oreConveyor = registerSound("ore_conveyor");
+	public static final RegistryObject<SoundEvent> oreDump = registerSound("ore_dump");
+	public static final RegistryObject<SoundEvent> process1 = registerSound("process_1");
+	public static final RegistryObject<SoundEvent> process1Lift = registerSound("process_1_lift");
+	public static final RegistryObject<SoundEvent> process2 = registerSound("process_2");
+	public static final RegistryObject<SoundEvent> process2Lift = registerSound("process_2_lift");
+	public static final RegistryObject<SoundEvent> electromagnet = registerSound("electromagnet");
 
 
 	public static void init()
@@ -59,6 +67,6 @@ public class IESounds
 
 	private static RegistryObject<SoundEvent> registerSound(String name)
 	{
-		return REGISTER.register(name, () -> new SoundEvent(ImmersiveEngineering.rl(name)));
+		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ImmersiveEngineering.rl(name)));
 	}
 }

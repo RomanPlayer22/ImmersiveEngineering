@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.items;
 
 import blusunrize.immersiveengineering.api.IETags;
@@ -14,13 +22,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ElytraItem;
+import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Wearable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.jetbrains.annotations.NotNull;
 
-public class GliderItem extends IEBaseItem implements Wearable
+public class GliderItem extends IEBaseItem implements Equipable
 {
 	public GliderItem()
 	{
@@ -61,19 +70,19 @@ public class GliderItem extends IEBaseItem implements Wearable
 	@Override
 	public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks)
 	{
-		if(!entity.level.isClientSide)
+		if(!entity.level().isClientSide)
 		{
 			int nextFlightTick = flightTicks+1;
 			if(nextFlightTick%10==0)
 			{
 				// if the player goes too fast, the glider takes additional damage
 				double speed = entity.getDeltaMovement().length();
-				int itemDamage = speed>1.5?3:1;
-				if(itemDamage>1 && entity instanceof Player player)
+				int itemDamage = speed > 1.5?3: 1;
+				if(itemDamage > 1&&entity instanceof Player player)
 					player.displayClientMessage(Component.translatable(Lib.CHAT_INFO+"glider.too_fast"), true);
 				// It also makes worrying noises!
 				if(itemDamage>1 && (nextFlightTick+40)%60==0)
-					entity.getLevel().playSound(null, entity, IESounds.glider.get(), SoundSource.PLAYERS, 1, 1);
+					entity.level().playSound(null, entity, IESounds.glider.get(), SoundSource.PLAYERS, 1, 1);
 
 				if(nextFlightTick%20==0)
 				{
@@ -95,4 +104,10 @@ public class GliderItem extends IEBaseItem implements Wearable
 		return EquipmentSlot.CHEST;
 	}
 
+	@Override
+	@NotNull
+	public EquipmentSlot getEquipmentSlot()
+	{
+		return EquipmentSlot.CHEST;
+	}
 }

@@ -13,10 +13,6 @@ import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.common.config.IEClientConfig;
 import blusunrize.immersiveengineering.mixin.accessors.client.PlayerControllerAccess;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -33,8 +29,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
+import org.joml.*;
 
+import java.lang.Math;
 import java.util.Collection;
 import java.util.List;
 
@@ -113,8 +110,8 @@ public class RenderUtils
 				rgba[1] = color>>8&255;
 				rgba[2] = color&255;
 			}
-			final Matrix4f positionTransform = transform.last().pose();
-			final Matrix3f normalTransform = transform.last().normal();
+			final Matrix4fc positionTransform = transform.last().pose();
+			final Matrix3fc normalTransform = transform.last().normal();
 			for(BakedQuad quad : quads)
 			{
 				int[] vData = quad.getVertices();
@@ -127,8 +124,8 @@ public class RenderUtils
 							1
 					);
 				//generate the normal vector
-				Vector3f normal = new Vector3f(quadCoords[1]);
-				Vector3f side2 = new Vector3f(quadCoords[2]);
+				Vector3f normal = new Vector3f(quadCoords[1].x, quadCoords[1].y, quadCoords[1].z);
+				Vector3f side2 = new Vector3f(quadCoords[2].x, quadCoords[2].y, quadCoords[2].z);
 				normal.add(-quadCoords[3].x(), -quadCoords[3].y(), -quadCoords[3].z());
 				side2.add(-quadCoords[0].x(), -quadCoords[0].y(), -quadCoords[0].z());
 				normal.cross(side2);
@@ -136,11 +133,11 @@ public class RenderUtils
 				// calculate the final light values and do the rendering
 				int l1 = getLightValue(neighbourBrightness[1], normalizationFactors[1], light&255, normal);
 				int l2 = getLightValue(neighbourBrightness[0], normalizationFactors[0], (light>>16)&255, normal);
-				normal.transform(normalTransform);
+				normal.mul(normalTransform);
 				for(int i = 0; i < 4; ++i)
 				{
 					final Vector4f vertexPos = quadCoords[i];
-					vertexPos.transform(positionTransform);
+					vertexPos.mul(positionTransform);
 					renderer.vertex(
 							vertexPos.x(), vertexPos.y(), vertexPos.z(),
 							rgba[0]/255f, rgba[1]/255f, rgba[2]/255f, rgba[3]/255f,
@@ -225,14 +222,14 @@ public class RenderUtils
 			matrix.pushPose();
 			matrix.translate(blockpos.getX(), blockpos.getY(), blockpos.getZ());
 			VertexConsumer worldRendererIn = buffers.getBuffer(ModelBakery.DESTROY_TYPES.get(progress));
-			worldRendererIn = new SheetedDecalTextureGenerator(worldRendererIn, matrix.last().pose(), matrix.last().normal());
+			worldRendererIn = new SheetedDecalTextureGenerator(worldRendererIn, matrix.last().pose(), matrix.last().normal(), 1);
 			Block block = world.getBlockState(blockpos).getBlock();
 			boolean hasBreak = block instanceof ChestBlock||block instanceof EnderChestBlock
 					||block instanceof SignBlock||block instanceof SkullBlock;
 			if(!hasBreak)
 			{
 				BlockState iblockstate = world.getBlockState(blockpos);
-				if(iblockstate.getMaterial()!=Material.AIR)
+				if(!iblockstate.isAir())
 					blockrendererdispatcher.renderBreakingTexture(iblockstate, blockpos, world, matrix, worldRendererIn);
 			}
 			matrix.popPose();

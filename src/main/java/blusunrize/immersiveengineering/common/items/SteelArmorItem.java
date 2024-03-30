@@ -26,9 +26,9 @@ public class SteelArmorItem extends ArmorItem
 {
 	public static ArmorMaterial mat = new SteelArmorMaterial();
 
-	public SteelArmorItem(EquipmentSlot type)
+	public SteelArmorItem(Type type)
 	{
-		super(mat, type, new Properties().stacksTo(1).tab(ImmersiveEngineering.ITEM_GROUP));
+		super(mat, type, new Properties().stacksTo(1));
 	}
 
 	@Override
@@ -41,36 +41,28 @@ public class SteelArmorItem extends ArmorItem
 	{
 
 		@Override
-		public int getDurabilityForSlot(@Nonnull EquipmentSlot slotIn)
+		public int getDurabilityForType(@Nonnull Type slotIn)
 		{
-			switch(slotIn)
-			{
-				case FEET:
-					return 273;
-				case LEGS:
-					return 315;
-				case CHEST:
-					return 336;
-				case HEAD:
-					return 231;
-			}
-			return 0;
+			return switch(slotIn)
+					{
+						case BOOTS -> 273;
+						case LEGGINGS -> 315;
+						case CHESTPLATE -> 336;
+						case HELMET -> 231;
+						default -> 0;
+					};
 		}
 
 		@Override
-		public int getDefenseForSlot(EquipmentSlot slotIn)
+		public int getDefenseForType(Type slotIn)
 		{
-			switch(slotIn)
-			{
-				case FEET:
-				case HEAD:
-					return 2;
-				case LEGS:
-					return 6;
-				case CHEST:
-					return 7;
-			}
-			return 0;
+			return switch(slotIn)
+					{
+						case BOOTS, HELMET -> 2;
+						case LEGGINGS -> 6;
+						case CHESTPLATE -> 7;
+						default -> 0;
+					};
 		}
 
 		@Override

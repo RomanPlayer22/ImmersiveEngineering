@@ -12,15 +12,14 @@ import blusunrize.immersiveengineering.api.IEProperties;
 import blusunrize.immersiveengineering.api.IETags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -37,7 +36,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +49,6 @@ public class IEBaseBlock extends Block implements IIEBlock, SimpleWaterloggedBlo
 	boolean hasFlavour;
 	//TODO wtf is variable opacity?
 	protected int lightOpacity;
-	protected PushReaction mobilityFlag = PushReaction.NORMAL;
 	protected final boolean notNormalBlock;
 	private final boolean fitsIntoContainer;
 
@@ -90,7 +87,7 @@ public class IEBaseBlock extends Block implements IIEBlock, SimpleWaterloggedBlo
 	@Override
 	public String getNameForFlavour()
 	{
-		return Registry.BLOCK.getKey(this).getPath();
+		return BuiltInRegistries.BLOCK.getKey(this).getPath();
 	}
 
 	@Override
@@ -115,19 +112,6 @@ public class IEBaseBlock extends Block implements IIEBlock, SimpleWaterloggedBlo
 			return 0;
 		else
 			return super.getLightBlock(state, worldIn, pos);
-	}
-
-	public IEBaseBlock setMobility(PushReaction flag)
-	{
-		mobilityFlag = flag;
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("deprecation")
-	public PushReaction getPistonPushReaction(BlockState state)
-	{
-		return mobilityFlag;
 	}
 
 	@Override
@@ -165,10 +149,9 @@ public class IEBaseBlock extends Block implements IIEBlock, SimpleWaterloggedBlo
 		super.setPlacedBy(worldIn, pos, state, placer, stack);
 	}
 
-	@Override
-	public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items)
+	public void fillCreativeTab(Output out)
 	{
-		items.add(new ItemStack(this, 1));
+		out.accept(this);
 	}
 
 	@Override

@@ -18,7 +18,7 @@ import blusunrize.immersiveengineering.common.items.ToolboxItem;
 import blusunrize.immersiveengineering.common.register.IEBlockEntities;
 import blusunrize.immersiveengineering.common.register.IEItems.Tools;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.inventory.IIEInventory;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
@@ -47,7 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class ToolboxBlockEntity extends IEBaseBlockEntity implements IStateBasedDirectional, IBlockBounds, IIEInventory,
 		IInteractionObjectIE<ToolboxBlockEntity>, IBlockEntityDrop, IPlayerInteraction
@@ -122,7 +122,7 @@ public class ToolboxBlockEntity extends IEBaseBlockEntity implements IStateBased
 	}
 
 	@Override
-	public BEContainer<ToolboxBlockEntity, ?> getContainerType()
+	public ArgContainer<ToolboxBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.TOOLBOX_BLOCK;
 	}
@@ -152,7 +152,7 @@ public class ToolboxBlockEntity extends IEBaseBlockEntity implements IStateBased
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		ItemStack stack = new ItemStack(Tools.TOOLBOX);
 		Tools.TOOLBOX.get().setContainedItems(stack, inventory);
@@ -160,7 +160,7 @@ public class ToolboxBlockEntity extends IEBaseBlockEntity implements IStateBased
 			stack.setHoverName(this.name);
 		if(enchantments!=null)
 			stack.getOrCreateTag().put("ench", enchantments);
-		return ImmutableList.of(stack);
+		drop.accept(stack);
 	}
 
 	@Override

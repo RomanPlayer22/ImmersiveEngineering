@@ -14,8 +14,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -23,18 +23,18 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public record RenderedItemModelDataProvider(
-        DataGenerator generator, ExistingFileHelper helper, Path itemOutputDirectory
+        PackOutput output, ExistingFileHelper helper, Path itemOutputDirectory
 ) implements DataProvider
 {
     @Override
-    public void run(CachedOutput pCache) throws IOException
+    public CompletableFuture<?> run(CachedOutput pCache)
     {
-        GameInitializationManager.getInstance().initialize(helper, generator);
+        GameInitializationManager.getInstance().initialize(helper, output);
         IEWireTypes.setup();
 
         try(ModelRenderer itemRenderer = new ModelRenderer(256, 256, itemOutputDirectory.toFile()))
@@ -52,6 +52,7 @@ public record RenderedItemModelDataProvider(
                 itemRenderer.renderModel(model, name.getNamespace()+"/"+name.getPath()+".png", stackToRender);
             });
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Nonnull

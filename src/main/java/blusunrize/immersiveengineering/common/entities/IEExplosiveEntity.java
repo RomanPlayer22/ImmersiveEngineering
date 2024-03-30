@@ -17,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,23 +31,23 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Explosion.BlockInteraction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 public class IEExplosiveEntity extends PrimedTnt
 {
 	private float size;
-	private Explosion.BlockInteraction mode = BlockInteraction.BREAK;
+	private Explosion.BlockInteraction mode = BlockInteraction.DESTROY;
 	private boolean isFlaming = false;
 	private float explosionDropChance;
 	public BlockState block;
 	private Component name;
 
-	private static final EntityDataAccessor<Optional<BlockState>> dataMarker_block = SynchedEntityData.defineId(IEExplosiveEntity.class, EntityDataSerializers.BLOCK_STATE);
+	private static final EntityDataAccessor<BlockState> dataMarker_block = SynchedEntityData.defineId(IEExplosiveEntity.class, EntityDataSerializers.BLOCK_STATE);
 	private static final EntityDataAccessor<Integer> dataMarker_fuse = SynchedEntityData.defineId(IEExplosiveEntity.class, EntityDataSerializers.INT);
 
 	public IEExplosiveEntity(EntityType<IEExplosiveEntity> type, Level world)
@@ -93,7 +94,7 @@ public class IEExplosiveEntity extends PrimedTnt
 	protected void defineSynchedData()
 	{
 		super.defineSynchedData();
-		this.entityData.define(dataMarker_block, Optional.empty());
+		this.entityData.define(dataMarker_block, Blocks.AIR.defaultBlockState());
 		this.entityData.define(dataMarker_fuse, 0);
 	}
 
@@ -101,14 +102,16 @@ public class IEExplosiveEntity extends PrimedTnt
 	{
 		if(this.block!=null)
 		{
-			this.entityData.set(dataMarker_block, Optional.of(this.block));
+			this.entityData.set(dataMarker_block, this.block);
 			this.entityData.set(dataMarker_fuse, this.getFuse());
 		}
 	}
 
 	private void getBlockSynced()
 	{
-		this.block = this.entityData.get(dataMarker_block).orElse(null);
+		this.block = this.entityData.get(dataMarker_block);
+		if(this.block.isAir())
+			this.block = null;
 		this.setFuse(this.entityData.get(dataMarker_fuse));
 	}
 
@@ -153,7 +156,7 @@ public class IEExplosiveEntity extends PrimedTnt
 	@Override
 	public void tick()
 	{
-		if(level.isClientSide&&this.block==null)
+		if(level().isClientSide&&this.block==null)
 			this.getBlockSynced();
 
 		this.xo = this.getX();
@@ -166,7 +169,7 @@ public class IEExplosiveEntity extends PrimedTnt
 
 		this.move(MoverType.SELF, this.getDeltaMovement());
 		this.setDeltaMovement(this.getDeltaMovement().scale(0.98D));
-		if(this.onGround)
+		if(this.onGround())
 		{
 			this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D, -0.5D, 0.7D));
 		}
@@ -176,9 +179,9 @@ public class IEExplosiveEntity extends PrimedTnt
 		{
 			this.discard();
 
-			Explosion explosion = new IEExplosion(level, this, getX(), getY()+(getBbHeight()/16f), getZ(), size, isFlaming, mode)
+			Explosion explosion = new IEExplosion(level(), this, getX(), getY()+(getBbHeight()/16f), getZ(), size, isFlaming, mode)
 					.setDropChance(explosionDropChance);
-			if(!ForgeEventFactory.onExplosionStart(level, explosion))
+			if(!ForgeEventFactory.onExplosionStart(level(), explosion))
 			{
 				explosion.explode();
 				explosion.finalizeExplosion(true);
@@ -187,14 +190,15 @@ public class IEExplosiveEntity extends PrimedTnt
 		else
 		{
 			this.updateInWaterStateAndDoFluidPushing();
-			this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY()+0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
+			this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY()+0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
 		}
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket()
+	public Packet<ClientGamePacketListener> getAddEntityPacket()
 	{
-		return NetworkHooks.getEntitySpawningPacket(this);
+		// TODO see fluorescent tube
+		return (Packet<ClientGamePacketListener>)NetworkHooks.getEntitySpawningPacket(this);
 	}
 
 }

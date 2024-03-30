@@ -48,6 +48,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -65,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public abstract class TurretBlockEntity<T extends TurretBlockEntity<T>> extends IEBaseBlockEntity implements
 		IEServerTickableBE, IEClientTickableBE, IIEInventory, IHasDummyBlocks, IBlockEntityDrop,
@@ -508,7 +511,7 @@ public abstract class TurretBlockEntity<T extends TurretBlockEntity<T>> extends 
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		BlockState state = context.getParamOrNull(LootContextParams.BLOCK_STATE);
 		Entity player = context.getParamOrNull(LootContextParams.THIS_ENTITY);
@@ -516,11 +519,12 @@ public abstract class TurretBlockEntity<T extends TurretBlockEntity<T>> extends 
 		TurretBlockEntity<?> turret = this;
 		if(isDummy())
 		{
-			BlockEntity t = level.getBlockEntity(getBlockPos().below());
-			if(t instanceof TurretBlockEntity<?>)
-				turret = (TurretBlockEntity<?>)t;
-			else
-				return ImmutableList.of(stack);
+			turret = master();
+			if(turret==null)
+			{
+				drop.accept(stack);
+				return;
+			}
 		}
 
 		CompoundTag tag = new CompoundTag();
@@ -547,7 +551,7 @@ public abstract class TurretBlockEntity<T extends TurretBlockEntity<T>> extends 
 
 		if(!tag.isEmpty())
 			stack.setTag(tag);
-		return ImmutableList.of(stack);
+		drop.accept(stack);
 	}
 
 	@Override

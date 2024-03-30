@@ -1,23 +1,6 @@
 /*
  * BluSunrize
- * Copyright (c) 2020
- *
- * This code is licensed under "Blu's License of Common Sense"
- * Details can be found in the license file in the root folder of this project
- *
- */
-
-/*
- * BluSunrize
- * Copyright (c) 2017
- *
- * This code is licensed under "Blu's License of Common Sense"
- * Details can be found in the license file in the root folder of this project
- */
-
-/*
- * BluSunrize
- * Copyright (c) 2017
+ * Copyright (c) 2023
  *
  * This code is licensed under "Blu's License of Common Sense"
  * Details can be found in the license file in the root folder of this project
@@ -47,10 +30,6 @@ public class CommonProxy
 	}
 
 	public void handleTileSound(Supplier<SoundEvent> soundEvent, BlockEntity tile, boolean tileActive, float volume, float pitch)
-	{
-	}
-
-	public void stopTileSound(String soundName, BlockEntity tile)
 	{
 	}
 

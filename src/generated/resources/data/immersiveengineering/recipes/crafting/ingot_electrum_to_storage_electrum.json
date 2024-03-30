@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "i": {
       "item": "immersiveengineering:ingot_electrum"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "immersiveengineering:storage_electrum"
-  }
+  },
+  "show_notification": true
 }

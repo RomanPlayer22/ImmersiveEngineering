@@ -11,9 +11,11 @@ package blusunrize.immersiveengineering.common.blocks.multiblocks;
 import blusunrize.immersiveengineering.api.IEProperties;
 import blusunrize.immersiveengineering.api.multiblocks.ClientMultiblocks.MultiblockManualData;
 import blusunrize.immersiveengineering.api.multiblocks.TemplateMultiblock;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.MultiblockRegistration;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockBE;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityDummy;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityMaster;
 import blusunrize.immersiveengineering.client.utils.BasicClientProperties;
-import blusunrize.immersiveengineering.common.blocks.generic.MultiblockPartBlockEntity;
-import blusunrize.immersiveengineering.common.register.IEBlocks;
 import blusunrize.immersiveengineering.common.util.IELogger;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -36,56 +38,35 @@ import java.util.function.Consumer;
 
 public abstract class IETemplateMultiblock extends TemplateMultiblock
 {
-	private final IEBlocks.BlockEntry<?> baseState;
+	private final MultiblockRegistration<?> logic;
 
 	public IETemplateMultiblock(
 			ResourceLocation loc, BlockPos masterFromOrigin, BlockPos triggerFromOrigin, BlockPos size,
-			IEBlocks.BlockEntry<?> baseState
+			MultiblockRegistration<?> logic
 	)
 	{
 		super(loc, masterFromOrigin, triggerFromOrigin, size, ImmutableMap.of());
-		this.baseState = baseState;
+		this.logic = logic;
 	}
 
 	@Override
 	protected void replaceStructureBlock(StructureBlockInfo info, Level world, BlockPos actualPos, boolean mirrored, Direction clickDirection, Vec3i offsetFromMaster)
 	{
-		BlockState newState = baseState.get().defaultBlockState();
-		if(!offsetFromMaster.equals(Vec3i.ZERO))
-			newState = newState.setValue(IEProperties.MULTIBLOCKSLAVE, true);
+		BlockState newState = logic.block().get().defaultBlockState();
+		newState = newState.setValue(IEProperties.MULTIBLOCKSLAVE, !offsetFromMaster.equals(Vec3i.ZERO));
+		if(newState.hasProperty(IEProperties.MIRRORED))
+			newState = newState.setValue(IEProperties.MIRRORED, mirrored);
+		if(newState.hasProperty(IEProperties.FACING_HORIZONTAL))
+			newState = newState.setValue(IEProperties.FACING_HORIZONTAL, clickDirection.getOpposite());
 		final BlockState oldState = world.getBlockState(actualPos);
-		world.setBlock(actualPos, newState, 0);
+		world.setBlock(actualPos, newState,0);
 		BlockEntity curr = world.getBlockEntity(actualPos);
-		if(curr instanceof MultiblockPartBlockEntity<?> tile)
-		{
-			tile.formed = true;
-			tile.offsetToMaster = new BlockPos(offsetFromMaster);
-			tile.posInMultiblock = info.pos;
-			if(newState.hasProperty(IEProperties.MIRRORED))
-				tile.setMirrored(mirrored);
-			tile.setFacing(transformDirection(clickDirection.getOpposite()));
-			tile.setChanged();
-			world.blockEvent(actualPos, world.getBlockState(actualPos).getBlock(), 255, 0);
-		}
-		else
+		if(curr instanceof MultiblockBlockEntityDummy<?> dummy)
+			dummy.getHelper().setPositionInMB(info.pos());
+		else if(!(curr instanceof MultiblockBlockEntityMaster<?>))
 			IELogger.logger.error("Expected MB TE at {} during placement", actualPos);
 		final LevelChunk chunk = world.getChunkAt(actualPos);
 		world.markAndNotifyBlock(actualPos, chunk, oldState, newState, Block.UPDATE_ALL, 512);
-	}
-
-	public Direction transformDirection(Direction original)
-	{
-		return original;
-	}
-
-	public Direction untransformDirection(Direction transformed)
-	{
-		return transformed;
-	}
-
-	public BlockPos multiblockToModelPos(BlockPos posInMultiblock)
-	{
-		return posInMultiblock.subtract(masterFromOrigin);
 	}
 
 	@Override
@@ -96,13 +77,14 @@ public abstract class IETemplateMultiblock extends TemplateMultiblock
 
 	@Nonnull
 	@Override
-	protected StructureTemplate getTemplate(@Nullable Level world)
+	public TemplateData getTemplate(@Nonnull Level world)
 	{
-		StructureTemplate result = super.getTemplate(world);
+		TemplateData result = super.getTemplate(world);
+		final Vec3i resultSize = result.template().getSize();
 		Preconditions.checkState(
-				result.getSize().equals(size),
+				resultSize.equals(size),
 				"Wrong template size for multiblock %s, template size: %s",
-				getTemplateLocation(), result.getSize()
+				getTemplateLocation(), resultSize
 		);
 		return result;
 	}
@@ -111,8 +93,8 @@ public abstract class IETemplateMultiblock extends TemplateMultiblock
 	protected void prepareBlockForDisassembly(Level world, BlockPos pos)
 	{
 		BlockEntity be = world.getBlockEntity(pos);
-		if(be instanceof MultiblockPartBlockEntity<?> multiblockBE)
-			multiblockBE.formed = false;
+		if(be instanceof IMultiblockBE<?> multiblockBE)
+			multiblockBE.getHelper().markDisassembling();
 		else if(be!=null)
 			IELogger.logger.error("Expected multiblock TE at {}, got {}", pos, be);
 	}
@@ -125,18 +107,18 @@ public abstract class IETemplateMultiblock extends TemplateMultiblock
 
 	public ResourceLocation getBlockName()
 	{
-		return baseState.getId();
+		return logic.id();
 	}
 
 	@Override
 	public Component getDisplayName()
 	{
-		return baseState.get().getName();
+		return logic.block().get().getName();
 	}
 
 	@Override
 	public Block getBlock()
 	{
-		return baseState.get();
+		return logic.block().get();
 	}
 }

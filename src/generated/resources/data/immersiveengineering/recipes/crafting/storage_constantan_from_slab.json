@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "s": {
       "item": "immersiveengineering:slab_storage_constantan"
@@ -11,5 +12,6 @@
   ],
   "result": {
     "item": "immersiveengineering:storage_constantan"
-  }
+  },
+  "show_notification": true
 }

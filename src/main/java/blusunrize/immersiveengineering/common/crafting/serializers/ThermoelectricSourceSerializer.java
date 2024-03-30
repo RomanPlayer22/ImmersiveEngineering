@@ -16,6 +16,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -51,7 +52,7 @@ public class ThermoelectricSourceSerializer extends IERecipeSerializer<Thermoele
 		else
 		{
 			ResourceLocation tagName = new ResourceLocation(json.get(BLOCK_TAG_KEY).getAsString());
-			TagKey<Block> tag = TagKey.create(Registry.BLOCK_REGISTRY, tagName);
+			TagKey<Block> tag = TagKey.create(Registries.BLOCK, tagName);
 			return new ThermoelectricSource(recipeId, tag, temperature);
 		}
 	}

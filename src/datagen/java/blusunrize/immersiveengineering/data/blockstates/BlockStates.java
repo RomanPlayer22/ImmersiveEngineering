@@ -21,12 +21,12 @@ import blusunrize.immersiveengineering.common.blocks.generic.WallmountBlock;
 import blusunrize.immersiveengineering.common.blocks.generic.WallmountBlock.Orientation;
 import blusunrize.immersiveengineering.common.blocks.metal.*;
 import blusunrize.immersiveengineering.common.blocks.metal.MetalLadderBlock.CoverType;
-import blusunrize.immersiveengineering.common.blocks.plant.EnumHempGrowth;
 import blusunrize.immersiveengineering.common.blocks.plant.HempBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.SawdustBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.TreatedWoodStyles;
 import blusunrize.immersiveengineering.common.register.IEBlocks.*;
 import blusunrize.immersiveengineering.common.register.IEFluids;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import blusunrize.immersiveengineering.data.DataGenUtils;
 import blusunrize.immersiveengineering.data.models.ConveyorModelBuilder;
 import blusunrize.immersiveengineering.data.models.ModelProviderUtils;
@@ -39,9 +39,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
-import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
@@ -76,9 +76,9 @@ public class BlockStates extends ExtendedBlockstateProvider
 	private static final ResourceLocation TREATED_FENCE_TEXTURE = rl("block/wooden_decoration/treated_wood_horizontal");
 	private final ConfiguredModel EMPTY_MODEL;
 
-	public BlockStates(DataGenerator gen, ExistingFileHelper exHelper)
+	public BlockStates(PackOutput output, ExistingFileHelper exHelper)
 	{
-		super(gen, exHelper);
+		super(output, exHelper);
 		EMPTY_MODEL = new ConfiguredModel(
 				new ExistingModelFile(modLoc("block/ie_empty"), existingFileHelper)
 		);
@@ -155,20 +155,29 @@ public class BlockStates extends ExtendedBlockstateProvider
 		cubeAll(StoneDecoration.COKEBRICK, rl("block/stone_decoration/cokebrick"));
 		cubeAll(StoneDecoration.BLASTBRICK, rl("block/stone_decoration/blastbrick"));
 		cubeAll(StoneDecoration.BLASTBRICK_REINFORCED, rl("block/stone_decoration/blastbrick_reinforced"));
-		cubeAll(StoneDecoration.SLAG_GRAVEL, rl("block/stone_decoration/slag_gravel"));
+		multiEightCubeAll(StoneDecoration.SLAG_BRICK, rl("block/stone_decoration/slag_brick/slag_brick"));
+		multiEightCubeAll(StoneDecoration.CLINKER_BRICK, rl("block/stone_decoration/clinker_brick/clinker_brick"));
+		simpleBlockAndItem(StoneDecoration.CLINKER_BRICK_SILL, new ConfiguredModel(models().cubeBottomTop(
+				"clinker_brick_sill",
+				modLoc("block/stone_decoration/clinker_brick/clinker_brick_sill_side"),
+				modLoc("block/stone_decoration/clinker_brick/clinker_brick0"),
+				modLoc("block/stone_decoration/clinker_brick/clinker_brick_sill_top")
+		)));
+		multiEightCubeAll(StoneDecoration.SLAG_GRAVEL, rl("block/stone_decoration/slag_gravel/slag_gravel"));
+		multiEightCubeAll(StoneDecoration.GRIT_SAND, rl("block/stone_decoration/grit_sand/grit_sand"));
 		cubeAll(StoneDecoration.COKE, rl("block/stone_decoration/coke"));
-		cubeAll(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete"));
-		cubeAll(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick"));
+		multiEightCubeAll(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete/concrete"));
+		multiEightCubeAll(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick/concrete_brick"));
 		cubeAll(StoneDecoration.CONCRETE_BRICK_CRACKED, rl("block/stone_decoration/concrete_brick_cracked"));
 		cubeAll(StoneDecoration.CONCRETE_CHISELED, rl("block/stone_decoration/concrete_chiseled"));
-		cubeSideVertical(StoneDecoration.CONCRETE_PILLAR, rl("block/stone_decoration/concrete_pillar"), rl("block/stone_decoration/concrete_tile"));
+		cubeSideVertical(StoneDecoration.CONCRETE_PILLAR, rl("block/stone_decoration/concrete_pillar"), rl("block/stone_decoration/concrete_tile/concrete_tile0"));
 		cubeAll(StoneDecoration.CONCRETE_LEADED, rl("block/stone_decoration/concrete_leaded"));
-		cubeAll(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile"));
-		cubeAll(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete"));
-		cubeAll(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick"));
+		multiEightCubeAll(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile/concrete_tile"));
+		multiEightCubeAll(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete/hempcrete"));
+		multiEightCubeAll(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick/hempcrete_brick"));
 		cubeAll(StoneDecoration.HEMPCRETE_BRICK_CRACKED, rl("block/stone_decoration/hempcrete_brick_cracked"));
 		cubeAll(StoneDecoration.HEMPCRETE_CHISELED, rl("block/stone_decoration/hempcrete_chiseled"));
-		cubeSideVertical(StoneDecoration.HEMPCRETE_PILLAR, rl("block/stone_decoration/hempcrete_pillar"), rl("block/stone_decoration/hempcrete"));
+		cubeSideVertical(StoneDecoration.HEMPCRETE_PILLAR, rl("block/stone_decoration/hempcrete_pillar"), rl("block/stone_decoration/hempcrete/hempcrete0"));
 		cubeAll(StoneDecoration.INSULATING_GLASS, rl("block/stone_decoration/insulating_glass"), translucent());
 		cubeAll(StoneDecoration.SLAG_GLASS, rl("block/stone_decoration/slag_glass"), translucent());
 		cubeAll(StoneDecoration.ALLOYBRICK, rl("block/stone_decoration/alloybrick"));
@@ -205,32 +214,48 @@ public class BlockStates extends ExtendedBlockstateProvider
 		slabFor(StoneDecoration.COKEBRICK, rl("block/stone_decoration/cokebrick"));
 		slabFor(StoneDecoration.BLASTBRICK, rl("block/stone_decoration/blastbrick"));
 		slabFor(StoneDecoration.BLASTBRICK_REINFORCED, rl("block/stone_decoration/blastbrick_reinforced"));
+		slabForMultiEightAll(StoneDecoration.SLAG_BRICK, rl("block/stone_decoration/slag_brick/slag_brick"));
+		slabForMultiEightAll(StoneDecoration.CLINKER_BRICK, rl("block/stone_decoration/clinker_brick/clinker_brick"));
 		slabFor(StoneDecoration.COKE, rl("block/stone_decoration/coke"));
-		slabFor(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete"));
-		slabFor(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick"));
-		slabFor(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile"));
+		slabForMultiEightAll(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete/concrete"));
+		slabForMultiEightAll(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick/concrete_brick"));
+		slabForMultiEightAll(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile/concrete_tile"));
 		slabFor(StoneDecoration.CONCRETE_LEADED, rl("block/stone_decoration/concrete_leaded"));
-		slabFor(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete"));
-		slabFor(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick"));
+		slabForMultiEightAll(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete/hempcrete"));
+		slabForMultiEightAll(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick/hempcrete_brick"));
 		slabFor(StoneDecoration.INSULATING_GLASS, rl("block/stone_decoration/insulating_glass"), translucent());
 		slabFor(StoneDecoration.ALLOYBRICK, rl("block/stone_decoration/alloybrick"));
 		for(TreatedWoodStyles style : TreatedWoodStyles.values())
 			slabFor(WoodenDecoration.TREATED_WOOD.get(style), rl("block/wooden_decoration/treated_wood_"+style.name().toLowerCase(Locale.ENGLISH)));
 
-		stairsFor(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete"));
-		stairsFor(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick"));
-		stairsFor(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete"));
-		stairsFor(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick"));
-		stairsFor(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile"));
+		stairsForMultiEightAll(StoneDecoration.SLAG_BRICK, rl("block/stone_decoration/slag_brick/slag_brick"));
+		stairsForMultiEightAll(StoneDecoration.CLINKER_BRICK, rl("block/stone_decoration/clinker_brick/clinker_brick"));
+		stairsForMultiEightAll(StoneDecoration.HEMPCRETE, rl("block/stone_decoration/hempcrete/hempcrete"));
+		stairsForMultiEightAll(StoneDecoration.HEMPCRETE_BRICK, rl("block/stone_decoration/hempcrete_brick/hempcrete_brick"));
+		stairsForMultiEightAll(StoneDecoration.CONCRETE, rl("block/stone_decoration/concrete/concrete"));
+		stairsForMultiEightAll(StoneDecoration.CONCRETE_BRICK, rl("block/stone_decoration/concrete_brick/concrete_brick"));
+		stairsForMultiEightAll(StoneDecoration.CONCRETE_TILE, rl("block/stone_decoration/concrete_tile/concrete_tile"));
 		stairsFor(StoneDecoration.CONCRETE_LEADED, rl("block/stone_decoration/concrete_leaded"));
 		for(TreatedWoodStyles style : TreatedWoodStyles.values())
 			stairsFor(WoodenDecoration.TREATED_WOOD.get(style), rl("block/wooden_decoration/treated_wood_"+style.name().toLowerCase(Locale.ENGLISH)));
+
+		wallForMultiEight(StoneDecoration.SLAG_BRICK,
+				rl("block/stone_decoration/slag_brick/slag_brick"),
+				rl("block/stone_decoration/slag_brick/slag_brick_wall"),
+				rl("block/stone_decoration/slag_brick/slag_brick_top"));
+		wallForMultiEight(StoneDecoration.CLINKER_BRICK,
+				rl("block/stone_decoration/clinker_brick/clinker_brick"),
+				rl("block/stone_decoration/clinker_brick/clinker_brick_wall"),
+				rl("block/stone_decoration/clinker_brick/clinker_brick_top"));
 
 		postBlock(WoodenDecoration.TREATED_POST, rl("block/wooden_decoration/post"));
 		postBlock(MetalDecoration.STEEL_POST, rl("block/metal_decoration/steel_post"));
 		postBlock(MetalDecoration.ALU_POST, rl("block/metal_decoration/aluminum_post"));
 
-		simpleBlock(Multiblocks.BUCKET_WHEEL.get(), emptyWithParticles("block/bucket_wheel", "block/multiblocks/bucket_wheel"));
+		simpleBlock(
+				IEMultiblockLogic.BUCKET_WHEEL.block().get(),
+				emptyWithParticles("block/bucket_wheel", "block/multiblocks/bucket_wheel")
+		);
 		simpleBlock(
 				MetalDevices.FLUID_PIPE.get(),
 				ieObjBuilder("block/metal_device/fluid_pipe.obj.ie").callback(PipeCallbacks.INSTANCE).layer(cutout()).end()
@@ -295,7 +320,7 @@ public class BlockStates extends ExtendedBlockstateProvider
 		createStructuralArm("block/metal_decoration/aluminum_scaffolding", MetalDecoration.ALU_SLOPE);
 
 		createHorizontalRotatedBlock(StoneDecoration.CORESAMPLE, obj("block/coresample.obj"));
-		ResourceLocation concreteTexture = rl("block/stone_decoration/concrete");
+		ResourceLocation concreteTexture = rl("block/stone_decoration/concrete/concrete0");
 		simpleBlockAndItem(StoneDecoration.CONCRETE_SHEET, models().carpet("concrete_sheet", concreteTexture));
 		simpleBlockAndItem(StoneDecoration.CONCRETE_QUARTER, quarter("concrete_quarter", concreteTexture));
 		simpleBlockAndItem(StoneDecoration.CONCRETE_THREE_QUARTER, threeQuarter("concrete_three_quarter", concreteTexture));
@@ -433,6 +458,16 @@ public class BlockStates extends ExtendedBlockstateProvider
 							.type(b.get().getType())
 							.end()
 			));
+		{
+			ModelFile magnetModel = models().cubeBottomTop("electromagnet",
+					modLoc("block/metal_device/electromagnet"),
+					modLoc("block/metal_device/electromagnet_bottom"),
+					modLoc("block/metal_device/electromagnet_top")
+			);
+			createRotatedBlock(MetalDevices.ELECTROMAGNET, magnetModel, IEProperties.FACING_ALL, ImmutableList.of(), -90, 0);
+			itemModel(MetalDevices.ELECTROMAGNET, magnetModel);
+		}
+
 		createHemp();
 		{
 			final var pottedHempModel = models()
@@ -450,7 +485,7 @@ public class BlockStates extends ExtendedBlockstateProvider
 			Mutable<IClientFluidTypeExtensions> box = new MutableObject<>();
 			still.getFluidType().initializeClient(box::setValue);
 			ResourceLocation stillTexture = box.getValue().getStillTexture();
-			ModelFile model = models().getBuilder("block/fluid/"+Registry.FLUID.getKey(still).getPath())
+			ModelFile model = models().getBuilder("block/fluid/"+BuiltInRegistries.FLUID.getKey(still).getPath())
 					.texture("particle", stillTexture);
 			getVariantBuilder(entry.getBlock()).partialState().setModels(new ConfiguredModel(model));
 		}
@@ -493,7 +528,7 @@ public class BlockStates extends ExtendedBlockstateProvider
 	{
 		super.fenceBlock(b.get(), texture);
 		itemModel(b,
-				models().withExistingParent(Registry.BLOCK.getKey(b.get()).getPath()+"_inventory", mcLoc("block/fence_inventory"))
+				models().withExistingParent(BuiltInRegistries.BLOCK.getKey(b.get()).getPath()+"_inventory", mcLoc("block/fence_inventory"))
 						.texture("texture", texture));
 	}
 
@@ -560,7 +595,7 @@ public class BlockStates extends ExtendedBlockstateProvider
 			for(WallmountBlock.Orientation or : Orientation.values())
 			{
 				ResourceLocation modelLoc = rl("block/wooden_device/wallmount"+or.modelSuffix()+".obj");
-				ModelFile model = obj(Registry.BLOCK.getKey(b.get()).getPath()+or.modelSuffix(), modelLoc,
+				ModelFile model = obj(BuiltInRegistries.BLOCK.getKey(b.get()).getPath()+or.modelSuffix(), modelLoc,
 						ImmutableMap.of("texture", texture), models());
 				stateBuilder.partialState()
 						.with(IEProperties.FACING_HORIZONTAL, d)
@@ -604,16 +639,21 @@ public class BlockStates extends ExtendedBlockstateProvider
 	private void createHemp()
 	{
 		VariantBlockStateBuilder builder = getVariantBuilder(Misc.HEMP_PLANT.get());
-		for(EnumHempGrowth g : EnumHempGrowth.values())
+		// Top
+		ModelFile model = models()
+				.withExistingParent("block/hemp/top", new ResourceLocation("block/crop"))
+				.texture("crop", new ResourceLocation(ImmersiveEngineering.MODID, "block/hemp/top0"))
+				.renderType(ModelProviderUtils.getName(cutout()));
+		builder.partialState().with(HempBlock.TOP, true).setModels(new ConfiguredModel(model));
+
+		// Bottoms
+		for(int i = 0; i <= 4; i++)
 		{
-			ModelFile model = models().withExistingParent(
-							"block/hemp/"+g.getSerializedName(), new ResourceLocation("block/crop")
-					)
-					.texture("crop", g.getTextureName())
+			model = models()
+					.withExistingParent("block/hemp/bottom"+i, new ResourceLocation("block/crop"))
+					.texture("crop", new ResourceLocation(ImmersiveEngineering.MODID, "block/hemp/bottom"+i))
 					.renderType(ModelProviderUtils.getName(cutout()));
-			builder.partialState()
-					.with(HempBlock.GROWTH, g)
-					.setModels(new ConfiguredModel(model));
+			builder.partialState().with(HempBlock.TOP, false).with(HempBlock.AGE, i).setModels(new ConfiguredModel(model));
 		}
 	}
 

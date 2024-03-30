@@ -10,10 +10,12 @@
       ],
       "entries": [
         {
-          "type": "immersiveengineering:tile_drop"
+          "type": "minecraft:item",
+          "name": "minecraft:white_banner"
         }
       ],
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "immersiveengineering:blocks/shader_banner_wall"
 }

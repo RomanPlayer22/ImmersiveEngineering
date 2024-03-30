@@ -16,11 +16,13 @@ import blusunrize.immersiveengineering.common.util.RecipeSerializers;
 import blusunrize.immersiveengineering.common.util.Utils;
 import com.google.common.collect.Lists;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -59,7 +61,7 @@ public class EarmuffsRecipe implements CraftingRecipe
 				if(earmuffs.isEmpty()&&isEarmuffs)
 					earmuffs = stackInSlot;
 				else if(armor.isEmpty()&&stackInSlot.getItem() instanceof ArmorItem armorItem&&
-						armorItem.getSlot()==EquipmentSlot.HEAD&&
+						armorItem.getEquipmentSlot()==EquipmentSlot.HEAD&&
 						!isEarmuffs)
 					armor = stackInSlot;
 				else if(Utils.isDye(stackInSlot))
@@ -75,7 +77,7 @@ public class EarmuffsRecipe implements CraftingRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(CraftingContainer inv)
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess access)
 	{
 		ItemStack earmuffs = ItemStack.EMPTY;
 		ItemStack armor = ItemStack.EMPTY;
@@ -114,7 +116,7 @@ public class EarmuffsRecipe implements CraftingRecipe
 					++totalColourSets;
 				}
 				else if(armor.isEmpty()&&stackInSlot.getItem() instanceof ArmorItem&&
-						((ArmorItem)stackInSlot.getItem()).getSlot()==EquipmentSlot.HEAD&&
+						((ArmorItem)stackInSlot.getItem()).getEquipmentSlot()==EquipmentSlot.HEAD&&
 						!isEarmuffs)
 					armor = stackInSlot;
 			}
@@ -163,7 +165,7 @@ public class EarmuffsRecipe implements CraftingRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return new ItemStack(Misc.EARMUFFS, 1);
 	}
@@ -199,5 +201,11 @@ public class EarmuffsRecipe implements CraftingRecipe
 	public NonNullList<Ingredient> getIngredients()
 	{
 		return NonNullList.withSize(1, Ingredient.of(Misc.EARMUFFS));
+	}
+
+	@Override
+	public CraftingBookCategory category()
+	{
+		return CraftingBookCategory.MISC;
 	}
 }

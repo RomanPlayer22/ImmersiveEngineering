@@ -17,7 +17,8 @@ import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import blusunrize.immersiveengineering.api.utils.FastEither;
 import blusunrize.immersiveengineering.api.utils.TagUtils;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -73,7 +74,7 @@ public class ThermoelectricSource extends IESerializableRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return ItemStack.EMPTY;
 	}
@@ -81,7 +82,7 @@ public class ThermoelectricSource extends IESerializableRecipe
 	public Block getExample()
 	{
 		return blocks.map(
-				tagKey -> Registry.BLOCK.getTag(tagKey)
+				tagKey -> BuiltInRegistries.BLOCK.getTag(tagKey)
 						.flatMap(t -> t.getRandomElement(ApiUtils.RANDOM_SOURCE))
 						.map(Holder::value)
 						.orElse(Blocks.AIR),
@@ -91,7 +92,7 @@ public class ThermoelectricSource extends IESerializableRecipe
 
 	public List<Block> getMatchingBlocks()
 	{
-		return blocks.map(t -> TagUtils.elementStream(Registry.BLOCK, t).toList(), Function.identity());
+		return blocks.map(t -> TagUtils.elementStream(BuiltInRegistries.BLOCK, t).toList(), Function.identity());
 	}
 
 	public int getTemperature()

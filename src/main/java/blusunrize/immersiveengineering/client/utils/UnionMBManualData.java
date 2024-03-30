@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.client.utils;
 
 import blusunrize.immersiveengineering.api.multiblocks.ClientMultiblocks;
@@ -5,12 +13,13 @@ import blusunrize.immersiveengineering.api.multiblocks.ClientMultiblocks.Multibl
 import blusunrize.immersiveengineering.common.blocks.multiblocks.UnionMultiblock.TransformedMultiblock;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Rotation;
+import org.joml.Quaternionf;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -29,7 +38,7 @@ public class UnionMBManualData implements MultiblockManualData
 				{
 					boolean added = false;
 					for(ItemStack ex : stacks)
-						if(ItemStack.isSame(ex, stack))
+						if(ItemStack.isSameItem(ex, stack))
 						{
 							ex.grow(stack.getCount());
 							added = true;
@@ -89,11 +98,11 @@ public class UnionMBManualData implements MultiblockManualData
 	{
 		MultiblockManualData data = ClientMultiblocks.get(mb.multiblock());
 		Vec3i offset = mb.offset().subtract(min);
-		Quaternion rotation = new Quaternion(0, getAngle(mb.rotation()), 0, true);
+		Quaternionf rotation = new Quaternionf().rotationY(getAngle(mb.rotation()) *Mth.DEG_TO_RAD);
 		return new ClientSubMultiblock(data, offset, rotation);
 	}
 
-	private record ClientSubMultiblock(MultiblockManualData mbData, Vec3i offset, Quaternion rotation)
+	private record ClientSubMultiblock(MultiblockManualData mbData, Vec3i offset, Quaternionf rotation)
 	{
 	}
 }

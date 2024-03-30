@@ -11,11 +11,11 @@ package blusunrize.lib.manual;
 import blusunrize.lib.manual.gui.GuiButtonManualNavigation;
 import blusunrize.lib.manual.gui.ManualScreen;
 import blusunrize.lib.manual.utils.ManualRecipeRef;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -98,8 +98,10 @@ public class ManualElementCrafting extends SpecialManualElements
 					pIngredients[index] = new PositionedItemStack(ingredientsPre.get(index),
 							xBase+widthPos*18, heightPos*18+yOffset);
 			}
-		pIngredients[pIngredients.length-1] = new PositionedItemStack(rec.getResultItem(), xBase+recipeWidth*18+18,
-				recipeHeight*9-8+yOffset);
+		final RegistryAccess regAccess = Minecraft.getInstance().level.registryAccess();
+		pIngredients[pIngredients.length-1] = new PositionedItemStack(
+				rec.getResultItem(regAccess), xBase+recipeWidth*18+18, recipeHeight*9-8+yOffset
+		);
 		if(this.heightPixels[recipeIndex] < recipeHeight*18)
 		{
 			this.heightPixels[recipeIndex] = recipeHeight*18;
@@ -108,7 +110,7 @@ public class ManualElementCrafting extends SpecialManualElements
 					moveBy(oldStacks, yOffset);
 		}
 		this.recipeLayout[recipeIndex].add(pIngredients);
-		addProvidedItem(rec.getResultItem());
+		addProvidedItem(rec.getResultItem(regAccess));
 	}
 
 	private void addFixedRecipe(int index, PositionedItemStack[] recipe)
@@ -167,7 +169,7 @@ public class ManualElementCrafting extends SpecialManualElements
 	}
 
 	@Override
-	public void render(PoseStack transform, ManualScreen gui, int x, int y, int mx, int my)
+	public void render(GuiGraphics graphics, ManualScreen gui, int x, int y, int mx, int my)
 	{
 		int totalYOff = 0;
 		highlighted = ItemStack.EMPTY;
@@ -182,10 +184,10 @@ public class ManualElementCrafting extends SpecialManualElements
 					{
 						if(pstack.x() > maxX)
 							maxX = pstack.x();
-						GuiComponent.fill(transform, x+pstack.x(), y+totalYOff+pstack.y(), x+pstack.x()+16, y+totalYOff+pstack.y()+16, 0x33666666);
+						graphics.fill(x+pstack.x(), y+totalYOff+pstack.y(), x+pstack.x()+16, y+totalYOff+pstack.y()+16, 0x33666666);
 					}
 
-				ManualUtils.drawTexturedRect(transform, manual.texture, x+maxX-17,
+				ManualUtils.drawTexturedRect(graphics, manual.texture, x+maxX-17,
 						y+totalYOff+heightPixels[i]/2-5, 16, 10, 0/256f,
 						16/256f, 226/256f, 236/256f);
 
@@ -203,7 +205,7 @@ public class ManualElementCrafting extends SpecialManualElements
 					if(pstack!=null)
 						if(!pstack.getStackAtCurrentTime().isEmpty())
 						{
-							ManualUtils.renderItemStack(transform, pstack.getStackAtCurrentTime(), x+pstack.x(), y+totalYOff+pstack.y(), true);
+							ManualUtils.renderItemStack(graphics, pstack.getStackAtCurrentTime(), x+pstack.x(), y+totalYOff+pstack.y(), true);
 							if(mx >= x+pstack.x()&&mx < x+pstack.x()+16&&my >= y+totalYOff+pstack.y()&&my < y+totalYOff+pstack.y()+16)
 								highlighted = pstack.getStackAtCurrentTime();
 						}
@@ -211,7 +213,7 @@ public class ManualElementCrafting extends SpecialManualElements
 			}
 		}
 
-		this.renderHighlightedTooltip(transform, gui, mx, my);
+		this.renderHighlightedTooltip(graphics, mx, my);
 	}
 
 	@Override

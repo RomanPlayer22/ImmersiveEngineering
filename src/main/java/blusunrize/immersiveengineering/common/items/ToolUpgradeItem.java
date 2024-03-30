@@ -15,6 +15,7 @@ import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +42,7 @@ public class ToolUpgradeItem extends IEBaseItem implements IUpgrade
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, TooltipFlag flag)
 	{
-		list.add(Component.translatable(Lib.DESC_FLAVOUR+Registry.ITEM.getKey(this).getPath()).withStyle(ChatFormatting.GRAY));
+		list.add(Component.translatable(Lib.DESC_FLAVOUR+BuiltInRegistries.ITEM.getKey(this).getPath()).withStyle(ChatFormatting.GRAY));
 	}
 
 	@Override
@@ -95,7 +96,10 @@ public class ToolUpgradeItem extends IEBaseItem implements IUpgrade
 		BUZZSAW_SPAREBLADES(ImmutableSet.of("BUZZSAW"), 1, (upgrade, modifications) -> modifications.putBoolean("spareblades", true)),
 		POWERPACK_ANTENNA(ImmutableSet.of("POWERPACK"), 1, (target, upgrade) -> !PowerpackItem.getUpgradesStatic(target).contains("tesla"), (upgrade, modifications) -> modifications.putBoolean("antenna", true)),
 		POWERPACK_INDUCTION(ImmutableSet.of("POWERPACK"), 1, (upgrade, modifications) -> modifications.putBoolean("induction", true)),
-		POWERPACK_TESLA(ImmutableSet.of("POWERPACK"), 1, (target, upgrade) -> !PowerpackItem.getUpgradesStatic(target).contains("antenna"), (upgrade, modifications) -> modifications.putBoolean("tesla", true));
+		POWERPACK_TESLA(ImmutableSet.of("POWERPACK"), 1, (target, upgrade) -> !PowerpackItem.getUpgradesStatic(target).contains("antenna"), (upgrade, modifications) -> modifications.putBoolean("tesla", true)),
+
+		POWERPACK_MAGNET(ImmutableSet.of("POWERPACK"), 1, (upgrade, modifications) -> modifications.putBoolean("magnet", true))
+		;
 
 		private ImmutableSet<String> toolset;
 		private int stackSize = 1;

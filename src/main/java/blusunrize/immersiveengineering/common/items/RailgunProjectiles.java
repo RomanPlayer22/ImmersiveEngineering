@@ -9,14 +9,14 @@
 package blusunrize.immersiveengineering.common.items;
 
 import blusunrize.immersiveengineering.api.IETags;
-import blusunrize.immersiveengineering.api.Lib;
+import blusunrize.immersiveengineering.api.Lib.DamageTypes;
 import blusunrize.immersiveengineering.api.tool.RailgunHandler;
 import blusunrize.immersiveengineering.api.tool.RailgunHandler.RailgunRenderColors;
 import blusunrize.immersiveengineering.common.entities.SawbladeEntity;
 import blusunrize.immersiveengineering.common.register.IEItems;
 import blusunrize.immersiveengineering.common.register.IEPotions;
+import blusunrize.immersiveengineering.mixin.accessors.DamageSourcesAccess;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.EnderMan;
@@ -30,7 +30,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nullable;
@@ -95,10 +94,11 @@ public class RailgunProjectiles
 				if(target instanceof EnderMan enderMan)
 				{
 					enderMan.addEffect(new MobEffectInstance(IEPotions.STUNNED.get(), 200));
+					final DamageSourcesAccess sources = (DamageSourcesAccess)world.damageSources();
 					Player p;
 					if(shooter!=null&&(p = world.getPlayerByUUID(shooter))!=null)
-						return new EntityDamageSource(Lib.DMG_Railgun, p);
-					return new DamageSource(Lib.DMG_Railgun);
+						return sources.invokeSource(DamageTypes.RAILGUN.turretType(), p, null);
+					return sources.invokeSource(DamageTypes.RAILGUN.playerType(), null, null);
 				}
 				return null;
 			}
@@ -110,7 +110,7 @@ public class RailgunProjectiles
 			@Override
 			public Entity getProjectile(@Nullable Player shooter, ItemStack ammo, Entity defaultProjectile)
 			{
-				return new SawbladeEntity(defaultProjectile.getLevel(), shooter, 20, 0, ammo);
+				return new SawbladeEntity(defaultProjectile.level(), shooter, 20, 0, ammo);
 			}
 		});
 
@@ -129,7 +129,7 @@ public class RailgunProjectiles
 				if(shooter!=null)
 				{
 					ammo.hurtAndBreak(1, shooter, (player) -> player.broadcastBreakEvent(shooter.getUsedItemHand()));
-					ThrownTrident trident = new ThrownTrident(shooter.level, shooter, ammo);
+					ThrownTrident trident = new ThrownTrident(shooter.level(), shooter, ammo);
 					trident.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, 5F, 0F);
 					if(shooter.getAbilities().instabuild)
 						trident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
@@ -153,7 +153,7 @@ public class RailgunProjectiles
 			{
 				if(shooter!=null)
 				{
-					ThrownEnderpearl pearl = new ThrownEnderpearl(shooter.level, shooter);
+					ThrownEnderpearl pearl = new ThrownEnderpearl(shooter.level(), shooter);
 					pearl.setItem(ammo);
 					pearl.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, 2.5F, 0);
 					return pearl;

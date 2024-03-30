@@ -17,6 +17,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
@@ -27,7 +28,7 @@ import javax.annotation.Nonnull;
 public record FluidSplashOptions(Fluid fluid) implements ParticleOptions
 {
 	public static final Codec<FluidSplashOptions> CODEC = ResourceLocation.CODEC.xmap(
-			FluidSplashOptions::new, d -> Registry.FLUID.getKey(d.fluid)
+			FluidSplashOptions::new, d -> BuiltInRegistries.FLUID.getKey(d.fluid)
 	);
 
 	public FluidSplashOptions(ResourceLocation name)
@@ -45,14 +46,14 @@ public record FluidSplashOptions(Fluid fluid) implements ParticleOptions
 	@Override
 	public void writeToNetwork(FriendlyByteBuf buffer)
 	{
-		buffer.writeResourceLocation(Registry.FLUID.getKey(fluid));
+		buffer.writeResourceLocation(BuiltInRegistries.FLUID.getKey(fluid));
 	}
 
 	@Nonnull
 	@Override
 	public String writeToString()
 	{
-		return Registry.FLUID.getKey(fluid).toString();
+		return BuiltInRegistries.FLUID.getKey(fluid).toString();
 	}
 
 	public static class DataDeserializer implements Deserializer<FluidSplashOptions>

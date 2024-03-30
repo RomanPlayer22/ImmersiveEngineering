@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "item": "immersiveengineering:coil_mv"
@@ -19,5 +20,6 @@
   "result": {
     "count": 4,
     "item": "immersiveengineering:generator"
-  }
+  },
+  "show_notification": true
 }

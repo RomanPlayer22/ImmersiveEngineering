@@ -24,6 +24,7 @@ import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -129,7 +130,7 @@ public class ManualEntry implements Comparable<ManualEntry>
 		initialized = true;
 	}
 
-	public void renderPage(PoseStack transform, ManualScreen gui, int x, int y, int mouseX, int mouseY)
+	public void renderPage(GuiGraphics graphics, ManualScreen gui, int x, int y, int mouseX, int mouseY)
 	{
 		ensureInitialized();
 		int page = gui.page;
@@ -143,12 +144,12 @@ public class ManualEntry implements Comparable<ManualEntry>
 			offsetText = toRender.special.getPixelsTaken();
 			offsetSpecial = 0;
 		}
-		ManualUtils.drawSplitString(transform, manual.fontRenderer(), toRender.renderText, x, y+offsetText,
+		ManualUtils.drawSplitString(graphics, manual.fontRenderer(), toRender.renderText, x, y+offsetText,
 				manual.getTextColour());
-		transform.pushPose();
-		transform.translate(x, y+offsetSpecial, 0);
-		toRender.special.render(transform, gui, 0, 0, mouseX, mouseY);
-		transform.popPose();
+		graphics.pose().pushPose();
+		graphics.pose().translate(x, y+offsetSpecial, 0);
+		toRender.special.render(graphics, gui, 0, 0, mouseX, mouseY);
+		graphics.pose().popPose();
 	}
 
 	public String getTitle()
@@ -181,13 +182,8 @@ public class ManualEntry implements Comparable<ManualEntry>
 		ManualUtils.addLinkButtons(this, manual, gui, p.text, x,
 				y+p.special.getPixelsTaken(), pageButtons);
 		List<Button> tempButtons = new ArrayList<>();
-		pages.get(gui.page).special.onOpened(gui, 0, 0, tempButtons);
-		for(Button btn : tempButtons)
-		{
-			btn.x += x;
-			btn.y += y;
-			pageButtons.add(btn);
-		}
+		pages.get(gui.page).special.onOpened(gui, x, y, tempButtons);
+        pageButtons.addAll(tempButtons);
 	}
 
 	public String getSubtext()
@@ -325,7 +321,7 @@ public class ManualEntry implements Comparable<ManualEntry>
 			location = name;
 			getContent = () -> {
 				ResourceLocation langLoc = new ResourceLocation(name.getNamespace(),
-						"manual/"+Minecraft.getInstance().getLanguageManager().getSelected().getCode()
+						"manual/"+Minecraft.getInstance().getLanguageManager().getSelected()
 								+"/"+name.getPath()+".txt");
 				ResourceLocation dataLoc = new ResourceLocation(name.getNamespace(),
 						"manual/"+name.getPath()+".json");
@@ -400,7 +396,7 @@ public class ManualEntry implements Comparable<ManualEntry>
 		}
 
 		@Override
-		public void render(PoseStack transform, ManualScreen m, int x, int y, int mouseX, int mouseY)
+		public void render(GuiGraphics graphics, ManualScreen m, int x, int y, int mouseX, int mouseY)
 		{
 		}
 

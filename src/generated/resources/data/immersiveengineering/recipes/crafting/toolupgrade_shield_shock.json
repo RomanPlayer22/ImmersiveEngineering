@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "item": "immersiveengineering:connector_lv"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "immersiveengineering:toolupgrade_shield_shock"
-  }
+  },
+  "show_notification": true
 }

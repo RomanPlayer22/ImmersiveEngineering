@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
@@ -51,7 +52,7 @@ public class ApiUtils
 		if(fluidStack==null)
 			return JsonNull.INSTANCE;
 		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("fluid", Registry.FLUID.getKey(fluidStack.getFluid()).toString());
+		jsonObject.addProperty("fluid", BuiltInRegistries.FLUID.getKey(fluidStack.getFluid()).toString());
 		jsonObject.addProperty("amount", fluidStack.getAmount());
 		if(fluidStack.hasTag())
 			jsonObject.addProperty("tag", fluidStack.getTag().toString());
@@ -97,7 +98,7 @@ public class ApiUtils
 		Vec3 toAdd = (new Vec3(xRatio, 0.0D, zRatio)).normalize().scale(strength);
 		entity.setDeltaMovement(
 				motionOld.x/2.0D-toAdd.x,
-				entity.isOnGround()?Math.min(0.4D, motionOld.y/2.0D+strength): motionOld.y,
+				entity.onGround()?Math.min(0.4D, motionOld.y/2.0D+strength): motionOld.y,
 				motionOld.z/2.0D-toAdd.z);
 	}
 

@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.client;
 
 import blusunrize.immersiveengineering.api.Lib;
@@ -10,11 +18,12 @@ import blusunrize.immersiveengineering.common.items.*;
 import blusunrize.immersiveengineering.common.items.IEItemInterfaces.IBulletContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
+import net.minecraft.client.gui.Font.DisplayMode;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -23,6 +32,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import java.util.function.BiConsumer;
 
@@ -35,7 +46,7 @@ public class ItemOverlayUtils
 		return buffer.getBuffer(IERenderTypes.getGui(rl("textures/gui/hud_elements.png")));
 	}
 
-	public static void renderRevolverOverlay(MultiBufferSource.BufferSource buffer, PoseStack transform, int scaledWidth, int scaledHeight,
+	public static void renderRevolverOverlay(MultiBufferSource.BufferSource buffer, GuiGraphics graphics, int scaledWidth, int scaledHeight,
 											 Player player, InteractionHand hand, ItemStack equipped)
 	{
 		NonNullList<ItemStack> bullets = ((IBulletContainer)equipped.getItem()).getBullets(equipped);
@@ -46,11 +57,12 @@ public class ItemOverlayUtils
 			boolean right = side==HumanoidArm.RIGHT;
 			float dx = right?scaledWidth-32-48: 48;
 			float dy = scaledHeight-64;
+			PoseStack transform = graphics.pose();
 			transform.pushPose();
 			transform.pushPose();
 			transform.translate(dx, dy, 0);
 			transform.scale(.5f, .5f, 1);
-			RevolverScreen.drawExternalGUI(bullets, bulletAmount, transform);
+			RevolverScreen.drawExternalGUI(bullets, bulletAmount, graphics);
 			transform.popPose();
 
 			if(equipped.getItem() instanceof RevolverItem)
@@ -113,14 +125,14 @@ public class ItemOverlayUtils
 
 		ItemStack ammo = RailgunItem.findAmmo(equipped, player);
 		if(!ammo.isEmpty())
-			GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, ammo, 6, -22);
+			GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, ammo, 6, -22, player.level());
 
 		transform.translate(30, -27.5, 0);
 		transform.scale(scale, scale, 1);
 		String chargeTxt = chargeLevel < 10?"0 "+chargeLevel: chargeLevel/10+" "+chargeLevel%10;
 		ClientUtils.font().drawInBatch(
 				chargeTxt, 0, 0, Lib.COLOUR_I_ImmersiveOrange,
-				true, transform.last().pose(), buffer, false,
+				true, transform.last().pose(), buffer, DisplayMode.NORMAL,
 				0, 0xf000f0
 		);
 		transform.popPose();
@@ -161,7 +173,7 @@ public class ItemOverlayUtils
 				float cap = (float)capacity;
 				float angle = 83-(166*amount/cap);
 				transform.pushPose();
-				transform.mulPose(new Quaternion(0, 0, angle, true));
+				transform.mulPose(new Quaternionf().rotateZ(angle *Mth.DEG_TO_RAD));
 				GuiHelper.drawTexturedColoredRect(builder, transform, 6, -2, 24, 4, 1, 1, 1, 1, 91/256f, 123/256f, 80/256f, 87/256f);
 				transform.popPose();
 				transform.translate(23, 37, 0);
@@ -180,7 +192,7 @@ public class ItemOverlayUtils
 			GuiHelper.drawTexturedColoredRect(builder, transform, -54, -73, 66, 72, 1, 1, 1, 1, 108/256f, 174/256f, 4/256f, 76/256f);
 			ItemStack head = ((DrillItem)equipped.getItem()).getHead(equipped);
 			if(!head.isEmpty())
-				GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, head, -51, -45);
+				GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, head, -51, -45, player.level());
 		});
 	}
 
@@ -191,7 +203,7 @@ public class ItemOverlayUtils
 			GuiHelper.drawTexturedColoredRect(builder, transform, -54, -73, 66, 72, 1, 1, 1, 1, 108/256f, 174/256f, 4/256f, 76/256f);
 			ItemStack blade = ((BuzzsawItem)equipped.getItem()).getHead(equipped);
 			if(!blade.isEmpty())
-				GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, blade, -51, -45);
+				GuiHelper.renderItemWithOverlayIntoGUI(buffer, transform, blade, -51, -45, player.level());
 		});
 	}
 
@@ -210,7 +222,7 @@ public class ItemOverlayUtils
 				String name = ClientUtils.font().substrByWidth(fuel.getDisplayName(), 50).getString().trim();
 				ClientUtils.font().drawInBatch(
 						name, -68-ClientUtils.font().width(name)/2, -15, 0,
-						false, transform.last().pose(), buffer, false,
+						false, transform.last().pose(), buffer, DisplayMode.NORMAL,
 						0, 0xf000f0
 				);
 			}

@@ -15,7 +15,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.Tags.Blocks;
@@ -81,7 +80,7 @@ public class IETags
 	public static final TagKey<Item> steelRod = createItemWrapper(getRod("steel"));
 	public static final TagKey<Item> metalRods = createItemWrapper(getRod("all_metal"));
 	public static final TagKey<Item> aluminumRod = createItemWrapper(getRod("aluminum"));
-	public static final TagKey<Item> seedsHemp = createItemWrapper(getRod("seeds/hemp"));
+	public static final TagKey<Item> seedsHemp = createItemWrapper(forgeLoc("seeds/hemp"));
 	public static final TagKey<Item> fiberHemp = createItemWrapper(forgeLoc("fiber_hemp"));
 	public static final TagKey<Item> fabricHemp = createItemWrapper(forgeLoc("fabric_hemp"));
 	public static final TagKey<Item> coalCoke = createItemWrapper(forgeLoc("coal_coke"));
@@ -116,6 +115,9 @@ public class IETags
 	public static final TagKey<Block> hammerHarvestable = createBlockWrapper(rl("mineable/hammer"));
 	public static final TagKey<Block> wirecutterHarvestable = createBlockWrapper(rl("mineable/wirecutter"));
 	public static final TagKey<Block> drillHarvestable = createBlockWrapper(rl("mineable/drill"));
+	public static final TagKey<Block> rockcutterHarvestable = createBlockWrapper(rl("mineable/rockcutter"));
+	public static final TagKey<Block> grindingDiskHarvestable = createBlockWrapper(rl("mineable/grinding_disk"));
+	public static final TagKey<Block> surveyToolTargets = createBlockWrapper(rl("survey_tool_targets"));
 
 	public static final TagKey<Block> buzzsawTreeBlacklist = createBlockWrapper(rl("buzzsaw/tree_blacklist"));
 	public static final TagKey<Item> tools = createItemWrapper(forgeLoc("tools"));
@@ -144,9 +146,6 @@ public class IETags
 
 	public static final TagKey<EntityType<?>> shaderbagWhitelist = createEntityWrapper(rl("shaderbag/whitelist"));
 	public static final TagKey<EntityType<?>> shaderbagBlacklist = createEntityWrapper(rl("shaderbag/blacklist"));
-
-	@Deprecated(forRemoval = true)
-	public static final TagKey<Biome> hasMineralVeins = createBiomeWrapper(rl("has_mineral_veins"));
 
 	static
 	{

@@ -23,7 +23,7 @@ import blusunrize.immersiveengineering.common.blocks.PlacementLimitation;
 import blusunrize.immersiveengineering.common.items.LogicCircuitBoardItem;
 import blusunrize.immersiveengineering.common.register.IEBlockEntities;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.inventory.IIEInventory;
 import com.google.common.collect.ImmutableList;
@@ -45,6 +45,7 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class LogicUnitBlockEntity extends IEBaseBlockEntity implements IIEInventory, IBlockEntityDrop,
 		IInteractionObjectIE<LogicUnitBlockEntity>, IStateBasedDirectional, ILogicCircuitHandler
@@ -96,14 +97,14 @@ public class LogicUnitBlockEntity extends IEBaseBlockEntity implements IIEInvent
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		ItemStack stack = new ItemStack(getBlockState().getBlock(), 1);
 		CompoundTag nbt = new CompoundTag();
 		ContainerHelper.saveAllItems(nbt, inventory);
 		if(!nbt.isEmpty())
 			stack.setTag(nbt);
-		return ImmutableList.of(stack);
+		drop.accept(stack);
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class LogicUnitBlockEntity extends IEBaseBlockEntity implements IIEInvent
 	}
 
 	@Override
-	public BEContainer<LogicUnitBlockEntity, ?> getContainerType()
+	public ArgContainer<LogicUnitBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.LOGIC_UNIT;
 	}

@@ -12,9 +12,11 @@ import blusunrize.immersiveengineering.common.items.BulletItem;
 import blusunrize.immersiveengineering.common.items.SpeedloaderItem;
 import blusunrize.immersiveengineering.common.util.RecipeSerializers;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -28,7 +30,7 @@ public class SpeedloaderLoadRecipe extends CustomRecipe
 
 	public SpeedloaderLoadRecipe(ResourceLocation resourceLocation)
 	{
-		super(resourceLocation);
+		super(resourceLocation, CraftingBookCategory.MISC);
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public class SpeedloaderLoadRecipe extends CustomRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(CraftingContainer inv)
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess access)
 	{
 		ItemStack speedloader = null;
 		int speedloaderX = -1;

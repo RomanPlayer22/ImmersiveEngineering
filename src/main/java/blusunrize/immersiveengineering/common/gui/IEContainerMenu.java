@@ -1,7 +1,17 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.gui;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.Lib;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockContext;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
 import blusunrize.immersiveengineering.common.gui.sync.GenericContainerData;
 import blusunrize.immersiveengineering.common.gui.sync.GenericDataSerializers.DataPair;
@@ -20,6 +30,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -28,7 +39,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.network.NetworkDirection;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -68,7 +78,7 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 		if(!toSync.isEmpty())
 			for(ServerPlayer player : usingPlayers)
 				ImmersiveEngineering.packetHandler.sendTo(
-						new MessageContainerData(toSync), player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT
+						new MessageContainerData(toSync), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT
 				);
 	}
 
@@ -108,7 +118,7 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 				slot.set(ItemStack.EMPTY);
 			else if(slot.mayPlace(stackHeld))
 			{
-				if(ItemStack.isSame(stackSlot, stackHeld))
+				if(ItemStack.isSameItem(stackSlot, stackHeld))
 					stackSlot.grow(amount);
 				else
 					slot.set(ItemHandlerHelper.copyStackWithSize(stackHeld, amount));
@@ -208,7 +218,7 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 			for(int i = 0; i < ieContainer.genericData.size(); i++)
 				list.add(Pair.of(i, ieContainer.genericData.get(i).dataPair()));
 			ImmersiveEngineering.packetHandler.sendTo(
-					new MessageContainerData(list), serverPlayer.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT
+					new MessageContainerData(list), serverPlayer.connection.connection, NetworkDirection.PLAY_TO_CLIENT
 			);
 		}
 	}
@@ -220,7 +230,18 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 			ieContainer.usingPlayers.remove(serverPlayer);
 	}
 
-	public static MenuContext blockCtx(@Nullable MenuType<?> pMenuType, int pContainerId, BlockEntity be)
+	public static MenuContext multiblockCtx(
+			MenuType<?> pMenuType, int pContainerId, MultiblockMenuContext<?> ctx
+	)
+	{
+		return new MenuContext(pMenuType, pContainerId, ctx.mbContext()::markMasterDirty, p -> {
+			if(!ctx.mbContext().isValid().getAsBoolean())
+				return false;
+			return p.distanceToSqr(Vec3.atCenterOf(ctx.clickedPos)) <= 64.0D;
+		});
+	}
+
+	public static MenuContext blockCtx(MenuType<?> pMenuType, int pContainerId, BlockEntity be)
 	{
 		return new MenuContext(pMenuType, pContainerId, () -> {
 			be.setChanged();
@@ -237,18 +258,18 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 	}
 
 	public static MenuContext itemCtx(
-			@Nullable MenuType<?> pMenuType, int pContainerId, Inventory playerInv, EquipmentSlot slot, ItemStack stack
+			MenuType<?> pMenuType, int pContainerId, Inventory playerInv, EquipmentSlot slot, ItemStack stack
 	)
 	{
 		return new MenuContext(pMenuType, pContainerId, () -> {
 		}, p -> {
 			if(p!=playerInv.player)
 				return false;
-			return ItemStack.isSame(p.getItemBySlot(slot), stack);
+			return ItemStack.isSameItem(p.getItemBySlot(slot), stack);
 		});
 	}
 
-	public static MenuContext clientCtx(@Nullable MenuType<?> pMenuType, int pContainerId)
+	public static MenuContext clientCtx(MenuType<?> pMenuType, int pContainerId)
 	{
 		return new MenuContext(pMenuType, pContainerId, () -> {
 		}, $ -> true);
@@ -257,6 +278,11 @@ public abstract class IEContainerMenu extends AbstractContainerMenu
 	protected record MenuContext(
 			MenuType<?> type, int id, Runnable setChanged, Predicate<Player> isValid
 	)
+	{
+	}
+
+	public record MultiblockMenuContext<S extends IMultiblockState>(IMultiblockContext<S> mbContext,
+																	BlockPos clickedPos)
 	{
 	}
 

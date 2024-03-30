@@ -16,7 +16,7 @@ import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IBlockEnt
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IInteractionObjectIE;
 import blusunrize.immersiveengineering.common.register.IEBlockEntities;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.Utils;
 import com.google.common.collect.ImmutableList;
@@ -41,6 +41,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER;
@@ -148,7 +149,7 @@ public class SorterBlockEntity extends IEBaseBlockEntity implements IInteraction
 	}
 
 	@Override
-	public BEContainer<SorterBlockEntity, ?> getContainerType()
+	public ArgContainer<SorterBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.SORTER;
 	}
@@ -223,7 +224,7 @@ public class SorterBlockEntity extends IEBaseBlockEntity implements IInteraction
 			if(!stack.getItem().builtInRegistryHolder().tags().anyMatch(filterStack::is))
 				return false;
 		}
-		else if(!ItemStack.isSame(filterStack, stack))
+		else if(!ItemStack.isSameItem(filterStack, stack))
 			return false;
 		// "NBT level" tests
 		if(!fuzzy&&(stack.isDamageableItem()||filterStack.isDamageableItem()))
@@ -344,11 +345,11 @@ public class SorterBlockEntity extends IEBaseBlockEntity implements IInteraction
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		ItemStack stack = new ItemStack(getBlockState().getBlock(), 1);
 		writeCustomNBT(stack.getOrCreateTag(), false);
-		return ImmutableList.of(stack);
+		drop.accept(stack);
 	}
 
 	@Override

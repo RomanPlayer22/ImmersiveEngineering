@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.client.render.conveyor;
 
 import blusunrize.immersiveengineering.api.tool.conveyor.BasicConveyorCacheData;
@@ -10,9 +18,7 @@ import blusunrize.immersiveengineering.client.utils.ModelUtils;
 import blusunrize.immersiveengineering.common.blocks.metal.conveyors.ConveyorBase;
 import blusunrize.immersiveengineering.common.blocks.metal.conveyors.VerticalConveyor;
 import blusunrize.immersiveengineering.common.util.chickenbones.Matrix4;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -23,6 +29,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -67,7 +75,7 @@ public class VerticalConveyorRender extends BasicConveyorRender<VerticalConveyor
 	public Transformation modifyBaseRotationMatrix(Transformation matrix)
 	{
 		return matrix.compose(new Transformation(
-				new Vector3f(0, 1, 0), new Quaternion((float)Math.PI/2, 0, 0, false), null, null
+				new Vector3f(0, 1, 0), new Quaternionf().rotateXYZ((float)Math.PI/2, 0, 0), null, null
 		));
 	}
 

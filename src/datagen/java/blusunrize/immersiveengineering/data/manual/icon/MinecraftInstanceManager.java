@@ -24,16 +24,18 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import sun.misc.Unsafe;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 public class MinecraftInstanceManager
@@ -51,7 +53,7 @@ public class MinecraftInstanceManager
 	{
 	}
 
-	void initialize(final ExistingFileHelper helper, DataGenerator gen)
+	void initialize(final ExistingFileHelper helper, PackOutput output)
 	{
 		if(isInitialized)
 			return;
@@ -62,7 +64,7 @@ public class MinecraftInstanceManager
 		initializeTimer();
 		initializeRenderSystem();
 
-		ReloadableResourceManager resourceManager = ManualDataGenerator.makeFullResourceManager(PackType.CLIENT_RESOURCES, gen, helper);
+		ReloadableResourceManager resourceManager = ManualDataGenerator.makeFullResourceManager(PackType.CLIENT_RESOURCES, output, helper);
 
 		initializeResourceManager(resourceManager);
 		initializeTextureManager(resourceManager);
@@ -75,7 +77,15 @@ public class MinecraftInstanceManager
 		initializeDataFixer();
 		initializeGameSettings();
 
-		Minecraft.getInstance().gameRenderer.reloadShaders(resourceManager);
+		try
+		{
+			ObfuscationReflectionHelper.findMethod(
+					GameRenderer.class, "reloadShaders", ResourceProvider.class
+			).invoke(Minecraft.getInstance().gameRenderer, resourceManager);
+		} catch(IllegalAccessException|InvocationTargetException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	private void createMinecraft()
@@ -151,6 +161,7 @@ public class MinecraftInstanceManager
 		BlockEntityWithoutLevelRenderer beNoLevelRenderer = new BlockEntityWithoutLevelRenderer(dispatcher, entityModelSet);
 		beNoLevelRenderer.onResourceManagerReload(null);
 		final ItemRenderer itemRenderer = new ItemRenderer(
+				Minecraft.getInstance(),
 				Minecraft.getInstance().getTextureManager(),
 				Minecraft.getInstance().getModelManager(),
 				Minecraft.getInstance().getItemColors(),

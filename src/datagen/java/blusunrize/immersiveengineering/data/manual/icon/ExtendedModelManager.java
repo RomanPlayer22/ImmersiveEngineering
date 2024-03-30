@@ -11,22 +11,17 @@ package blusunrize.immersiveengineering.data.manual.icon;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.renderer.texture.AtlasSet;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.profiling.InactiveProfiler;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.SimpleReloadInstance;
+import net.minecraft.util.Unit;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class ExtendedModelManager extends ModelManager
 {
-	private AtlasSet spriteMap = null;
-
 	ExtendedModelManager(
 			final TextureManager textureManagerIn,
 			final BlockColors blockColorsIn,
@@ -35,28 +30,12 @@ public class ExtendedModelManager extends ModelManager
 		super(textureManagerIn, blockColorsIn, maxMipmapLevelIn);
 	}
 
-	void loadModels()
+	void loadModels() throws ClassNotFoundException
 	{
-		final ModelBakery modelBakery = this.prepare(
-				Minecraft.getInstance().getResourceManager(), InactiveProfiler.INSTANCE
+		final var resourceManager = (ReloadableResourceManager)Minecraft.getInstance().getResourceManager();
+		final var instance = SimpleReloadInstance.of(
+				resourceManager, List.of(this), Runnable::run, Runnable::run, CompletableFuture.completedFuture(Unit.INSTANCE)
 		);
-
-		this.apply(modelBakery, Minecraft.getInstance().getResourceManager(), InactiveProfiler.INSTANCE);
-
-		this.spriteMap = modelBakery.getAtlasSet();
-
-		Minecraft.getInstance().getItemRenderer().getItemModelShaper().rebuildCache();
-	}
-
-	@SuppressWarnings("unchecked")
-	public Collection<ResourceLocation> getTextureMap()
-	{
-		if(spriteMap==null)
-			throw new IllegalStateException("SpriteMap not initialized.");
-
-		final Map<ResourceLocation, TextureAtlas> textureMap = ObfuscationReflectionHelper.getPrivateValue(
-				AtlasSet.class, spriteMap, "atlases"
-		);
-		return textureMap.keySet();
+		instance.done().join();
 	}
 }

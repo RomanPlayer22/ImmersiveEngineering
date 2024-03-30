@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.gui.sync;
 
 import org.apache.commons.lang3.mutable.Mutable;
@@ -31,6 +39,12 @@ public record GetterAndSetter<T>(Supplier<T> getter, Consumer<T> setter) impleme
 			result.add(new GetterAndSetter<>(() -> data[finalI], o -> data[finalI] = o));
 		}
 		return result;
+	}
+
+	public static <T>
+	GetterAndSetter<T> constant(T value)
+	{
+		return getterOnly(() -> value);
 	}
 
 	public void set(T newValue)

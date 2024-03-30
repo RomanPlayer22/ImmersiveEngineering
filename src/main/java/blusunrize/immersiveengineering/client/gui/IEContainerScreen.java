@@ -16,12 +16,10 @@ import blusunrize.immersiveengineering.client.gui.elements.ITooltipWidget;
 import blusunrize.immersiveengineering.client.gui.info.InfoArea;
 import blusunrize.immersiveengineering.common.network.MessageContainerUpdate;
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -47,7 +45,6 @@ public abstract class IEContainerScreen<C extends AbstractContainerMenu> extends
 		super(inventorySlotsIn, inv, title);
 		this.background = background;
 		this.infoAreas = new ResettableLazy<>(this::makeInfoAreas);
-		this.inventoryLabelY = this.imageHeight-91;
 	}
 
 	@Override
@@ -55,6 +52,7 @@ public abstract class IEContainerScreen<C extends AbstractContainerMenu> extends
 	{
 		super.init();
 		this.infoAreas.reset();
+		this.inventoryLabelY = this.imageHeight-91;
 	}
 
 	@Nonnull
@@ -63,31 +61,31 @@ public abstract class IEContainerScreen<C extends AbstractContainerMenu> extends
 	}
 
 	@Override
-	protected void renderLabels(PoseStack transform, int mouseX, int mouseY)
+	protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
 	{
 		// Only difference to super version is the text color
-		this.font.drawShadow(transform, title, titleLabelX, titleLabelY, Lib.COLOUR_I_ImmersiveOrange);
-		this.font.drawShadow(transform, playerInventoryTitle, inventoryLabelX, inventoryLabelY, Lib.COLOUR_I_ImmersiveOrange);
+		graphics.drawString(this.font, title, titleLabelX, titleLabelY, Lib.COLOUR_I_ImmersiveOrange, true);
+		graphics.drawString(this.font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, Lib.COLOUR_I_ImmersiveOrange, true);
 	}
 
 	@Override
-	public void render(@Nonnull PoseStack transform, int mouseX, int mouseY, float partialTicks)
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
 	{
-		this.renderBackground(transform);
-		super.render(transform, mouseX, mouseY, partialTicks);
+		this.renderBackground(graphics);
+		super.render(graphics, mouseX, mouseY, partialTicks);
 		List<Component> tooltip = new ArrayList<>();
-		for (InfoArea area : infoAreas.get())
+		for(InfoArea area : infoAreas.get())
 			area.fillTooltip(mouseX, mouseY, tooltip);
-		for (GuiEventListener w : children())
-			if (w.isMouseOver(mouseX, mouseY) && w instanceof ITooltipWidget ttw)
+		for(GuiEventListener w : children())
+			if(w.isMouseOver(mouseX, mouseY)&&w instanceof ITooltipWidget ttw)
 				ttw.gatherTooltip(mouseX, mouseY, tooltip);
 		gatherAdditionalTooltips(
 				mouseX, mouseY, tooltip::add, t -> tooltip.add(TextUtils.applyFormat(t, ChatFormatting.GRAY))
 		);
-		if (!tooltip.isEmpty())
-			renderTooltip(transform, tooltip, Optional.empty(), mouseX, mouseY);
+		if(!tooltip.isEmpty())
+			graphics.renderTooltip(font, tooltip, Optional.empty(), mouseX, mouseY);
 		else
-			this.renderTooltip(transform, mouseX, mouseY);
+			this.renderTooltip(graphics, mouseX, mouseY);
 	}
 
 	protected boolean isMouseIn(int mouseX, int mouseY, int x, int y, int w, int h)
@@ -102,23 +100,20 @@ public abstract class IEContainerScreen<C extends AbstractContainerMenu> extends
 	}
 
 	@Override
-	protected final void renderBg(@Nonnull PoseStack transform, float partialTicks, int x, int y)
+	protected final void renderBg(@Nonnull GuiGraphics graphics, float partialTicks, int x, int y)
 	{
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, background);
-		drawBackgroundTexture(transform);
-		drawContainerBackgroundPre(transform, partialTicks, x, y);
+		drawBackgroundTexture(graphics);
+		drawContainerBackgroundPre(graphics, partialTicks, x, y);
 		for(InfoArea area : infoAreas.get())
-			area.draw(transform);
+			area.draw(graphics);
 	}
 
-	protected void drawBackgroundTexture(PoseStack transform)
+	protected void drawBackgroundTexture(GuiGraphics graphics)
 	{
-		blit(transform, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+		graphics.blit(background, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 	}
 
-	protected void drawContainerBackgroundPre(@Nonnull PoseStack matrixStack, float partialTicks, int x, int y)
+	protected void drawContainerBackgroundPre(@Nonnull GuiGraphics graphics, float partialTicks, int x, int y)
 	{
 	}
 

@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "s": {
       "item": "immersiveengineering:slab_storage_electrum"
@@ -11,5 +12,6 @@
   ],
   "result": {
     "item": "immersiveengineering:storage_electrum"
-  }
+  },
+  "show_notification": true
 }

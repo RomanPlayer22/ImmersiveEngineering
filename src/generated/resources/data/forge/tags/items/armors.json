@@ -1,12 +1,12 @@
 {
   "values": [
-    "immersiveengineering:armor_steel_feet",
-    "immersiveengineering:armor_faraday_feet",
-    "immersiveengineering:armor_steel_legs",
-    "immersiveengineering:armor_faraday_legs",
-    "immersiveengineering:armor_steel_chest",
-    "immersiveengineering:armor_faraday_chest",
-    "immersiveengineering:armor_steel_head",
-    "immersiveengineering:armor_faraday_head"
+    "immersiveengineering:armor_steel_helmet",
+    "immersiveengineering:armor_faraday_helmet",
+    "immersiveengineering:armor_steel_chestplate",
+    "immersiveengineering:armor_faraday_chestplate",
+    "immersiveengineering:armor_steel_leggings",
+    "immersiveengineering:armor_faraday_leggings",
+    "immersiveengineering:armor_steel_boots",
+    "immersiveengineering:armor_faraday_boots"
   ]
 }

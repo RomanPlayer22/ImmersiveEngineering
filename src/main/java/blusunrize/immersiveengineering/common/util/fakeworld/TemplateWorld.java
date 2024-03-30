@@ -1,9 +1,21 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.util.fakeworld;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
-import blusunrize.immersiveengineering.api.Lib;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -12,6 +24,7 @@ import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -30,52 +43,37 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class TemplateWorld extends Level
 {
-	private static final DeferredRegister<DimensionType> REGISTER = DeferredRegister.create(
-			Registry.DIMENSION_TYPE_REGISTRY, Lib.MODID
+	private static final DimensionType DIMENSION_TYPE = new DimensionType(
+			OptionalLong.empty(), false, false, false, false, 1, false, false, 0, 256, 256,
+			BlockTags.INFINIBURN_OVERWORLD, new ResourceLocation("missingno"), 0,
+			new DimensionType.MonsterSettings(true, false, ConstantInt.ZERO, 0)
 	);
+	private static final ResourceLocation DIMENSION_TYPE_ID = ImmersiveEngineering.rl("multiblock_preview");
 
-	private static final RegistryObject<DimensionType> STRUCTURE_DIMENSION = REGISTER.register(
-			"multiblock_preview",
-			() -> new DimensionType(
-					OptionalLong.empty(), false, false, false, false, 1, false, false, 0, 256, 256,
-					BlockTags.INFINIBURN_OVERWORLD, new ResourceLocation("missingno"), 0,
-					new DimensionType.MonsterSettings(true, false, ConstantInt.ZERO, 0)
-			)
+	private static final Holder<DimensionType> STRUCTURE_DIMENSION = new FakeRegisteredHolder<>(
+			DIMENSION_TYPE, ResourceKey.create(Registries.DIMENSION_TYPE, DIMENSION_TYPE_ID)
 	);
-	private final Lazy<? extends RegistryAccess> FALLBACK_REGISTRIES = Lazy.of(RegistryAccess.BUILTIN);
 
 	private final Map<String, MapItemSavedData> maps = new HashMap<>();
 	private final Scoreboard scoreboard = new Scoreboard();
 	private final RecipeManager recipeManager = new RecipeManager();
 	private final TemplateChunkProvider chunkProvider;
 
-	public TemplateWorld(List<StructureBlockInfo> blocks, Predicate<BlockPos> shouldShow)
+	public TemplateWorld(List<StructureBlockInfo> blocks, Predicate<BlockPos> shouldShow, RegistryAccess regAccess)
 	{
 		super(
-				new FakeSpawnInfo(), Level.OVERWORLD, STRUCTURE_DIMENSION.getHolder().orElseThrow(),
+				new FakeSpawnInfo(), Level.OVERWORLD, regAccess, STRUCTURE_DIMENSION,
 				() -> InactiveProfiler.INSTANCE, true, false, 0, 0
 		);
 		this.chunkProvider = new TemplateChunkProvider(blocks, this, shouldShow);
-	}
-
-	public static void init()
-	{
-		REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 
 	@Override
@@ -84,12 +82,12 @@ public class TemplateWorld extends Level
 	}
 
 	@Override
-	public void playSeededSound(@org.jetbrains.annotations.Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_)
+	public void playSeededSound(@Nullable Player p_262953_, double p_263004_, double p_263398_, double p_263376_, Holder<SoundEvent> p_263359_, SoundSource p_263020_, float p_263055_, float p_262914_, long p_262991_)
 	{
 	}
 
 	@Override
-	public void playSeededSound(@org.jetbrains.annotations.Nullable Player p_220372_, Entity p_220373_, SoundEvent p_220374_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_)
+	public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, Holder<SoundEvent> p_263500_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_)
 	{
 	}
 
@@ -188,11 +186,13 @@ public class TemplateWorld extends Level
 	public RegistryAccess registryAccess()
 	{
 		Level clientWorld = ImmersiveEngineering.proxy.getClientWorld();
-		if(clientWorld!=null)
-			return clientWorld.registryAccess();
-		else
-			// Should never happen, but will work correctly in case it does
-			return FALLBACK_REGISTRIES.get();
+		return Objects.requireNonNull(clientWorld).registryAccess();
+	}
+
+	@Override
+	public FeatureFlagSet enabledFeatures()
+	{
+		return ImmersiveEngineering.proxy.getClientWorld().enabledFeatures();
 	}
 
 	@Override
@@ -212,12 +212,18 @@ public class TemplateWorld extends Level
 	@Override
 	public Holder<Biome> getUncachedNoiseBiome(int x, int y, int z)
 	{
-		return Holder.direct(registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getOrThrow(Biomes.PLAINS));
+		return Holder.direct(registryAccess().registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
 	}
 
 	@Override
 	public int getBrightness(@Nonnull LightLayer lightType, @Nonnull BlockPos pos)
 	{
 		return 15;
+	}
+
+	@Override
+	public ResourceKey<DimensionType> dimensionTypeId()
+	{
+		throw new UnsupportedOperationException("The dimension type for this \"world\" is not actually registered!");
 	}
 }

@@ -10,10 +10,9 @@ package blusunrize.lib.manual.gui;
 
 import blusunrize.lib.manual.ManualInstance.ManualLink;
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -34,7 +33,7 @@ public class GuiButtonManualLink extends Button
 		super(x, y, w, h, Component.empty(), btn -> {
 			if(link!=null)
 				link.changePage(gui, true);
-		});
+		}, DEFAULT_NARRATION);
 		this.gui = gui;
 		this.link = link;
 		this.localized = localized;
@@ -43,30 +42,29 @@ public class GuiButtonManualLink extends Button
 	}
 
 	@Override
-	public void render(PoseStack transform, int mx, int my, float partialTicks)
+	public void render(GuiGraphics graphics, int mx, int my, float partialTicks)
 	{
-		Minecraft mc = Minecraft.getInstance();
-		isHovered = mx >= this.x&&my >= this.y&&mx < this.x+this.width&&my < this.y+this.height;
+		isHovered = mx >= this.getX()&&my >= this.getY()&&mx < this.getX()+this.width&&my < this.getY()+this.height;
 		if(isHovered)
 		{
-			drawHovered(transform, mx, my);
+			drawHovered(graphics, mx, my);
 			for(GuiButtonManualLink btn : otherParts)
 				if(btn!=this)
-					btn.drawHovered(transform, mx, my);
+					btn.drawHovered(graphics, mx, my);
 		}
 	}
 
-	private void drawHovered(PoseStack transform, int mx, int my)
+	private void drawHovered(GuiGraphics graphics, int mx, int my)
 	{
 		Font font = gui.manual.fontRenderer();
-		font.draw(transform, localized, x, y, gui.manual.getHighlightColour());
+		graphics.drawString(font, localized, getX(), getY(), gui.manual.getHighlightColour(), false);
 		String tooltip;
 		if(link!=null)
 			tooltip = gui.manual.formatLink(link);
 		else
 			tooltip = "Invalid link";
-		gui.renderTooltip(transform, Language.getInstance().getVisualOrder(
+		graphics.renderTooltip(font, Language.getInstance().getVisualOrder(
 				ImmutableList.of(Component.literal(tooltip))
-		), mx+8, my+4, font);
+		), mx+8, my+4);
 	}
 }

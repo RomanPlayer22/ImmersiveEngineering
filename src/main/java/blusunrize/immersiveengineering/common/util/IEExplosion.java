@@ -20,7 +20,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +31,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -103,8 +102,7 @@ public class IEExplosion extends Explosion
 				if(this.world instanceof ServerLevel&&state.canDropFromExplosion(this.world, pos, this))
 				{
 					BlockEntity tile = this.world.getBlockEntity(pos);
-					LootContext.Builder lootCtx = new LootContext.Builder((ServerLevel)this.world)
-							.withRandom(this.world.random)
+					LootParams.Builder lootCtx = new LootParams.Builder((ServerLevel)this.world)
 							.withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
 							.withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
 							.withOptionalParameter(LootContextParams.BLOCK_ENTITY, tile);
@@ -150,21 +148,21 @@ public class IEExplosion extends Explosion
 
 						for(float f1 = 0.3F; f > 0.0F; f -= 0.22500001F)
 						{
-							BlockPos blockpos = new BlockPos(d4, d6, d8);
+							BlockPos blockpos = BlockPos.containing(d4, d6, d8);
 							BlockState iblockstate = this.world.getBlockState(blockpos);
 							FluidState ifluidstate = this.world.getFluidState(blockpos);
 							if(!iblockstate.isAir()||!ifluidstate.isEmpty())
 							{
 								float f2 = Math.max(iblockstate.getExplosionResistance(world, blockpos, this), ifluidstate.getExplosionResistance(world, blockpos, this));
-								if(this.getSourceMob()!=null)
+								if(this.getDirectSourceEntity()!=null)
 								{
-									f2 = this.getSourceMob().getBlockExplosionResistance(this, this.world, blockpos, iblockstate, ifluidstate, f2);
+									f2 = this.getDirectSourceEntity().getBlockExplosionResistance(this, this.world, blockpos, iblockstate, ifluidstate, f2);
 								}
 
 								f -= (f2+0.3F)*0.3F;
 							}
 
-							if(f > 0.0F&&(this.getSourceMob()==null||this.getSourceMob().shouldBlockExplode(this, this.world, blockpos, iblockstate, f)))
+							if(f > 0.0F&&(this.getDirectSourceEntity()==null||this.getDirectSourceEntity().shouldBlockExplode(this, this.world, blockpos, iblockstate, f)))
 							{
 								set.add(blockpos);
 							}
@@ -185,7 +183,7 @@ public class IEExplosion extends Explosion
 		int i1 = Mth.floor(getPosition().y+(double)f3+1.0D);
 		int j2 = Mth.floor(getPosition().z-(double)f3-1.0D);
 		int j1 = Mth.floor(getPosition().z+(double)f3+1.0D);
-		List<Entity> list = this.world.getEntities(this.getSourceMob(), new AABB(k1, i2, j2, l1, i1, j1));
+		List<Entity> list = this.world.getEntities(this.getDirectSourceEntity(), new AABB(k1, i2, j2, l1, i1, j1));
 		net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.world, this, list, f3);
 		Vec3 vec3 = new Vec3(getPosition().x, getPosition().y, getPosition().z);
 
@@ -209,7 +207,7 @@ public class IEExplosion extends Explosion
 						d9 = d9/d13;
 						double d14 = getSeenPercent(vec3, entity);
 						double d10 = (1.0D-d12)*d14;
-						entity.hurt(DamageSource.explosion(this), (float)((int)((d10*d10+d10)/2.0D*8.0D*(double)f3+1.0D)));
+						entity.hurt(entity.damageSources().explosion(this), (float)((int)((d10*d10+d10)/2.0D*8.0D*(double)f3+1.0D)));
 						double d11 = entity instanceof LivingEntity?ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)entity, d10): d10;
 						entity.setDeltaMovement(entity.getDeltaMovement().add(d5*d11,
 								d7*d11,
@@ -229,7 +227,7 @@ public class IEExplosion extends Explosion
 		if(this.world.isClientSide)
 			this.world.playLocalSound(pos.x, pos.y, pos.z, SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 4.0F, (1.0F+(ApiUtils.RANDOM.nextFloat()-ApiUtils.RANDOM.nextFloat())*0.2F)*0.7F, true);
 
-		if(this.size >= 2.0F&&this.damagesTerrain!=BlockInteraction.NONE)
+		if(this.size >= 2.0F&&this.damagesTerrain!=BlockInteraction.KEEP)
 			this.world.addParticle(ParticleTypes.EXPLOSION_EMITTER, pos.x, pos.y, pos.z, 1.0D, 0.0D, 0.0D);
 		else
 			this.world.addParticle(ParticleTypes.EXPLOSION, pos.x, pos.y, pos.z, 1.0D, 0.0D, 0.0D);

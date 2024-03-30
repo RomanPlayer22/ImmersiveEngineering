@@ -10,7 +10,6 @@ package blusunrize.immersiveengineering.client.fx;
 
 import blusunrize.immersiveengineering.client.ClientUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
@@ -19,7 +18,6 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
@@ -73,11 +71,10 @@ public class FluidSplashParticle extends TextureSheetParticle
 			this.zd *= 0.7;
 		}
 
-		BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
+		BlockPos blockpos = BlockPos.containing(this.x, this.y, this.z);
 		BlockState iblockstate = this.level.getBlockState(blockpos);
-		Material material = iblockstate.getMaterial();
 
-		if(material.isLiquid()||material.isSolid())
+		if(iblockstate.liquid()||iblockstate.isSolid())
 		{
 			double d0;
 			/*TODO if(iblockstate.getBlock() instanceof BlockLiquid)
@@ -108,11 +105,11 @@ public class FluidSplashParticle extends TextureSheetParticle
 		return ParticleRenderType.TERRAIN_SHEET;
 	}
 
-	public static class Factory implements ParticleProvider<FluidSplashOptions>
+	public static class Factory implements ParticleProvider.Sprite<FluidSplashOptions>
 	{
 		@Nullable
 		@Override
-		public Particle createParticle(FluidSplashOptions typeIn, @Nonnull ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
+		public TextureSheetParticle createParticle(FluidSplashOptions typeIn, @Nonnull ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed)
 		{
 			return new FluidSplashParticle(typeIn.fluid(), worldIn, x, y, z, xSpeed, ySpeed, zSpeed);
 		}

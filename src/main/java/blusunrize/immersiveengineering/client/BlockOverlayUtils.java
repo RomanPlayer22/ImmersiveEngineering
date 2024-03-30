@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.client;
 
 import blusunrize.immersiveengineering.api.Lib;
@@ -12,10 +20,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Font.DisplayMode;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -29,6 +37,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +50,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderHighlightEvent;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 public class BlockOverlayUtils
@@ -51,18 +63,21 @@ public class BlockOverlayUtils
 	public static void drawBlockOverlayText(PoseStack transform, Component[] text, int scaledWidth, int scaledHeight)
 	{
 		if(text!=null&&text.length > 0)
-		{
-			int i = 0;
-			MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-			for(Component s : text)
-				if(s!=null)
-					ClientUtils.font().drawInBatch(
-							Language.getInstance().getVisualOrder(s),
-							scaledWidth/2+8, scaledHeight/2+8+(i++)*ClientUtils.font().lineHeight, 0xffffffff, true,
-							transform.last().pose(), buffer, false, 0, 0xf000f0
-					);
-			buffer.endBatch();
-		}
+			drawBlockOverlayText(transform, Arrays.asList(text), scaledWidth, scaledHeight);
+	}
+
+	public static void drawBlockOverlayText(PoseStack transform, Iterable<Component> text, int scaledWidth, int scaledHeight)
+	{
+		int i = 0;
+		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+		for(Component s : text)
+			if(s!=null)
+				ClientUtils.font().drawInBatch(
+						Language.getInstance().getVisualOrder(s),
+						scaledWidth/2+8, scaledHeight/2+8+(i++)*ClientUtils.font().lineHeight, 0xffffffff, true,
+						transform.last().pose(), buffer, DisplayMode.NORMAL, 0, 0xf000f0
+				);
+		buffer.endBatch();
 	}
 
 	/* ----------- ARROWS ----------- */
@@ -154,13 +169,13 @@ public class BlockOverlayUtils
 		int[] vertexOrder;
 		if(flip)
 		{
-			transform.mulPose(new Quaternion(0, -rotation, 0, false));
+			transform.mulPose(new Quaternionf().rotateXYZ(0, -rotation, 0));
 			transform.scale(1, 1, -1);
 			vertexOrder = new int[]{2, 3, 1, 0};
 		}
 		else
 		{
-			transform.mulPose(new Quaternion(0, rotation, 0, false));
+			transform.mulPose(new Quaternionf().rotateXYZ(0, rotation, 0));
 			vertexOrder = new int[]{0, 1, 3, 2};
 		}
 		transform.pushPose();
@@ -179,7 +194,7 @@ public class BlockOverlayUtils
 							.normal(transform.last().normal(), diff.x, 0, diff.y)
 							.endVertex();
 			}
-			transform.mulPose(new Quaternion(0, 180, 0, true));
+			transform.mulPose(new Quaternionf().rotateXYZ(0, Mth.PI, 0));
 		}
 		transform.popPose();
 		transform.pushPose();
@@ -195,7 +210,7 @@ public class BlockOverlayUtils
 							.color(Lib.COLOUR_F_ImmersiveOrange[0], Lib.COLOUR_F_ImmersiveOrange[1], Lib.COLOUR_F_ImmersiveOrange[2], 0.4F)
 							.endVertex();
 				}
-			transform.mulPose(new Quaternion(0, 180, 0, true));
+			transform.mulPose(new Quaternionf().rotateXYZ(0, Mth.PI, 0));
 		}
 		transform.popPose();
 		transform.popPose();
@@ -274,7 +289,7 @@ public class BlockOverlayUtils
 		transform.translate(-renderView.x, -renderView.y, -renderView.z);
 		MultiPlayerGameMode controllerMP = ClientUtils.mc().gameMode;
 		if(controllerMP.isDestroying())
-			RenderUtils.drawBlockDamageTexture(transform, ev.getMultiBufferSource(), player.level, blocks);
+			RenderUtils.drawBlockDamageTexture(transform, ev.getMultiBufferSource(), player.level(), blocks);
 		transform.popPose();
 	}
 
@@ -283,101 +298,106 @@ public class BlockOverlayUtils
 	/**
 	 * Draw overlay for a map in a frame, based on where the player's cursor is on the map
 	 */
-	public static void renderOreveinMapOverlays(PoseStack transform, ItemFrame frameEntity, HitResult rayTraceResult, int scaledWidth, int scaledHeight)
+	public static void renderOreveinMapOverlays(GuiGraphics graphics, ItemFrame frameEntity, HitResult rayTraceResult, int scaledWidth, int scaledHeight)
 	{
-		if(frameEntity!=null)
+		if(frameEntity==null)
+			return;
+		ItemStack frameItem = frameEntity.getItem();
+		if(frameItem.getItem()==Items.FILLED_MAP&&ItemNBTHelper.hasKey(frameItem, "Decorations", 9))
 		{
-			ItemStack frameItem = frameEntity.getItem();
-			if(frameItem.getItem()==Items.FILLED_MAP&&ItemNBTHelper.hasKey(frameItem, "Decorations", 9))
+			Level world = frameEntity.getCommandSenderWorld();
+			MapItemSavedData mapData = MapItem.getSavedData(frameItem, world);
+			if(mapData!=null)
 			{
-				Level world = frameEntity.getCommandSenderWorld();
-				MapItemSavedData mapData = MapItem.getSavedData(frameItem, world);
-				if(mapData!=null)
+				Font font = ClientUtils.font();
+				int mapScale = 1<<mapData.scale;
+				float mapRotation = (frameEntity.getRotation()%4)*1.5708f;
+
+				// Player hit vector, relative to frame block pos
+				Vec3 hitVec = rayTraceResult.getLocation().subtract(Vec3.atLowerCornerOf(frameEntity.getPos()));
+				Direction frameDir = frameEntity.getDirection();
+				double cursorH = 0;
+				double cursorV = 0;
+				// Get a 0-1 cursor coordinate; this could be ternary operator, but switchcase is easier to read
+				switch(frameDir)
 				{
-					Font font = ClientUtils.font();
-					int mapScale = 1<<mapData.scale;
-					float mapRotation = (frameEntity.getRotation()%4)*1.5708f;
-
-					// Player hit vector, relative to frame block pos
-					Vec3 hitVec = rayTraceResult.getLocation().subtract(Vec3.atLowerCornerOf(frameEntity.getPos()));
-					Direction frameDir = frameEntity.getDirection();
-					double cursorH = 0;
-					double cursorV = 0;
-					// Get a 0-1 cursor coordinate; this could be ternary operator, but switchcase is easier to read
-					switch(frameDir)
+					case DOWN ->
 					{
-						case DOWN -> {
-							cursorH = hitVec.x;
-							cursorV = 1-hitVec.z;
-						}
-						case UP -> {
-							cursorH = hitVec.x;
-							cursorV = hitVec.z;
-						}
-						case NORTH -> {
-							cursorH = 1-hitVec.x;
-							cursorV = 1-hitVec.y;
-						}
-						case SOUTH -> {
-							cursorH = hitVec.x;
-							cursorV = 1-hitVec.y;
-						}
-						case WEST -> {
-							cursorH = hitVec.z;
-							cursorV = 1-hitVec.y;
-						}
-						case EAST -> {
-							cursorH = 1-hitVec.z;
-							cursorV = 1-hitVec.y;
-						}
+						cursorH = hitVec.x;
+						cursorV = 1-hitVec.z;
 					}
-					// Multiply it to the number scale vanilla maps use
-					cursorH *= 128;
-					cursorV *= 128;
-
-					ListTag minerals = null;
-					double lastDist = Double.MAX_VALUE;
-					ListTag nbttaglist = frameItem.getTag().getList("Decorations", 10);
-					for(Tag inbt : nbttaglist)
+					case UP ->
 					{
-						CompoundTag tagCompound = (CompoundTag)inbt;
-						String id = tagCompound.getString("id");
-						if(id.startsWith("ie:coresample_")&&tagCompound.contains("minerals"))
-						{
-							double sampleX = tagCompound.getDouble("x");
-							double sampleZ = tagCompound.getDouble("z");
-							// Map coordinates require some pretty funky maths. I tried to simplify this,
-							// and ran into issues that made highlighting fail on certain markers.
-							// This implementation works, so I just won't touch it again.
-							float f = (float)(sampleX-(double)mapData.x)/(float)mapScale;
-							float f1 = (float)(sampleZ-(double)mapData.z)/(float)mapScale;
-							byte b0 = (byte)((int)((double)(f*2.0F)+0.5D));
-							byte b1 = (byte)((int)((double)(f1*2.0F)+0.5D));
-							// Make it a vector, rotate it around the map center
-							Vec3 mapPos = new Vec3(0, b1, b0);
-							mapPos = mapPos.xRot(mapRotation);
-							// Turn it into a 0.0 to 128.0 offset
-							double offsetH = (mapPos.z/2.0F+64.0F);
-							double offsetV = (mapPos.y/2.0F+64.0F);
-							// Get cursor distance
-							double dH = cursorH-offsetH;
-							double dV = cursorV-offsetV;
-							double dist = dH*dH+dV*dV;
-							if(dist < 10&&dist < lastDist)
-							{
-								lastDist = dist;
-								minerals = tagCompound.getList("minerals", Tag.TAG_STRING);
-							}
-						}
+						cursorH = hitVec.x;
+						cursorV = hitVec.z;
 					}
-					if(minerals!=null)
-						for(int i = 0; i < minerals.size(); i++)
-						{
-							MineralMix mix = MineralMix.RECIPES.getById(Minecraft.getInstance().level, new ResourceLocation(minerals.getString(i)));
-							if(mix!=null)
-								font.drawShadow(transform, I18n.get(mix.getTranslationKey()), scaledWidth/2+8, scaledHeight/2+8+i*font.lineHeight, 0xffffff);
-						}
+					case NORTH ->
+					{
+						cursorH = 1-hitVec.x;
+						cursorV = 1-hitVec.y;
+					}
+					case SOUTH ->
+					{
+						cursorH = hitVec.x;
+						cursorV = 1-hitVec.y;
+					}
+					case WEST ->
+					{
+						cursorH = hitVec.z;
+						cursorV = 1-hitVec.y;
+					}
+					case EAST ->
+					{
+						cursorH = 1-hitVec.z;
+						cursorV = 1-hitVec.y;
+					}
 				}
+				// Multiply it to the number scale vanilla maps use
+				cursorH *= 128;
+				cursorV *= 128;
+
+				ListTag minerals = null;
+				double lastDist = Double.MAX_VALUE;
+				ListTag nbttaglist = frameItem.getTag().getList("Decorations", 10);
+				for(Tag inbt : nbttaglist)
+				{
+					CompoundTag tagCompound = (CompoundTag)inbt;
+					String id = tagCompound.getString("id");
+					if(id.startsWith("ie:coresample_")&&tagCompound.contains("minerals"))
+					{
+						double sampleX = tagCompound.getDouble("x");
+						double sampleZ = tagCompound.getDouble("z");
+						// Map coordinates require some pretty funky maths. I tried to simplify this,
+						// and ran into issues that made highlighting fail on certain markers.
+						// This implementation works, so I just won't touch it again.
+						float f = (float)(sampleX-(double)mapData.centerX)/(float)mapScale;
+						float f1 = (float)(sampleZ-(double)mapData.centerZ)/(float)mapScale;
+						byte b0 = (byte)((int)((double)(f*2.0F)+0.5D));
+						byte b1 = (byte)((int)((double)(f1*2.0F)+0.5D));
+						// Make it a vector, rotate it around the map center
+						Vec3 mapPos = new Vec3(0, b1, b0);
+						mapPos = mapPos.xRot(mapRotation);
+						// Turn it into a 0.0 to 128.0 offset
+						double offsetH = (mapPos.z/2.0F+64.0F);
+						double offsetV = (mapPos.y/2.0F+64.0F);
+						// Get cursor distance
+						double dH = cursorH-offsetH;
+						double dV = cursorV-offsetV;
+						double dist = dH*dH+dV*dV;
+						if(dist < 10&&dist < lastDist)
+						{
+							lastDist = dist;
+							minerals = tagCompound.getList("minerals", Tag.TAG_STRING);
+						}
+					}
+				}
+				if(minerals!=null)
+					for(int i = 0; i < minerals.size(); i++)
+					{
+						MineralMix mix = MineralMix.RECIPES.getById(Minecraft.getInstance().level, new ResourceLocation(minerals.getString(i)));
+						if(mix!=null)
+							graphics.drawString(font, I18n.get(mix.getTranslationKey()), scaledWidth/2+8, scaledHeight/2+8+i*font.lineHeight, 0xffffff, true);
+					}
 			}
 		}
 	}

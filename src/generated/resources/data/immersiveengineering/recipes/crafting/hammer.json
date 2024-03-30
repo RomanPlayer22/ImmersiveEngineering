@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "f": {
       "tag": "forge:string"
@@ -18,5 +19,6 @@
   ],
   "result": {
     "item": "immersiveengineering:hammer"
-  }
+  },
+  "show_notification": true
 }

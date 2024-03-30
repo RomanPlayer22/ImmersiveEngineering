@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "f": {
       "item": "immersiveengineering:treated_fence"
@@ -18,5 +19,6 @@
   "result": {
     "count": 3,
     "item": "immersiveengineering:razor_wire"
-  }
+  },
+  "show_notification": true
 }

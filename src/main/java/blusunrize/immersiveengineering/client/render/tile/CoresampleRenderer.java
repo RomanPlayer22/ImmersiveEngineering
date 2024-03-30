@@ -11,11 +11,11 @@ package blusunrize.immersiveengineering.client.render.tile;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.common.blocks.stone.CoresampleBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Quaternionf;
 
 public class CoresampleRenderer extends IEBlockEntityRenderer<CoresampleBlockEntity>
 {
@@ -27,11 +27,16 @@ public class CoresampleRenderer extends IEBlockEntityRenderer<CoresampleBlockEnt
 
 		matrixStack.pushPose();
 		matrixStack.translate(.5, .5, .5);
-		matrixStack.mulPose(new Quaternion(new Vector3f(0, 1, 0), tile.getFacing()==Direction.NORTH?180: tile.getFacing()==Direction.WEST?-90: tile.getFacing()==Direction.EAST?90: 0, true));
-		matrixStack.mulPose(new Quaternion(new Vector3f(1, 0, 0), -45, true));
+		matrixStack.mulPose(new Quaternionf().rotateY(
+				tile.getFacing()==Direction.NORTH?Mth.PI: tile.getFacing()==Direction.WEST?-Mth.HALF_PI: tile.getFacing()==Direction.EAST?Mth.HALF_PI: 0
+		));
+		matrixStack.mulPose(new Quaternionf().rotateX(-Mth.HALF_PI/2));
 		matrixStack.translate(0, .04864, .02903);
-		ClientUtils.mc().getItemRenderer().renderStatic(tile.coresample, TransformType.FIXED, combinedLightIn,
-				combinedOverlayIn, matrixStack, bufferIn, 0);
+		ClientUtils.mc().getItemRenderer().renderStatic(
+				tile.coresample, ItemDisplayContext.FIXED,
+				combinedLightIn, combinedOverlayIn, matrixStack, bufferIn,
+				tile.getLevel(), 0
+		);
 		matrixStack.popPose();
 	}
 }

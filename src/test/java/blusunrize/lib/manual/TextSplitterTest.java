@@ -1,8 +1,16 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.lib.manual;
 
 import blusunrize.lib.manual.SplitResult.Token;
 import blusunrize.lib.manual.gui.ManualScreen;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import org.junit.Assert;
 import org.junit.Before;
@@ -176,7 +184,7 @@ public class TextSplitterTest
 		}
 
 		@Override
-		public void render(PoseStack transform, ManualScreen gui, int x, int y, int mouseX, int mouseY)
+		public void render(GuiGraphics graphics, ManualScreen gui, int x, int y, int mouseX, int mouseY)
 		{
 		}
 

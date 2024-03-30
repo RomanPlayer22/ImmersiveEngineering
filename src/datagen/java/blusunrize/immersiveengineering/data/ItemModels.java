@@ -20,6 +20,7 @@ import blusunrize.immersiveengineering.common.blocks.metal.ChuteBlock;
 import blusunrize.immersiveengineering.common.blocks.metal.ConveyorBlock;
 import blusunrize.immersiveengineering.common.blocks.metal.MetalLadderBlock.CoverType;
 import blusunrize.immersiveengineering.common.items.BulletItem;
+import blusunrize.immersiveengineering.common.items.SteelArmorItem;
 import blusunrize.immersiveengineering.common.register.IEBannerPatterns;
 import blusunrize.immersiveengineering.common.register.IEBlocks.Metals;
 import blusunrize.immersiveengineering.common.register.IEBlocks.*;
@@ -27,16 +28,22 @@ import blusunrize.immersiveengineering.common.register.IEFluids;
 import blusunrize.immersiveengineering.common.register.IEItems;
 import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import blusunrize.immersiveengineering.common.register.IEItems.*;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import blusunrize.immersiveengineering.data.blockstates.MultiblockStates;
 import blusunrize.immersiveengineering.data.models.*;
+import blusunrize.immersiveengineering.mixin.accessors.ItemModelGeneratorsAccess;
+import blusunrize.immersiveengineering.mixin.accessors.TrimModelDataAccess;
 import com.google.common.base.Preconditions;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
+import net.minecraftforge.client.model.generators.ModelProvider;
 import net.minecraftforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder;
 import net.minecraftforge.client.model.generators.loaders.ObjModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -53,9 +60,9 @@ public class ItemModels extends TRSRItemModelProvider
 {
 	private final MultiblockStates blockStates;
 
-	public ItemModels(DataGenerator generator, ExistingFileHelper existingFileHelper, MultiblockStates blockStates)
+	public ItemModels(PackOutput output, ExistingFileHelper existingFileHelper, MultiblockStates blockStates)
 	{
-		super(generator, existingFileHelper);
+		super(output, existingFileHelper);
 		this.blockStates = blockStates;
 	}
 
@@ -116,39 +123,39 @@ public class ItemModels extends TRSRItemModelProvider
 				.transforms(rl("item/blastfurnace_preheater"));
 		obj(MetalDevices.SAMPLE_DRILL, rl("block/metal_device/core_drill.obj"))
 				.transforms(rl("item/sampledrill"));
-		obj(Multiblocks.METAL_PRESS, rl("block/metal_multiblock/metal_press.obj"))
+		obj(IEMultiblockLogic.METAL_PRESS.blockItem().get(), rl("block/metal_multiblock/metal_press.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.CRUSHER, rl("block/metal_multiblock/crusher.obj"))
+		obj(IEMultiblockLogic.CRUSHER.blockItem().get(), rl("block/metal_multiblock/crusher.obj"))
 				.transforms(rl("item/crusher"));
-		obj(Multiblocks.SAWMILL, rl("block/metal_multiblock/sawmill.obj"))
+		obj(IEMultiblockLogic.SAWMILL.blockItem().get(), rl("block/metal_multiblock/sawmill.obj"))
 				.transforms(rl("item/crusher"));
-		obj(Multiblocks.TANK, rl("block/metal_multiblock/tank.obj"))
+		obj(IEMultiblockLogic.TANK.blockItem().get(), rl("block/metal_multiblock/tank.obj"))
 				.transforms(rl("item/tank"));
-		obj(Multiblocks.SILO, rl("block/metal_multiblock/silo.obj"))
+		obj(IEMultiblockLogic.SILO.blockItem().get(), rl("block/metal_multiblock/silo.obj"))
 				.transforms(rl("item/silo"));
-		obj(Multiblocks.ASSEMBLER, rl("block/metal_multiblock/assembler.obj"))
+		obj(IEMultiblockLogic.ASSEMBLER.blockItem().get(), rl("block/metal_multiblock/assembler.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.AUTO_WORKBENCH, rl("block/metal_multiblock/auto_workbench.obj"))
+		obj(IEMultiblockLogic.AUTO_WORKBENCH.blockItem().get(), rl("block/metal_multiblock/auto_workbench.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.BOTTLING_MACHINE, rl("block/metal_multiblock/bottling_machine.obj.ie"))
+		obj(IEMultiblockLogic.BOTTLING_MACHINE.blockItem().get(), rl("block/metal_multiblock/bottling_machine.obj.ie"))
 				.transforms(rl("item/bottling_machine"));
-		obj(Multiblocks.SQUEEZER, rl("block/metal_multiblock/squeezer.obj"))
+		obj(IEMultiblockLogic.SQUEEZER.blockItem().get(), rl("block/metal_multiblock/squeezer.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.FERMENTER, rl("block/metal_multiblock/fermenter.obj"))
+		obj(IEMultiblockLogic.FERMENTER.blockItem().get(), rl("block/metal_multiblock/fermenter.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.REFINERY, rl("block/metal_multiblock/refinery.obj"))
+		obj(IEMultiblockLogic.REFINERY.blockItem().get(), rl("block/metal_multiblock/refinery.obj"))
 				.transforms(rl("item/refinery"));
-		obj(Multiblocks.DIESEL_GENERATOR, rl("block/metal_multiblock/diesel_generator.obj"))
+		obj(IEMultiblockLogic.DIESEL_GENERATOR.blockItem().get(), rl("block/metal_multiblock/diesel_generator.obj"))
 				.transforms(rl("item/crusher"));
-		obj(Multiblocks.EXCAVATOR, rl("block/metal_multiblock/excavator.obj"))
+		obj(IEMultiblockLogic.EXCAVATOR.blockItem().get(), rl("block/metal_multiblock/excavator.obj"))
 				.transforms(rl("item/excavator"));
-		obj(Multiblocks.BUCKET_WHEEL, rl("block/metal_multiblock/bucket_wheel.obj.ie"))
+		obj(IEMultiblockLogic.BUCKET_WHEEL.blockItem().get(), rl("block/metal_multiblock/bucket_wheel.obj.ie"))
 				.transforms(rl("item/bucket_wheel"));
-		obj(Multiblocks.ARC_FURNACE, rl("block/metal_multiblock/arc_furnace.obj"))
+		obj(IEMultiblockLogic.ARC_FURNACE.blockItem().get(), rl("block/metal_multiblock/arc_furnace.obj"))
 				.transforms(rl("item/arc_furnace"));
-		obj(Multiblocks.LIGHTNING_ROD, rl("block/metal_multiblock/lightningrod.obj"))
+		obj(IEMultiblockLogic.LIGHTNING_ROD.blockItem().get(), rl("block/metal_multiblock/lightningrod.obj"))
 				.transforms(rl("item/multiblock"));
-		obj(Multiblocks.MIXER, rl("block/metal_multiblock/mixer.obj"))
+		obj(IEMultiblockLogic.MIXER.blockItem().get(), rl("block/metal_multiblock/mixer.obj"))
 				.transforms(rl("item/multiblock"));
 
 		obj(MetalDecoration.ALU_WALLMOUNT, modLoc("block/wooden_device/wallmount.obj"))
@@ -244,7 +251,10 @@ public class ItemModels extends TRSRItemModelProvider
 		for(Entry<IBullet, ItemRegObject<BulletItem>> bullet : Weapons.BULLETS.entrySet())
 			addLayeredItemModel(bullet.getValue().asItem(), bullet.getKey().getTextures());
 		addItemModels("", IEItems.Misc.FARADAY_SUIT.values());
-		addItemModels("", IEItems.Tools.STEEL_ARMOR.values());
+//		addItemModels("", IEItems.Tools.STEEL_ARMOR.values());
+		for(Entry<Type, ItemRegObject<SteelArmorItem>> armorPiece : IEItems.Tools.STEEL_ARMOR.entrySet())
+			addTrimmedArmorModel(armorPiece.getValue().get());
+
 		addItemModel("blueprint", IEItems.Misc.BLUEPRINT);
 		addItemModel("seed_hemp", IEItems.Misc.HEMP_SEEDS);
 		addItemModel("drillhead_iron", Tools.DRILLHEAD_IRON);
@@ -338,16 +348,16 @@ public class ItemModels extends TRSRItemModelProvider
 	{
 		obj(StoneDecoration.CONCRETE_SPRAYED, rl("block/sprayed_concrete.obj"))
 				.transforms(rl("item/block"));
-		getBuilder(Multiblocks.ALLOY_SMELTER)
+		getBuilder(IEMultiblockLogic.ALLOY_SMELTER.blockItem().get())
 				.parent(blockStates.alloySmelterOn)
 				.transforms(rl("item/alloysmelter"));
-		getBuilder(Multiblocks.BLAST_FURNACE)
+		getBuilder(IEMultiblockLogic.BLAST_FURNACE.blockItem().get())
 				.parent(blockStates.blastFurnaceOn)
 				.transforms(rl("item/blastfurnace"));
-		getBuilder(Multiblocks.COKE_OVEN)
+		getBuilder(IEMultiblockLogic.COKE_OVEN.blockItem().get())
 				.parent(blockStates.cokeOvenOn)
 				.transforms(rl("item/blastfurnace"));
-		obj(Multiblocks.ADVANCED_BLAST_FURNACE, rl("block/blastfurnace_advanced.obj"))
+		obj(IEMultiblockLogic.ADV_BLAST_FURNACE.blockItem().get(), rl("block/blastfurnace_advanced.obj"))
 				.transforms(rl("item/multiblock"));
 	}
 
@@ -429,7 +439,7 @@ public class ItemModels extends TRSRItemModelProvider
 
 	private String name(ItemLike item)
 	{
-		return Registry.ITEM.getKey(item.asItem()).getPath();
+		return BuiltInRegistries.ITEM.getKey(item.asItem()).getPath();
 	}
 
 	@Nonnull
@@ -482,7 +492,7 @@ public class ItemModels extends TRSRItemModelProvider
 	private void addItemModels(String texturePrefix, ResourceLocation parent, Collection<? extends ItemLike> items)
 	{
 		for(ItemLike item : items)
-			addItemModel(texturePrefix==null?null: (texturePrefix+Registry.ITEM.getKey(item.asItem()).getPath()), item, parent);
+			addItemModel(texturePrefix==null?null: (texturePrefix+BuiltInRegistries.ITEM.getKey(item.asItem()).getPath()), item, parent);
 	}
 
 	private void addItemModel(String texture, ItemLike item)
@@ -505,5 +515,25 @@ public class ItemModels extends TRSRItemModelProvider
 		int layerIdx = 0;
 		for(ResourceLocation layer : layers)
 			modelBuilder.texture("layer"+(layerIdx++), layer);
+	}
+
+	private void addTrimmedArmorModel(ArmorItem item)
+	{
+		String path = name(item);
+		ResourceLocation baseTexture = modLoc("item/"+path);
+		TRSRModelBuilder modelBuilder = withExistingParent(path, mcLoc("item/generated"))
+				.texture("layer0", baseTexture);
+		for(TrimModelDataAccess trim : ItemModelGeneratorsAccess.getGeneratedTrimModels())
+		{
+			String material = trim.getName();
+			String name = path+"_"+material+"_trim";
+			ResourceLocation trimTexture = mcLoc("trims/items/"+item.getType().getName()+"_trim_"+material);
+			// hacky workaround to avoid complaints about missing textures
+			existingFileHelper.trackGenerated(trimTexture, ModelProvider.TEXTURE);
+			TRSRModelBuilder trimModel = this.withExistingParent(name, mcLoc("item/generated"))
+					.texture("layer0", baseTexture)
+					.texture("layer1", trimTexture);
+			modelBuilder.override(trimModel, new ResourceLocation("trim_type"), trim.getItemModelIndex());
+		}
 	}
 }

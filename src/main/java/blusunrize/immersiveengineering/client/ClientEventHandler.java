@@ -13,6 +13,9 @@ import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.api.client.TextUtils;
 import blusunrize.immersiveengineering.api.crafting.BlastFurnaceFuel;
 import blusunrize.immersiveengineering.api.crafting.BlueprintCraftingRecipe;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockBEHelper;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockBE;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.logic.IMultiblockState;
 import blusunrize.immersiveengineering.api.shader.CapabilityShader;
 import blusunrize.immersiveengineering.api.tool.IDrillHead;
 import blusunrize.immersiveengineering.api.tool.ZoomHandler;
@@ -31,6 +34,7 @@ import blusunrize.immersiveengineering.client.utils.FontUtils;
 import blusunrize.immersiveengineering.client.utils.GuiHelper;
 import blusunrize.immersiveengineering.client.utils.IERenderTypes;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IBlockOverlayText;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.interfaces.MBOverlayText;
 import blusunrize.immersiveengineering.common.blocks.wooden.TurntableBlockEntity;
 import blusunrize.immersiveengineering.common.config.IEClientConfig;
 import blusunrize.immersiveengineering.common.config.IEServerConfig;
@@ -52,11 +56,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font.DisplayMode;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -72,6 +75,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -100,6 +104,9 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -286,7 +293,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 
 			if(playerDistanceSq < 1000)
 			{
-				BlueprintCraftingRecipe[] recipes = BlueprintCraftingRecipe.findRecipes(event.getItemFrameEntity().level, ItemNBTHelper.getString(event.getItemStack(), "blueprint"));
+				BlueprintCraftingRecipe[] recipes = BlueprintCraftingRecipe.findRecipes(event.getItemFrameEntity().level(), ItemNBTHelper.getString(event.getItemStack(), "blueprint"));
 				if(recipes.length > 0)
 				{
 					int i = event.getItemFrameEntity().getRotation();
@@ -297,7 +304,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 						PoseStack transform = event.getPoseStack();
 						transform.pushPose();
 						MultiBufferSource buffer = event.getMultiBufferSource();
-						transform.mulPose(new Quaternion(0, 0, -i*45, true));
+						transform.mulPose(new Quaternionf().rotateXYZ(0, 0, -i*Mth.PI / 4));
 						transform.translate(-.5, .5, -.001);
 						VertexConsumer builder = buffer.getBuffer(IERenderTypes.getGui(rl("textures/models/blueprint_frame.png")));
 						GuiHelper.drawTexturedColoredRect(builder, transform, .125f, -.875f, .75f, .75f, 1, 1, 1, 1, 1, 0, 1, 0);
@@ -407,7 +414,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 							transform.translate(6/256f*resMin, curStep*stepLength/256*resMin, 0);
 							GuiHelper.drawTexturedColoredRect(builder, transform, 0, 0, 8/256f*resMin, 7/256f*resMin, 1, 1, 1, 1, 88/256f, 98/256f, 103/256f, 110/256f);
 							ClientUtils.font().drawInBatch((1/steps[curStep])+"x", (int)(16/256f*resMin), 0, 0xffffff, true,
-									transform.last().pose(), buffers, false, 0, 0xf000f0);
+									transform.last().pose(), buffers, DisplayMode.NORMAL, 0, 0xf000f0);
 							transform.translate(-6/256f*resMin, -curStep*stepLength/256*resMin, 0);
 						}
 						transform.translate(0, -((5+stepOffset)/256*resMin), 0);
@@ -437,7 +444,8 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 		if(ClientUtils.mc().player!=null&&event.getOverlay().id().equals(VanillaGuiOverlay.ITEM_NAME.id()))
 		{
 			Player player = ClientUtils.mc().player;
-			PoseStack transform = new PoseStack();
+			GuiGraphics graphics = event.getGuiGraphics();
+			PoseStack transform = graphics.pose();
 
 			for(InteractionHand hand : InteractionHand.values())
 				if(!player.getItemInHand(hand).isEmpty())
@@ -467,7 +475,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 							}
 							ClientUtils.font().drawInBatch(
 									s, scaledWidth/2-ClientUtils.font().width(s)/2, scaledHeight-leftHeight-20, col,
-									true, transform.last().pose(), buffer, false, 0, 0xf000f0);
+									true, transform.last().pose(), buffer, DisplayMode.NORMAL, 0, 0xf000f0);
 						}
 					}
 					else if(equipped.getItem()==Misc.FLUORESCENT_TUBE.get())
@@ -476,11 +484,11 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 						String s = I18n.get(Lib.DESC_INFO+"colour")+"#"+FontUtils.hexColorString(color);
 						ClientUtils.font().drawInBatch(s, scaledWidth/2-ClientUtils.font().width(s)/2,
 								scaledHeight-leftHeight-20, FluorescentTubeItem.getRGBInt(equipped, 1),
-								true, transform.last().pose(), buffer, false, 0, 0xf000f0
+								true, transform.last().pose(), buffer, DisplayMode.NORMAL, 0, 0xf000f0
 						);
 					}
 					else if(equipped.getItem() instanceof RevolverItem||equipped.getItem() instanceof SpeedloaderItem)
-						ItemOverlayUtils.renderRevolverOverlay(buffer, transform, scaledWidth, scaledHeight, player, hand, equipped);
+						ItemOverlayUtils.renderRevolverOverlay(buffer, graphics, scaledWidth, scaledHeight, player, hand, equipped);
 					else if(equipped.getItem() instanceof RailgunItem)
 						ItemOverlayUtils.renderRailgunOverlay(buffer, transform, scaledWidth, scaledHeight, player, hand, equipped);
 					else if(equipped.getItem() instanceof DrillItem)
@@ -505,7 +513,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 				{
 					Entity entity = ((EntityHitResult)mop).getEntity();
 					if(entity instanceof ItemFrame)
-						BlockOverlayUtils.renderOreveinMapOverlays(transform, (ItemFrame)entity, mop, scaledWidth, scaledHeight);
+						BlockOverlayUtils.renderOreveinMapOverlays(graphics, (ItemFrame)entity, mop, scaledWidth, scaledHeight);
 					else if(entity instanceof IEMinecartEntity<?> ieMinecart&&ieMinecart.getContainedBlockEntity() instanceof IBlockOverlayText overlayText)
 					{
 						Component[] text = overlayText.getOverlayText(player, mop, false);
@@ -516,23 +524,40 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 				{
 					BlockPos pos = ((BlockHitResult)mop).getBlockPos();
 					Direction face = ((BlockHitResult)mop).getDirection();
-					BlockEntity tileEntity = player.level.getBlockEntity(pos);
+					BlockEntity tileEntity = player.level().getBlockEntity(pos);
 					if(tileEntity instanceof IBlockOverlayText overlayBlock)
 					{
 						Component[] text = overlayBlock.getOverlayText(ClientUtils.mc().player, mop, hammer);
 						BlockOverlayUtils.drawBlockOverlayText(transform, text, scaledWidth, scaledHeight);
 					}
-					else
+					else if(!(tileEntity instanceof IMultiblockBE<?> multiblock)||!renderMultiblockOverlay(
+							multiblock, hammer, transform, scaledWidth, scaledHeight
+					))
 					{
-						List<ItemFrame> list = player.level.getEntitiesOfClass(ItemFrame.class,
+						List<ItemFrame> list = player.level().getEntitiesOfClass(ItemFrame.class,
 								new AABB(pos.relative(face)), entity -> entity!=null&&entity.getDirection()==face);
 						if(list.size()==1)
-							BlockOverlayUtils.renderOreveinMapOverlays(transform, list.get(0), mop, scaledWidth, scaledHeight);
+							BlockOverlayUtils.renderOreveinMapOverlays(graphics, list.get(0), mop, scaledWidth, scaledHeight);
 					}
 				}
-
 			}
 		}
+	}
+
+	private <S extends IMultiblockState> boolean renderMultiblockOverlay(
+			IMultiblockBE<S> be, boolean hammer, PoseStack transform, int scaledWidth, int scaledHeight
+	)
+	{
+		final IMultiblockBEHelper<S> helper = be.getHelper();
+		if(!(helper.getMultiblock().logic() instanceof MBOverlayText<S> overlayHandler))
+			return false;
+		final List<Component> overlayText = overlayHandler.getOverlayText(
+				helper.getState(), ClientUtils.mc().player, hammer
+		);
+		if(overlayText==null)
+			return false;
+		BlockOverlayUtils.drawBlockOverlayText(transform, overlayText, scaledWidth, scaledHeight);
+		return true;
 	}
 
 	private void renderVoltmeterOverlay(Player player, float scaledWidth, float scaledHeight, PoseStack transform, MultiBufferSource buffer)
@@ -550,7 +575,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 		ArrayList<String> text = new ArrayList<>();
 
 		boolean matches = VoltmeterItem.lastEnergyUpdate.pos().equals(pos);
-		long sinceLast = player.level.getGameTime()-VoltmeterItem.lastEnergyUpdate.measuredInTick();
+		long sinceLast = player.level().getGameTime()-VoltmeterItem.lastEnergyUpdate.measuredInTick();
 		if(!matches||sinceLast > 20)
 			ImmersiveEngineering.packetHandler.sendToServer(new MessageRequestEnergyUpdate(pos));
 
@@ -567,7 +592,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 		if(pos.isLeft())
 		{
 			matches = VoltmeterItem.lastRedstoneUpdate.pos().equals(pos.leftNonnull());
-			sinceLast = player.level.getGameTime()-VoltmeterItem.lastRedstoneUpdate.measuredInTick();
+			sinceLast = player.level().getGameTime()-VoltmeterItem.lastRedstoneUpdate.measuredInTick();
 			if(!matches||sinceLast > 20)
 				ImmersiveEngineering.packetHandler.sendToServer(new MessageRequestRedstoneUpdate(pos.leftNonnull()));
 
@@ -591,7 +616,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 					ClientUtils.font().drawInBatch(
 							s, scaledWidth/2-w/2f,
 							scaledHeight/2+4+(i++)*(ClientUtils.font().lineHeight+2), col,
-							false, transform.last().pose(), buffer, false,
+							false, transform.last().pose(), buffer, DisplayMode.NORMAL,
 							0, 0xf000f0
 					);
 				}
@@ -703,7 +728,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 			transform.translate(-renderView.x, -renderView.y, -renderView.z);
 			transform.translate(pos.getX(), pos.getY(), pos.getZ());
 			float eps = 0.002F;
-			BlockEntity tile = living.level.getBlockEntity(rtr.getBlockPos());
+			BlockEntity tile = living.level().getBlockEntity(rtr.getBlockPos());
 			ItemStack stack = living.getItemInHand(InteractionHand.MAIN_HAND);
 
 			if(tile instanceof TurntableBlockEntity turntableTile&&Utils.isHammer(stack))
@@ -715,7 +740,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 					transform.pushPose();
 					transform.translate(0.5, 0.5, 0.5);
 					transform.pushTransformation(ClientUtils.toModelRotation(side).getRotation());
-					transform.mulPose(new Quaternion(-90, 0, 0, true));
+					transform.mulPose(new Quaternionf().rotateXYZ(-Mth.HALF_PI, 0, 0));
 					Rotation rotation = turntableTile.getRotationFromSide(side);
 					boolean cw180 = rotation==Rotation.CLOCKWISE_180;
 					double angle;
@@ -731,7 +756,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 				}
 			}
 
-			Level world = living.level;
+			Level world = living.level();
 			if(!stack.isEmpty()&&ConveyorHandler.isConveyorBlock(Block.byItem(stack.getItem()))&&rtr.getDirection().getAxis()==Axis.Y)
 			{
 				Direction side = rtr.getDirection();
@@ -819,7 +844,7 @@ public class ClientEventHandler implements ResourceManagerReloadListener
 	@SubscribeEvent
 	public void onEntityJoiningWorld(EntityJoinLevelEvent event)
 	{
-		if(event.getEntity().level.isClientSide&&event.getEntity() instanceof AbstractMinecart&&
+		if(event.getEntity().level().isClientSide&&event.getEntity() instanceof AbstractMinecart&&
 				event.getEntity().getCapability(CapabilityShader.SHADER_CAPABILITY).isPresent())
 			ImmersiveEngineering.packetHandler.sendToServer(new MessageMinecartShaderSync(event.getEntity()));
 	}

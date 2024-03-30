@@ -18,7 +18,7 @@ import blusunrize.immersiveengineering.api.utils.Raytracer;
 import blusunrize.immersiveengineering.common.util.inventory.IIEInventory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.mojang.math.Vector4f;
+import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,6 +34,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -49,6 +50,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -63,10 +65,13 @@ import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.*;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootContext.Builder;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -85,6 +90,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import org.joml.Vector4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,6 +98,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 public class Utils
@@ -362,7 +370,7 @@ public class Utils
 
 	public static boolean canBlockDamageSource(LivingEntity entity, DamageSource damageSourceIn)
 	{
-		if(!damageSourceIn.isBypassArmor()&&entity.isBlocking())
+		if(!damageSourceIn.is(DamageTypeTags.BYPASSES_ARMOR)&&entity.isBlocking())
 		{
 			Vec3 vec3d = damageSourceIn.getSourcePosition();
 			if(vec3d!=null)
@@ -507,7 +515,7 @@ public class Utils
 
 	public static Fluid getRelatedFluid(Level w, BlockPos pos)
 	{
-		return w.getBlockState(pos).getFluidState().getType();
+		return w.getFluidState(pos).getType();
 	}
 
 	//Stolen from BucketItem
@@ -519,9 +527,8 @@ public class Utils
 		else
 		{
 			BlockState blockstate = worldIn.getBlockState(posIn);
-			Material material = blockstate.getMaterial();
-			boolean flag = !material.isSolid();
-			boolean flag1 = material.isReplaceable();
+			boolean flag = !blockstate.isSolid();
+			boolean flag1 = blockstate.canBeReplaced();
 			if(worldIn.isEmptyBlock(posIn)||flag||flag1||blockstate.getBlock() instanceof LiquidBlockContainer&&((LiquidBlockContainer)blockstate.getBlock()).canPlaceLiquid(worldIn, posIn, blockstate, fluid))
 			{
 				if(worldIn.dimensionType().ultraWarm()&&fluid.is(FluidTags.WATER))
@@ -538,7 +545,7 @@ public class Utils
 					((LiquidBlockContainer)blockstate.getBlock()).placeLiquid(worldIn, posIn, blockstate, ((FlowingFluid)fluid).getSource(false));
 				else
 				{
-					if(!worldIn.isClientSide&&(flag||flag1)&&!material.isLiquid())
+					if(!worldIn.isClientSide&&(flag||flag1)&&!blockstate.liquid())
 						worldIn.destroyBlock(posIn, true);
 
 					worldIn.setBlock(posIn, fluid.defaultFluidState().createLegacyBlock(), 11);
@@ -691,7 +698,7 @@ public class Utils
 		return vertex;
 	}
 
-	public static class InventoryCraftingFalse extends CraftingContainer
+	public static class InventoryCraftingFalse extends TransientCraftingContainer
 	{
 		private static final AbstractContainerMenu nullContainer = new AbstractContainerMenu(MenuType.CRAFTING, 0)
 		{
@@ -718,7 +725,7 @@ public class Utils
 			super(nullContainer, w, h);
 		}
 
-		public static CraftingContainer createFilledCraftingInventory(int w, int h, NonNullList<ItemStack> stacks)
+		public static CraftingContainer createFilledCraftingInventory(int w, int h, List<ItemStack> stacks)
 		{
 			CraftingContainer invC = new Utils.InventoryCraftingFalse(w, h);
 			for(int j = 0; j < w*h; j++)
@@ -790,41 +797,50 @@ public class Utils
 		}
 	}
 
+	@Deprecated
 	public static int calcRedstoneFromInventory(IIEInventory inv)
 	{
-		if(inv==null)
+		if(inv==null||inv.getInventory()==null)
 			return 0;
 		else
-		{
-			int max = inv.getComparatedSize();
-			int i = 0;
-			float f = 0.0F;
-			for(int j = 0; j < max; ++j)
-			{
-				ItemStack itemstack = inv.getInventory().get(j);
-				if(!itemstack.isEmpty())
-				{
-					f += (float)itemstack.getCount()/(float)Math.min(inv.getSlotLimit(j), itemstack.getMaxStackSize());
-					++i;
-				}
-			}
-			f = f/(float)max;
-			return Mth.floor(f*14.0F)+(i > 0?1: 0);
-		}
+			return calcRedstoneFromInventory(inv.getComparatedSize(), inv.getInventory()::get, inv::getSlotLimit);
 	}
 
-	public static List<ItemStack> getDrops(BlockState state, Builder builder)
+	public static int calcRedstoneFromInventory(int maxSlot, IItemHandler inv)
+	{
+		return calcRedstoneFromInventory(maxSlot, inv::getStackInSlot, inv::getSlotLimit);
+	}
+
+	private static int calcRedstoneFromInventory(int maxSlot, IntFunction<ItemStack> getStack, Int2IntFunction getSlotLimit)
+	{
+		int i = 0;
+		float f = 0.0F;
+		for(int j = 0; j < maxSlot; ++j)
+		{
+			ItemStack itemstack = getStack.apply(j);
+			if(!itemstack.isEmpty())
+			{
+				f += (float)itemstack.getCount()/(float)Math.min(getSlotLimit.get(j), itemstack.getMaxStackSize());
+				++i;
+			}
+		}
+		f = f/(float)maxSlot;
+		return Mth.floor(f*14.0F)+(i > 0?1: 0);
+	}
+
+	public static void getDrops(BlockState state, LootContext originalCtx, Consumer<ItemStack> out)
 	{
 		ResourceLocation resourcelocation = state.getBlock().getLootTable();
 		if(resourcelocation==BuiltInLootTables.EMPTY)
-			return Collections.emptyList();
-		else
-		{
-			LootContext lootcontext = builder.withParameter(LootContextParams.BLOCK_STATE, state).create(LootContextParamSets.BLOCK);
-			ServerLevel serverworld = lootcontext.getLevel();
-			LootTable loottable = serverworld.getServer().getLootTables().get(resourcelocation);
-			return loottable.getRandomItems(lootcontext);
-		}
+			return;
+		LootParams lootcontext = new LootParams.Builder(originalCtx.getLevel())
+				.withOptionalParameter(LootContextParams.TOOL, originalCtx.getParamOrNull(LootContextParams.TOOL))
+				.withOptionalParameter(LootContextParams.ORIGIN, originalCtx.getParamOrNull(LootContextParams.ORIGIN))
+				.withParameter(LootContextParams.BLOCK_STATE, state)
+				.create(LootContextParamSets.BLOCK);
+		ServerLevel serverworld = lootcontext.getLevel();
+		LootTable loottable = serverworld.getServer().getLootData().getLootTable(resourcelocation);
+		loottable.getRandomItems(lootcontext, out);
 	}
 
 	public static ItemStack getPickBlock(BlockState state, HitResult rtr, Player player)

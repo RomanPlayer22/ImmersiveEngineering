@@ -19,13 +19,12 @@ import blusunrize.immersiveengineering.common.entities.*;
 import blusunrize.immersiveengineering.common.items.*;
 import blusunrize.immersiveengineering.common.items.ToolUpgradeItem.ToolUpgrade;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.EquipmentSlot.Type;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.ForgeSpawnEggItem;
@@ -184,7 +183,7 @@ public final class IEItems
 		public static final ItemRegObject<SwordItem> STEEL_SWORD = register(
 				"sword_steel", IETools.createSword(Lib.MATERIAL_Steel)
 		);
-		public static final Map<EquipmentSlot, ItemRegObject<SteelArmorItem>> STEEL_ARMOR = new EnumMap<>(EquipmentSlot.class);
+		public static final Map<Type, ItemRegObject<SteelArmorItem>> STEEL_ARMOR = new EnumMap<>(Type.class);
 
 		public static final ItemRegObject<ToolboxItem> TOOLBOX = register("toolbox", ToolboxItem::new);
 
@@ -213,11 +212,10 @@ public final class IEItems
 
 		private static void init()
 		{
-			for(EquipmentSlot slot : EquipmentSlot.values())
-				if(slot.getType()==Type.ARMOR)
-					STEEL_ARMOR.put(slot, register(
-							"armor_steel_"+slot.getName().toLowerCase(Locale.ENGLISH), () -> new SteelArmorItem(slot)
-					));
+			for(var slot : ArmorItem.Type.values())
+				STEEL_ARMOR.put(slot, register(
+						"armor_steel_"+slot.getName().toLowerCase(Locale.ENGLISH), () -> new SteelArmorItem(slot)
+				));
 		}
 	}
 
@@ -289,7 +287,7 @@ public final class IEItems
 		public static final ItemRegObject<EarmuffsItem> EARMUFFS = register("earmuffs", EarmuffsItem::new);
 		public static final ItemRegObject<CoresampleItem> CORESAMPLE = register("coresample", CoresampleItem::new);
 		public static final ItemRegObject<GraphiteElectrodeItem> GRAPHITE_ELECTRODE = register("graphite_electrode", GraphiteElectrodeItem::new);
-		public static final Map<EquipmentSlot, ItemRegObject<FaradaySuitItem>> FARADAY_SUIT = new EnumMap<>(EquipmentSlot.class);
+		public static final Map<Type, ItemRegObject<FaradaySuitItem>> FARADAY_SUIT = new EnumMap<>(Type.class);
 		public static final ItemRegObject<FluorescentTubeItem> FLUORESCENT_TUBE = register("fluorescent_tube", FluorescentTubeItem::new);
 		public static final ItemRegObject<PowerpackItem> POWERPACK = register("powerpack", PowerpackItem::new);
 		public static final ItemRegObject<IEShieldItem> SHIELD = register("shield", IEShieldItem::new);
@@ -321,11 +319,10 @@ public final class IEItems
 				IEItems.Misc.TOOL_UPGRADES.put(upgrade, register(
 						"toolupgrade_"+upgrade.name().toLowerCase(Locale.US), () -> new ToolUpgradeItem(upgrade)
 				));
-			for(EquipmentSlot slot : EquipmentSlot.values())
-				if(slot.getType()==Type.ARMOR)
-					IEItems.Misc.FARADAY_SUIT.put(slot, register(
-							"armor_faraday_"+slot.getName().toLowerCase(Locale.ENGLISH), () -> new FaradaySuitItem(slot)
-					));
+			for(Type slot : Type.values())
+				IEItems.Misc.FARADAY_SUIT.put(slot, register(
+						"armor_faraday_"+slot.name().toLowerCase(Locale.ENGLISH), () -> new FaradaySuitItem(slot)
+				));
 		}
 
 		public static void registerShaderBags()
@@ -349,7 +346,7 @@ public final class IEItems
 
 		private static ItemRegObject<ForgeSpawnEggItem> registerEgg(RegistryObject<? extends EntityType<? extends Mob>> type, int col1, int col2)
 		{
-			return register(type.getId().getPath()+"_spawn_egg", () -> new ForgeSpawnEggItem(type, col1, col2, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+			return register(type.getId().getPath()+"_spawn_egg", () -> new ForgeSpawnEggItem(type, col1, col2, new Item.Properties()));
 		}
 	}
 
@@ -402,7 +399,7 @@ public final class IEItems
 
 	private static <T extends Item> ItemRegObject<T> of(T existing)
 	{
-		return new ItemRegObject<>(RegistryObject.create(Registry.ITEM.getKey(existing), ForgeRegistries.ITEMS));
+		return new ItemRegObject<>(RegistryObject.create(BuiltInRegistries.ITEM.getKey(existing), ForgeRegistries.ITEMS));
 	}
 
 	public record ItemRegObject<T extends Item>(RegistryObject<T> regObject) implements Supplier<T>, ItemLike

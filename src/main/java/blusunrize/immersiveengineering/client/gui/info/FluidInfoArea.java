@@ -12,14 +12,14 @@ import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.client.utils.GuiHelper;
 import blusunrize.immersiveengineering.client.utils.IERenderTypes;
 import blusunrize.immersiveengineering.common.fluids.PotionFluid;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
@@ -80,7 +80,7 @@ public class FluidInfoArea extends InfoArea
 			else
 			{
 				//TODO translation keys
-				tooltip.accept(applyFormat(Component.literal("Fluid Registry: "+Registry.FLUID.getKey(fluid.getFluid())), ChatFormatting.DARK_GRAY));
+				tooltip.accept(applyFormat(Component.literal("Fluid Registry: "+BuiltInRegistries.FLUID.getKey(fluid.getFluid())), ChatFormatting.DARK_GRAY));
 				tooltip.accept(applyFormat(Component.literal("Density: "+fluid.getFluid().getFluidType().getDensity(fluid)), ChatFormatting.DARK_GRAY));
 				tooltip.accept(applyFormat(Component.literal("Temperature: "+fluid.getFluid().getFluidType().getTemperature(fluid)), ChatFormatting.DARK_GRAY));
 				tooltip.accept(applyFormat(Component.literal("Viscosity: "+fluid.getFluid().getFluidType().getViscosity(fluid)), ChatFormatting.DARK_GRAY));
@@ -96,26 +96,26 @@ public class FluidInfoArea extends InfoArea
 	}
 
 	@Override
-	public void draw(PoseStack transform)
+	public void draw(GuiGraphics graphics)
 	{
 		FluidStack fluid = tank.getFluid();
 		float capacity = tank.getCapacity();
-		transform.pushPose();
+		graphics.pose().pushPose();
 		MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 		if(!fluid.isEmpty())
 		{
 			int fluidHeight = (int)(area.getHeight()*(fluid.getAmount()/capacity));
-			GuiHelper.drawRepeatedFluidSpriteGui(buffer, transform, fluid, area.getX(), area.getY()+area.getHeight()-fluidHeight, area.getWidth(), fluidHeight);
+			GuiHelper.drawRepeatedFluidSpriteGui(buffer, graphics.pose(), fluid, area.getX(), area.getY()+area.getHeight()-fluidHeight, area.getWidth(), fluidHeight);
 		}
 		int xOff = (area.getWidth()-overlayWidth)/2;
 		int yOff = (area.getHeight()-overlayHeight)/2;
 		RenderType renderType = IERenderTypes.getGui(overlayTexture);
 		GuiHelper.drawTexturedRect(
-				buffer.getBuffer(renderType), transform,
+				buffer.getBuffer(renderType), graphics.pose(),
 				area.getX()+xOff, area.getY()+yOff, overlayWidth, overlayHeight,
 				256f, overlayUMin, overlayUMin+overlayWidth, overlayVMin, overlayVMin+overlayHeight
 		);
 		buffer.endBatch();
-		transform.popPose();
+		graphics.pose().popPose();
 	}
 }

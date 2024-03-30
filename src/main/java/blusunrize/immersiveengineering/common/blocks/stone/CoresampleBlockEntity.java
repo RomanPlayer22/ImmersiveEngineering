@@ -45,6 +45,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CoresampleBlockEntity extends IEBaseBlockEntity implements IStateBasedDirectional, IBlockEntityDrop, IPlayerInteraction,
 		IBlockOverlayText, IBlockBounds
@@ -133,8 +134,8 @@ public class CoresampleBlockEntity extends IEBaseBlockEntity implements IStateBa
 					double sampleZ = coords.z()+.5;
 
 					int mapScale = 1<<mapData.scale;
-					float distX = (float)(sampleX-mapData.x)/(float)mapScale;
-					float distZ = (float)(sampleZ-mapData.z)/(float)mapScale;
+					float distX = (float)(sampleX-mapData.centerX)/(float)mapScale;
+					float distZ = (float)(sampleZ-mapData.centerZ)/(float)mapScale;
 					if(distX >= -63&&distX <= 63&&distZ >= -63&&distZ <= 63)
 					{
 						CompoundTag tagCompound = new CompoundTag();
@@ -168,9 +169,9 @@ public class CoresampleBlockEntity extends IEBaseBlockEntity implements IStateBa
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
-		return ImmutableList.of(this.coresample);
+		drop.accept(this.coresample);
 	}
 
 	@Override

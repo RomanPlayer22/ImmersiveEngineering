@@ -12,11 +12,13 @@ import blusunrize.immersiveengineering.common.crafting.fluidaware.TurnAndCopyRec
 import blusunrize.immersiveengineering.common.items.RevolverItem;
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import javax.annotation.Nonnull;
@@ -25,16 +27,16 @@ public class RevolverAssemblyRecipe extends TurnAndCopyRecipe
 {
 	public RevolverAssemblyRecipe(ResourceLocation id, String group, int width, int height, NonNullList<Ingredient> ingr, ItemStack output)
 	{
-		super(id, group, width, height, ingr, output);
+		super(id, group, width, height, ingr, output, CraftingBookCategory.EQUIPMENT);
 	}
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(@Nonnull CraftingContainer matrix)
+	public ItemStack assemble(@Nonnull CraftingContainer matrix, RegistryAccess access)
 	{
 		if(nbtCopyTargetSlot!=null)
 		{
-			ItemStack out = getResultItem().copy();
+			ItemStack out = getResultItem(access).copy();
 			CompoundTag tag = new CompoundTag();
 			for(int targetSlot : nbtCopyTargetSlot)
 			{
@@ -58,6 +60,6 @@ public class RevolverAssemblyRecipe extends TurnAndCopyRecipe
 			return out;
 		}
 		else
-			return super.assemble(matrix);
+			return super.assemble(matrix, access);
 	}
 }

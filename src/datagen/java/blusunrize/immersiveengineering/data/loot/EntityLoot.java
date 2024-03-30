@@ -12,6 +12,7 @@ import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.common.register.IEItems.Ingredients;
 import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import blusunrize.immersiveengineering.common.util.loot.RevolverperkLootFunction;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -26,14 +27,13 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static blusunrize.immersiveengineering.ImmersiveEngineering.rl;
 
-public class EntityLoot implements Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>
+public class EntityLoot implements LootTableSubProvider
 {
 	@Override
-	public void accept(BiConsumer<ResourceLocation, LootTable.Builder> out)
+	public void generate(BiConsumer<ResourceLocation, LootTable.Builder> out)
 	{
 		LootTable.Builder builder = LootTable.lootTable().withPool(LootPool.lootPool()
 				.setRolls(ConstantValue.exactly(1))

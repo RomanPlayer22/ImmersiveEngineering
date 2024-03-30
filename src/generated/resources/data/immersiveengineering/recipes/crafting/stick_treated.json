@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "sticks",
   "key": {
     "w": {
@@ -13,5 +14,6 @@
   "result": {
     "count": 4,
     "item": "immersiveengineering:stick_treated"
-  }
+  },
+  "show_notification": true
 }

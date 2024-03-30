@@ -1,9 +1,16 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.register;
 
-import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.common.register.IEItems.ItemRegObject;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BannerPatternItem;
 import net.minecraft.world.item.Item.Properties;
@@ -18,7 +25,7 @@ import java.util.List;
 public class IEBannerPatterns
 {
 	private static final DeferredRegister<BannerPattern> REGISTER = DeferredRegister.create(
-			Registry.BANNER_PATTERN_REGISTRY, Lib.MODID
+			Registries.BANNER_PATTERN, Lib.MODID
 	);
 	public static final List<BannerEntry> ALL_BANNERS = new ArrayList<>();
 	public static final BannerEntry HAMMER = addBanner("hammer", "hmr");
@@ -38,9 +45,9 @@ public class IEBannerPatterns
 	private static BannerEntry addBanner(String name, String hashName)
 	{
 		RegistryObject<BannerPattern> pattern = REGISTER.register(name, () -> new BannerPattern("ie_"+hashName));
-		TagKey<BannerPattern> tag = TagKey.create(Registry.BANNER_PATTERN_REGISTRY, pattern.getId());
+		TagKey<BannerPattern> tag = TagKey.create(Registries.BANNER_PATTERN, pattern.getId());
 		ItemRegObject<BannerPatternItem> item = IEItems.register("bannerpattern_"+name, () -> new BannerPatternItem(
-				tag, new Properties().tab(ImmersiveEngineering.ITEM_GROUP)
+				tag, new Properties()
 		));
 		BannerEntry result = new BannerEntry(pattern, tag, item);
 		ALL_BANNERS.add(result);

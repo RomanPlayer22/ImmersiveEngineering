@@ -12,10 +12,12 @@ import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import blusunrize.immersiveengineering.common.util.RecipeSerializers;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -35,7 +37,7 @@ public class JerrycanRefillRecipe extends CustomRecipe
 
 	public JerrycanRefillRecipe(ResourceLocation resourceLocation)
 	{
-		super(resourceLocation);
+		super(resourceLocation, CraftingBookCategory.MISC);
 	}
 
 	@Override
@@ -56,7 +58,7 @@ public class JerrycanRefillRecipe extends CustomRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(@Nonnull CraftingContainer inv)
+	public ItemStack assemble(@Nonnull CraftingContainer inv, RegistryAccess access)
 	{
 		ItemStack[] components = getComponents(inv);
 		ItemStack newContainer = ItemHandlerHelper.copyStackWithSize(components[containerIndex], 1);

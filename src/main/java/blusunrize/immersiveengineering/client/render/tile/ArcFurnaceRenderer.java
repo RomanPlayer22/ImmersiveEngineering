@@ -11,28 +11,29 @@ package blusunrize.immersiveengineering.client.render.tile;
 import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.ApiUtils;
 import blusunrize.immersiveengineering.api.IEProperties.VisibilityList;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityMaster;
 import blusunrize.immersiveengineering.api.utils.client.ModelDataUtils;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.client.models.obj.callback.DynamicSubmodelCallbacks;
 import blusunrize.immersiveengineering.client.utils.IERenderTypes;
 import blusunrize.immersiveengineering.client.utils.RenderUtils;
-import blusunrize.immersiveengineering.common.blocks.metal.ArcFurnaceBlockEntity;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.arcfurnace.ArcFurnaceLogic;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.arcfurnace.ArcFurnaceLogic.State;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 
 import java.util.List;
 
-public class ArcFurnaceRenderer extends IEBlockEntityRenderer<ArcFurnaceBlockEntity>
+public class ArcFurnaceRenderer extends IEBlockEntityRenderer<MultiblockBlockEntityMaster<State>>
 {
 	private TextureAtlasSprite hotMetal_flow = null;
 	private TextureAtlasSprite hotMetal_still = null;
@@ -43,14 +44,14 @@ public class ArcFurnaceRenderer extends IEBlockEntityRenderer<ArcFurnaceBlockEnt
 	public static final ResourceLocation HOT_METLA_FLOW = new ResourceLocation(ImmersiveEngineering.MODID, "block/fluid/hot_metal_flow");
 
 	@Override
-	public void render(ArcFurnaceBlockEntity te, float partialTicks, PoseStack matrixStack, MultiBufferSource bufferIn,
+	public void render(MultiblockBlockEntityMaster<State> te, float partialTicks, PoseStack matrixStack, MultiBufferSource bufferIn,
 					   int combinedLightIn, int combinedOverlayIn)
 	{
-		if(!te.formed||te.isDummy()||!te.getLevelNonnull().hasChunkAt(te.getBlockPos()))
-			return;
+		final State state = te.getHelper().getState();
+		final Direction facing = te.getHelper().getContext().getLevel().getOrientation().front();
 		List<String> renderedParts = null;
-		for(int i = 0; i < ArcFurnaceBlockEntity.ELECTRODE_COUNT; i++)
-			if(!te.getInventory().get(ArcFurnaceBlockEntity.FIRST_ELECTRODE_SLOT+i).isEmpty())
+		for(int i = 0; i < ArcFurnaceLogic.ELECTRODE_COUNT; i++)
+			if((state.electrodePresence&(1<<i))!=0)
 			{
 				if(renderedParts==null)
 					renderedParts = Lists.newArrayList("electrode"+(i+1));
@@ -59,7 +60,7 @@ public class ArcFurnaceRenderer extends IEBlockEntityRenderer<ArcFurnaceBlockEnt
 			}
 		if(renderedParts==null)
 			return;
-		if(te.shouldRenderAsActive())
+		if(state.isClientActive())
 			renderedParts.add("active");
 
 		matrixStack.pushPose();
@@ -67,14 +68,14 @@ public class ArcFurnaceRenderer extends IEBlockEntityRenderer<ArcFurnaceBlockEnt
 				DynamicSubmodelCallbacks.getProperty(), VisibilityList.show(renderedParts)
 		), RenderType.cutout());
 		matrixStack.pushPose();
-		rotateForFacing(matrixStack, te.getFacing());
+		rotateForFacing(matrixStack, facing);
 		RenderUtils.renderModelTESRFast(
 				quads, bufferIn.getBuffer(RenderType.solid()), matrixStack, combinedLightIn, combinedOverlayIn
 		);
 		matrixStack.popPose();
 		matrixStack.translate(.5, .5, .5);
 
-		if(te.pouringMetal > 0)
+		if(state.pouringMetal > 0)
 		{
 			if(hotMetal_flow==null)
 			{
@@ -82,10 +83,10 @@ public class ArcFurnaceRenderer extends IEBlockEntityRenderer<ArcFurnaceBlockEnt
 				hotMetal_still = blockMap.getSprite(HOT_METLA_STILL);
 				hotMetal_flow = blockMap.getSprite(HOT_METLA_FLOW);
 			}
-			matrixStack.mulPose(new Quaternion(new Vector3f(0, 1, 0), -te.getFacing().toYRot()+180, true));
+			rotateForFacingNoCentering(matrixStack, facing);
 			int process = 40;
 			float speed = 5f;
-			int pour = process-te.pouringMetal;
+			int pour = process-state.pouringMetal;
 			float h = (pour > (process-speed)?((process-pour)/speed*27): pour > speed?27: (pour/speed*27))/16f;
 			matrixStack.translate(-.5f, 1.25-.6875f, 1.5f);
 			VertexConsumer fullbright = bufferIn.getBuffer(IERenderTypes.SOLID_FULLBRIGHT);

@@ -175,7 +175,7 @@ public class ConnectionRenderer implements ResourceManagerReloadListener
 			renderBidirectionalQuad(vertices, start, end, horRadius, key.color(), verticalNormal);
 			renderBidirectionalQuad(vertices, start, end, verticalRadius, key.color(), horNormal);
 			segments.add(new RenderedSegment(
-					vertices, new Vec3i(start.x, start.y, start.z), new Vec3i(end.x, end.y, end.z)
+					vertices, BlockPos.containing(start), BlockPos.containing(end)
 			));
 		}
 		return segments;

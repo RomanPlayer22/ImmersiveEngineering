@@ -9,7 +9,6 @@
 
 package blusunrize.immersiveengineering.client.models.obj.callback.item;
 
-import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.client.ieobj.ItemCallback;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.client.models.obj.callback.item.RevolverCallbacks.Key;
@@ -18,11 +17,8 @@ import blusunrize.immersiveengineering.common.items.RevolverItem;
 import blusunrize.immersiveengineering.common.items.RevolverItem.SpecialRevolver;
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.CompoundTag;
@@ -30,12 +26,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
+import static blusunrize.immersiveengineering.ImmersiveEngineering.rl;
 import static blusunrize.immersiveengineering.common.items.RevolverItem.specialRevolversByTag;
 
 public class RevolverCallbacks implements ItemCallback<Key>
@@ -45,30 +44,22 @@ public class RevolverCallbacks implements ItemCallback<Key>
 	public static HashMap<String, TextureAtlasSprite> revolverIcons = new HashMap<>();
 	public static TextureAtlasSprite revolverDefaultTexture;
 
-	public static void addRevolverTextures(TextureStitchEvent.Pre evt)
+	public static void retrieveRevolverTextures(TextureAtlas map)
 	{
-		evt.addSprite(new ResourceLocation(ImmersiveEngineering.MODID, "revolvers/revolver"));
+		revolverDefaultTexture = map.getSprite(revolverRL("revolver"));
 		for(String key : specialRevolversByTag.keySet())
-			if(!key.isEmpty()&&!specialRevolversByTag.get(key).tag.isEmpty())
+			if(!key.isEmpty()&&!specialRevolversByTag.get(key).tag().isEmpty())
 			{
 				int split = key.lastIndexOf("_");
 				if(split < 0)
 					split = key.length();
-				evt.addSprite(new ResourceLocation(ImmersiveEngineering.MODID, "revolvers/revolver_"+key.substring(0, split).toLowerCase(Locale.US)));
+				revolverIcons.put(key, map.getSprite(revolverRL("revolver_"+key.substring(0, split).toLowerCase(Locale.US))));
 			}
 	}
 
-	public static void retrieveRevolverTextures(TextureAtlas map)
+	private static ResourceLocation revolverRL(String revolverName)
 	{
-		revolverDefaultTexture = map.getSprite(new ResourceLocation("immersiveengineering:revolvers/revolver"));
-		for(String key : specialRevolversByTag.keySet())
-			if(!key.isEmpty()&&!specialRevolversByTag.get(key).tag.isEmpty())
-			{
-				int split = key.lastIndexOf("_");
-				if(split < 0)
-					split = key.length();
-				revolverIcons.put(key, map.getSprite(new ResourceLocation("immersiveengineering:revolvers/revolver_"+key.substring(0, split).toLowerCase(Locale.US))));
-			}
+		return rl("item/revolvers/"+revolverName);
 	}
 
 	@Override
@@ -108,14 +99,14 @@ public class RevolverCallbacks implements ItemCallback<Key>
 		if(!tag.isEmpty()&&specialRevolversByTag.containsKey(tag))
 		{
 			SpecialRevolver r = specialRevolversByTag.get(tag);
-			if(r!=null&&r.renderAdditions!=null)
-				Collections.addAll(render, r.renderAdditions);
+			if(r!=null&&r.renderAdditions()!=null)
+				Collections.addAll(render, r.renderAdditions());
 		}
 		else if(!flavour.isEmpty()&&specialRevolversByTag.containsKey(flavour))
 		{
 			SpecialRevolver r = specialRevolversByTag.get(flavour);
-			if(r!=null&&r.renderAdditions!=null)
-				Collections.addAll(render, r.renderAdditions);
+			if(r!=null&&r.renderAdditions()!=null)
+				Collections.addAll(render, r.renderAdditions());
 		}
 		if(stack.extraBullets()&&!render.contains("dev_mag"))
 			render.add("player_mag");
@@ -135,12 +126,12 @@ public class RevolverCallbacks implements ItemCallback<Key>
 	}
 
 	@Override
-	public void handlePerspective(Key key, LivingEntity holder, TransformType cameraTransformType, PoseStack mat)
+	public void handlePerspective(Key key, LivingEntity holder, ItemDisplayContext cameraItemDisplayContext, PoseStack mat)
 	{
-		if(holder instanceof Player player&&(cameraTransformType==TransformType.FIRST_PERSON_RIGHT_HAND||cameraTransformType==TransformType.FIRST_PERSON_LEFT_HAND||cameraTransformType==TransformType.THIRD_PERSON_RIGHT_HAND||cameraTransformType==TransformType.THIRD_PERSON_LEFT_HAND))
+		if(holder instanceof Player player&&(cameraItemDisplayContext==ItemDisplayContext.FIRST_PERSON_RIGHT_HAND||cameraItemDisplayContext==ItemDisplayContext.FIRST_PERSON_LEFT_HAND||cameraItemDisplayContext==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND||cameraItemDisplayContext==ItemDisplayContext.THIRD_PERSON_LEFT_HAND))
 		{
-			boolean main = (cameraTransformType==TransformType.FIRST_PERSON_RIGHT_HAND||cameraTransformType==TransformType.THIRD_PERSON_RIGHT_HAND)==(holder.getMainArm()==HumanoidArm.RIGHT);
-			boolean left = cameraTransformType==TransformType.FIRST_PERSON_LEFT_HAND||cameraTransformType==TransformType.THIRD_PERSON_LEFT_HAND;
+			boolean main = (cameraItemDisplayContext==ItemDisplayContext.FIRST_PERSON_RIGHT_HAND||cameraItemDisplayContext==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)==(holder.getMainArm()==HumanoidArm.RIGHT);
+			boolean left = cameraItemDisplayContext==ItemDisplayContext.FIRST_PERSON_LEFT_HAND||cameraItemDisplayContext==ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
 			if(key.fancyAnimation()&&main)
 			{
 				float f = player.getAttackStrengthScale(ClientUtils.mc().getFrameTime());
@@ -150,7 +141,7 @@ public class RevolverCallbacks implements ItemCallback<Key>
 					if(left)
 						angle *= -1;
 					mat.translate(0, 1.5-f, 0);
-					mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), angle, false));
+					mat.mulPose(new Quaternionf().rotateXYZ(0, 0, angle));
 				}
 			}
 
@@ -162,33 +153,33 @@ public class RevolverCallbacks implements ItemCallback<Key>
 					if(f < .5)
 					{
 						mat.translate((.35-f)*2, 0, 0);
-						mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), 2.64F*(f-.35F), false));
+						mat.mulPose(new Quaternionf().rotateAxis(2.64F*(f-.35F), new Vector3f(0, 0, 1)));
 					}
 					else if(f < .6)
 					{
 						mat.translate((f-.5)*6, (.5-f)*1, 0);
-						mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), .87266F, false));
+						mat.mulPose(new Quaternionf().rotateAxis(.87266F, new Vector3f(0, 0, 1)));
 					}
 					else if(f < 1.7)
 					{
 						mat.translate(0, -.6, 0);
-						mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), .87266F, false));
+						mat.mulPose(new Quaternionf().rotateAxis(.87266F, new Vector3f(0, 0, 1)));
 					}
 					else if(f < 1.8)
 					{
 						mat.translate((1.8-f)*6, (f-1.8)*1, 0);
-						mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), .87266F, false));
+						mat.mulPose(new Quaternionf().rotateAxis(.87266F, new Vector3f(0, 0, 1)));
 					}
 					else
 					{
 						mat.translate((f-1.95f)*2, 0, 0);
-						mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), 2.64F*(1.95F-f), false));
+						mat.mulPose(new Quaternionf().rotateAxis(2.64F*(1.95F-f), new Vector3f(0, 0, 1)));
 					}
 			}
 			else if(player.containerMenu instanceof RevolverContainer)
 			{
 				mat.translate(left?.4: -.4, .4, 0);
-				mat.mulPose(new Quaternion(new Vector3f(0, 0, 1), .87266F, false));
+				mat.mulPose(new Quaternionf().rotateAxis(.87266F, 0, 0, 1));
 			}
 		}
 	}
@@ -196,7 +187,7 @@ public class RevolverCallbacks implements ItemCallback<Key>
 	private static final List<List<String>> groups = List.of(List.of("frame"), List.of("cylinder"));
 
 	@Override
-	public List<List<String>> getSpecialGroups(ItemStack stack, TransformType transform, LivingEntity entity)
+	public List<List<String>> getSpecialGroups(ItemStack stack, ItemDisplayContext transform, LivingEntity entity)
 	{
 		return groups;
 	}
@@ -207,19 +198,19 @@ public class RevolverCallbacks implements ItemCallback<Key>
 
 	@Nonnull
 	@Override
-	public Transformation getTransformForGroups(ItemStack stack, List<String> groups, TransformType transform, LivingEntity entity,
+	public Transformation getTransformForGroups(ItemStack stack, List<String> groups, ItemDisplayContext transform, LivingEntity entity,
 												float partialTicks)
 	{
 		if(matOpen==null)
-			matOpen = new Transformation(new Vector3f(-.625F, .25F, 0), new Quaternion(0, 0, -.87266f, false), null, null);
+			matOpen = new Transformation(new Vector3f(-.625F, .25F, 0), new Quaternionf().rotateXYZ(0, 0, -.87266f), null, null);
 		if(matClose==null)
 			matClose = new Transformation(new Vector3f(-.625F, .25F, 0), null, null, null);
 		if(matCylinder==null)
 			matCylinder = new Transformation(new Vector3f(0, .6875F, 0), null, null, null);
-		if(entity instanceof Player&&(transform==TransformType.FIRST_PERSON_RIGHT_HAND||transform==TransformType.FIRST_PERSON_LEFT_HAND||transform==TransformType.THIRD_PERSON_RIGHT_HAND||transform==TransformType.THIRD_PERSON_LEFT_HAND))
+		if(entity instanceof Player&&(transform==ItemDisplayContext.FIRST_PERSON_RIGHT_HAND||transform==ItemDisplayContext.FIRST_PERSON_LEFT_HAND||transform==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND||transform==ItemDisplayContext.THIRD_PERSON_LEFT_HAND))
 		{
-			boolean main = (transform==TransformType.FIRST_PERSON_RIGHT_HAND||transform==TransformType.THIRD_PERSON_RIGHT_HAND)==(entity.getMainArm()==HumanoidArm.RIGHT);
-			boolean left = transform==TransformType.FIRST_PERSON_LEFT_HAND||transform==TransformType.THIRD_PERSON_LEFT_HAND;
+			boolean main = (transform==ItemDisplayContext.FIRST_PERSON_RIGHT_HAND||transform==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)==(entity.getMainArm()==HumanoidArm.RIGHT);
+			boolean left = transform==ItemDisplayContext.FIRST_PERSON_LEFT_HAND||transform==ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
 			//Re-grab stack because the other one doesn't do reloads properly
 			stack = main?entity.getMainHandItem(): entity.getOffhandItem();
 			if(ItemNBTHelper.hasKey(stack, "reload"))
@@ -232,14 +223,14 @@ public class RevolverCallbacks implements ItemCallback<Key>
 					else if(f < .5)
 						return new Transformation(
 								new Vector3f(-.625f, .25f, 0),
-								new Quaternion(0, 0, -2.64F*(f-.35F), false),
+								new Quaternionf().rotateXYZ(0, 0, -2.64F*(f-.35F)),
 								null, null);
 					else if(f < 1.8)
 						return matOpen;
 					else
 						return new Transformation(
 								new Vector3f(-.625f, .25f, 0),
-								new Quaternion(0, 0, -2.64f*(1.95f-f), false),
+								new Quaternionf().rotateXYZ(0, 0, -2.64f*(1.95f-f)),
 								null, null);
 				}
 				else if(f > 2.5&&f < 2.9)
@@ -247,7 +238,7 @@ public class RevolverCallbacks implements ItemCallback<Key>
 					float angle = (left?-1: 1)*-15.70795f*(f-2.5f);
 					return new Transformation(
 							new Vector3f(0, .6875f, 0),
-							new Quaternion(angle, 0, 0, false),
+							new Quaternionf().rotateXYZ(angle, 0, 0),
 							null, null);
 				}
 			}

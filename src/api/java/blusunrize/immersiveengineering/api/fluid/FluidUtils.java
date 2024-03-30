@@ -1,12 +1,18 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.fluid;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidStack;
@@ -15,6 +21,7 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.mutable.Mutable;
@@ -82,33 +89,56 @@ public class FluidUtils
 	}
 
 	public static boolean multiblockFluidOutput(
-			Level level, BlockPos targetPos, Direction dir, FluidTank tank,
-			int slotIn, int slotOut, IntFunction<ItemStack> invGet, BiConsumer<Integer, ItemStack> invSet
+			CapabilityReference<IFluidHandler> outputCap, FluidTank tank,
+			int slotIn, int slotOut, @Nullable IItemHandlerModifiable inv
 	)
 	{
 		boolean updateTile = false;
 		if(tank.getFluidAmount() > 0)
 		{
 			// Handle container filling first, so that players can "intercept" the output
-			if(slotIn >= 0&&slotOut >= 0&&invGet!=null&&invSet!=null)
-				updateTile = fillFluidContainer(tank, slotIn, slotOut, invGet, invSet);
+			if(slotIn >= 0&&slotOut >= 0&&inv!=null)
+				updateTile = fillFluidContainer(tank, slotIn, slotOut, inv);
 
 			// Then try to output into pipes or similar
 			FluidStack out = copyFluidStackWithAmount(tank.getFluid(), Math.min(tank.getFluidAmount(), FluidType.BUCKET_VOLUME), false);
-			updateTile |= FluidUtil.getFluidHandler(level, targetPos, dir.getOpposite()).map(output -> {
-				int accepted = output.fill(out, FluidAction.SIMULATE);
+			final IFluidHandler output = outputCap.getNullable();
+			if(output!=null)
+			{
+				int accepted = output.fill(out, FluidAction.EXECUTE);
 				if(accepted > 0)
 				{
-					int drained = output.fill(copyFluidStackWithAmount(out, Math.min(out.getAmount(), accepted), false), FluidAction.EXECUTE);
-					tank.drain(drained, FluidAction.EXECUTE);
+					tank.drain(accepted, FluidAction.EXECUTE);
 					return true;
 				}
-				return false;
-			}).orElse(false);
+			}
 		}
 		return updateTile;
 	}
 
+	public static boolean fillFluidContainer(IFluidHandler handler, int slotIn, int slotOut, IItemHandlerModifiable inv)
+	{
+		ItemStack filledContainer = fillFluidContainer(handler, inv.getStackInSlot(slotIn), inv.getStackInSlot(slotOut), null);
+		if(!filledContainer.isEmpty())
+		{
+			if(inv.getStackInSlot(slotIn).getCount()==1&&!isFluidContainerFull(filledContainer))
+				inv.setStackInSlot(slotIn, filledContainer.copy());
+			else
+			{
+				if(!inv.getStackInSlot(slotOut).isEmpty()&&ItemHandlerHelper.canItemStacksStack(filledContainer, inv.getStackInSlot(slotOut)))
+					inv.getStackInSlot(slotOut).grow(filledContainer.getCount());
+				else
+					inv.setStackInSlot(slotOut, filledContainer);
+				inv.getStackInSlot(slotIn).shrink(1);
+				if(inv.getStackInSlot(slotIn).getCount() <= 0)
+					inv.setStackInSlot(slotIn, ItemStack.EMPTY);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Deprecated
 	public static boolean fillFluidContainer(IFluidHandler handler, int slotIn, int slotOut, IntFunction<ItemStack> invGet, BiConsumer<Integer, ItemStack> invSet)
 	{
 		ItemStack filledContainer = fillFluidContainer(handler, invGet.apply(slotIn), invGet.apply(slotOut), null);
@@ -264,6 +294,7 @@ public class FluidUtils
 	public static boolean enableFractionDisplay = true;
 	private static final Map<Fraction, String> FRACTION_STRINGS = new HashMap<>();
 	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
+
 	static
 	{
 		// this is not all the existing fraction symbols, but the most commonly used

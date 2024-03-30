@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "d": {
       "tag": "forge:dyes/blue"
@@ -27,5 +28,6 @@
     "nbt": {
       "blueprint": "components"
     }
-  }
+  },
+  "show_notification": true
 }

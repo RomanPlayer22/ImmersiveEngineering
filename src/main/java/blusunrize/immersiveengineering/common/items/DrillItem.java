@@ -284,7 +284,7 @@ public class DrillItem extends DieselToolItem
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos iPos, Player player)
 	{
-		Level world = player.level;
+		Level world = player.level();
 		// early exit for client
 		if(world.isClientSide||!(player instanceof ServerPlayer))
 			return false;

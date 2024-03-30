@@ -14,7 +14,7 @@ import blusunrize.immersiveengineering.common.register.IEBlocks.StoneDecoration;
 import blusunrize.immersiveengineering.common.util.Utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -129,22 +129,22 @@ public class IEPotions
 		{
 			if(this==IEPotions.SLIPPERY.get())
 			{
-				if(living.isOnGround())
+				if(living.onGround())
 					living.moveRelative(0, new Vec3(0, 1, 0.005));
 				EquipmentSlot hand = living.getRandom().nextBoolean()?EquipmentSlot.MAINHAND: EquipmentSlot.OFFHAND;
-				if(!living.level.isClientSide&&living.getRandom().nextInt(300)==0&&!living.getItemBySlot(hand).isEmpty())
+				if(!living.level().isClientSide&&living.getRandom().nextInt(300)==0&&!living.getItemBySlot(hand).isEmpty())
 				{
 					ItemEntity dropped = living.spawnAtLocation(living.getItemBySlot(hand).copy(), 1);
 					dropped.setPickUpDelay(20);
 					living.setItemSlot(hand, ItemStack.EMPTY);
 				}
 			}
-			else if(this==IEPotions.CONCRETE_FEET.get()&&!living.level.isClientSide)
+			else if(this==IEPotions.CONCRETE_FEET.get()&&!living.level().isClientSide)
 			{
-				BlockState state = living.level.getBlockState(living.blockPosition());
+				BlockState state = living.level().getBlockState(living.blockPosition());
 				if(!concrete.contains(state.getBlock())&&
 						concrete.stream()
-								.map(Registry.BLOCK::getKey)
+								.map(BuiltInRegistries.BLOCK::getKey)
 								.map(IEBlocks.TO_SLAB::get)
 								.filter(Objects::nonNull)
 								.noneMatch(b -> b.get()==state.getBlock()))

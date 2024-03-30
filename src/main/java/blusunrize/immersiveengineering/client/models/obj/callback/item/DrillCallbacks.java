@@ -16,17 +16,17 @@ import blusunrize.immersiveengineering.client.models.obj.callback.item.DrillCall
 import blusunrize.immersiveengineering.common.items.DieselToolItem;
 import blusunrize.immersiveengineering.common.items.DrillItem;
 import blusunrize.immersiveengineering.common.register.IEItems.Tools;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -110,7 +110,7 @@ public class DrillCallbacks implements ItemCallback<Key>
 	));
 
 	@Override
-	public List<List<String>> getSpecialGroups(ItemStack stack, TransformType transform, LivingEntity entity)
+	public List<List<String>> getSpecialGroups(ItemStack stack, ItemDisplayContext transform, LivingEntity entity)
 	{
 		if(shouldRotate(Tools.DRILL, entity, stack, transform))
 			return ROTATING;
@@ -122,36 +122,36 @@ public class DrillCallbacks implements ItemCallback<Key>
 
 	@Nonnull
 	@Override
-	public Transformation getTransformForGroups(ItemStack stack, List<String> groups, TransformType transform, LivingEntity entity, float partialTicks)
+	public Transformation getTransformForGroups(ItemStack stack, List<String> groups, ItemDisplayContext transform, LivingEntity entity, float partialTicks)
 	{
 		if(groups==FIXED.get(0))
 			return MAT_AUGERS;
 		float angle = (entity.tickCount%60+partialTicks)/60f*(float)(2*Math.PI);
-		Quaternion rotation = null;
+		Quaternionf rotation = null;
 		Vector3f translation = null;
 		if("drill_head".equals(groups.get(0)))
-			rotation = new Quaternion(angle, 0, 0, false);
+			rotation = new Quaternionf().rotateXYZ(angle, 0, 0);
 		else if("upgrade_damage1".equals(groups.get(0)))
 		{
 			translation = new Vector3f(.46875f, 0, 0);
-			rotation = new Quaternion(0, angle, 0, false);
+			rotation = new Quaternionf().rotateXYZ(0, angle, 0);
 		}
 		else if("upgrade_damage3".equals(groups.get(0)))
 		{
 			translation = new Vector3f(.46875f, 0, 0);
-			rotation = new Quaternion(0, 0, angle, false);
+			rotation = new Quaternionf().rotateXYZ(0, 0, angle);
 		}
 		return new Transformation(translation, rotation, null, null);
 	}
 
 	public static boolean shouldRotate(
-			Supplier<? extends DieselToolItem> item, LivingEntity entity, ItemStack stack, TransformType transform
+			Supplier<? extends DieselToolItem> item, LivingEntity entity, ItemStack stack, ItemDisplayContext transform
 	)
 	{
 		return entity!=null&&item.get().canToolBeUsed(stack)&&
 				(entity.getItemInHand(InteractionHand.MAIN_HAND)==stack||entity.getItemInHand(InteractionHand.OFF_HAND)==stack)&&
-				(transform==TransformType.FIRST_PERSON_RIGHT_HAND||transform==TransformType.FIRST_PERSON_LEFT_HAND||
-						transform==TransformType.THIRD_PERSON_RIGHT_HAND||transform==TransformType.THIRD_PERSON_LEFT_HAND);
+				(transform==ItemDisplayContext.FIRST_PERSON_RIGHT_HAND||transform==ItemDisplayContext.FIRST_PERSON_LEFT_HAND||
+						transform==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND||transform==ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
 	}
 
 	@Override

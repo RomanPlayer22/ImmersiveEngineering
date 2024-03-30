@@ -14,8 +14,8 @@ import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import malte0811.modelsplitter.math.Vec3d;
 import malte0811.modelsplitter.model.Polygon;
 import malte0811.modelsplitter.model.UVCoords;
@@ -94,13 +94,13 @@ public class PolygonUtils
 			normal.set(toArray(v.normal(), 3));
 			rotation.transformPosition(pos);
 			rotation.transformNormal(normal);
-			pos.perspectiveDivide();
+			pos.mul(1 / pos.w);
 			final double epsilon = 1e-5;
 			for(int i = 0; i < 2; ++i)
 			{
-				if(Math.abs(i-pos.x()) < epsilon) pos.setX(i);
-				if(Math.abs(i-pos.y()) < epsilon) pos.setY(i);
-				if(Math.abs(i-pos.z()) < epsilon) pos.setZ(i);
+				if(Math.abs(i-pos.x()) < epsilon) pos.setComponent(0, i);
+				if(Math.abs(i-pos.y()) < epsilon) pos.setComponent(1, i);
+				if(Math.abs(i-pos.z()) < epsilon) pos.setComponent(2, i);
 			}
 			quadBuilder.putVertexData(
 					new Vec3(pos.x(), pos.y(), pos.z()),

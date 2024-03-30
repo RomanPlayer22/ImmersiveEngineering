@@ -14,14 +14,13 @@ import blusunrize.immersiveengineering.client.models.obj.callback.item.Chemthrow
 import blusunrize.immersiveengineering.common.entities.illager.Bulwark;
 import blusunrize.immersiveengineering.common.items.ChemthrowerItem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.AbstractIllager.IllagerArmPose;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Quaternionf;
 
 public class ChemthrowerCallbacks implements ItemCallback<Key>
 {
@@ -48,19 +47,19 @@ public class ChemthrowerCallbacks implements ItemCallback<Key>
 	}
 
 	@Override
-	public void handlePerspective(Key key, LivingEntity holder, TransformType cameraTransformType, PoseStack mat)
+	public void handlePerspective(Key key, LivingEntity holder, ItemDisplayContext cameraTransformType, PoseStack mat)
 	{
-		if(holder instanceof Bulwark bulwark&&(cameraTransformType==TransformType.THIRD_PERSON_RIGHT_HAND||cameraTransformType==TransformType.THIRD_PERSON_LEFT_HAND))
+		if(holder instanceof Bulwark bulwark&&(cameraTransformType==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND||cameraTransformType==ItemDisplayContext.THIRD_PERSON_LEFT_HAND))
 			if(bulwark.getArmPose()==IllagerArmPose.CELEBRATING)
 			{
 				mat.translate(-2, -1.25, -0);
-				mat.mulPose(Vector3f.YP.rotationDegrees(-95));
-				mat.mulPose(Vector3f.ZP.rotationDegrees(-30));
-				mat.mulPose(Vector3f.XP.rotationDegrees(20));
+				mat.mulPose(new Quaternionf().rotateY(-1.65806f));
+				mat.mulPose(new Quaternionf().rotateZ(-0.523599f));
+				mat.mulPose(new Quaternionf().rotateX(0.349066f));
 			}
 			else
 			{
-				mat.mulPose(new Quaternion(2, -10, -10, true));
+				mat.mulPose(new Quaternionf().rotateXYZ(0.0349066f, -0.174533f, -0.174533f));
 				mat.translate(-.875, -.75, .3);
 			}
 	}

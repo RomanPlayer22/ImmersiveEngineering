@@ -15,7 +15,9 @@ import blusunrize.immersiveengineering.api.crafting.IESerializableRecipe;
 import blusunrize.immersiveengineering.api.crafting.cache.CachedRecipeList;
 import blusunrize.immersiveengineering.api.utils.FastEither;
 import blusunrize.immersiveengineering.api.utils.TagUtils;
-import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +27,10 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 public class GeneratorFuel extends IESerializableRecipe
@@ -53,7 +58,7 @@ public class GeneratorFuel extends IESerializableRecipe
 
 	public List<Fluid> getFluids()
 	{
-		return fluids.map(t -> TagUtils.elementStream(Registry.FLUID, t).toList(), Function.identity());
+		return fluids.map(t -> TagUtils.elementStream(BuiltInRegistries.FLUID, t).toList(), Function.identity());
 	}
 
 	public int getBurnTime()
@@ -69,7 +74,7 @@ public class GeneratorFuel extends IESerializableRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return ItemStack.EMPTY;
 	}
@@ -90,5 +95,16 @@ public class GeneratorFuel extends IESerializableRecipe
 			if(fuel.matches(in))
 				return fuel;
 		return null;
+	}
+
+	public static SortedMap<Component, Integer> getManualFuelList(Level level)
+	{
+		SortedMap<Component, Integer> map = new TreeMap<>(
+				Comparator.comparing(Component::getString, Comparator.naturalOrder())
+		);
+		for(GeneratorFuel recipe : RECIPES.getRecipes(level))
+			for(Fluid f : recipe.getFluids())
+				map.put(f.getFluidType().getDescription(), recipe.getBurnTime());
+		return map;
 	}
 }

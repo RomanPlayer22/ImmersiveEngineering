@@ -20,7 +20,7 @@ import com.google.common.base.Suppliers;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -81,7 +81,9 @@ public class ComputerCraftCompatModule extends StandardIECompatModule
 		try
 		{
 			for(Entry<ResourceLocation, CallbackOwner<?>> entry : Callbacks.getCallbacks().entrySet())
-				knownPeripherals.put(entry.getKey(), new PeripheralCreator<>(entry.getValue()));
+				knownPeripherals.put(
+						entry.getKey(), new PeripheralCreator<>((CallbackOwner<? extends BlockEntity>)entry.getValue())
+				);
 		} catch(IllegalAccessException e)
 		{
 			throw new RuntimeException(e);
@@ -95,7 +97,7 @@ public class ComputerCraftCompatModule extends StandardIECompatModule
 		if(PERIPHERAL_CAPABILITY==null)
 			return;
 		BlockEntity te = ev.getObject();
-		PeripheralCreator<?> creator = knownPeripherals.get(Registry.BLOCK_ENTITY_TYPE.getKey(te.getType()));
+		PeripheralCreator<?> creator = knownPeripherals.get(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(te.getType()));
 		if(creator!=null)
 		{
 			ev.addCapability(CAP_NAME, new ICapabilityProvider()

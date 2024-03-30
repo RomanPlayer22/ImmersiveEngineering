@@ -1,5 +1,6 @@
 {
   "type": "immersiveengineering:turn_and_copy",
+  "category": "misc",
   "copy_nbt": [
     0,
     1,
@@ -23,5 +24,6 @@
   ],
   "result": {
     "item": "immersiveengineering:firework"
-  }
+  },
+  "show_notification": true
 }

@@ -11,6 +11,8 @@ package blusunrize.immersiveengineering.common.util.loot;
 import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.Lib;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.Serializer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
@@ -32,7 +34,7 @@ import java.util.function.Supplier;
 public class IELootFunctions
 {
 	private static final DeferredRegister<LootItemFunctionType> FUNCTION_REGISTER = DeferredRegister.create(
-			Registry.LOOT_FUNCTION_REGISTRY, ImmersiveEngineering.MODID
+			Registries.LOOT_FUNCTION_TYPE, ImmersiveEngineering.MODID
 	);
 	public static final RegistryObject<LootItemFunctionType> BLUPRINTZ = registerFunction("secret_bluprintz", () -> new SimpleSerializer<>(BluprintzLootFunction::new));
 	public static final RegistryObject<LootItemFunctionType> REVOLVERPERK = registerFunction("revolverperk", () -> new SimpleSerializer<>(RevolverperkLootFunction::new));
@@ -42,11 +44,11 @@ public class IELootFunctions
 
 	private static final DeferredRegister<LootPoolEntryType> ENTRY_REGISTER = DeferredRegister.create(
 			// TODO why isn't there a REGISTRY field for this one?
-			Registry.LOOT_POOL_ENTRY_TYPE.key(), ImmersiveEngineering.MODID
+			BuiltInRegistries.LOOT_POOL_ENTRY_TYPE.key(), ImmersiveEngineering.MODID
 	);
 	public static final RegistryObject<LootPoolEntryType> DROP_INVENTORY = registerEntry("drop_inv", DropInventoryLootEntry.Serializer::new);
 	public static final RegistryObject<LootPoolEntryType> TILE_DROP = registerEntry("tile_drop", BEDropLootEntry.Serializer::new);
-	public static final RegistryObject<LootPoolEntryType> MULTIBLOCK_ORIGINAL_BLOCK = registerEntry("multiblock_original_block", MBOriginalBlockLootEntry.Serializer::new);
+	public static final RegistryObject<LootPoolEntryType> MULTIBLOCK_DROPS = registerEntry("multiblock", MultiblockDropsLootContainer.Serializer::new);
 
 	public static void init()
 	{

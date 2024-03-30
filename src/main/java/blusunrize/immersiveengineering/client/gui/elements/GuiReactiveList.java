@@ -12,8 +12,8 @@ import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.client.gui.IEContainerScreen;
 import blusunrize.immersiveengineering.client.gui.elements.GuiButtonIE.IIEPressable;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +39,7 @@ public class GuiReactiveList extends Button
 
 	public GuiReactiveList(int x, int y, int w, int h, IIEPressable<? extends GuiReactiveList> handler, Supplier<List<String>> entries)
 	{
-		super(x, y, w, h, Component.empty(), handler);
+		super(x, y, w, h, Component.empty(), handler, DEFAULT_NARRATION);
 		this.entries = entries;
 	}
 
@@ -85,33 +85,32 @@ public class GuiReactiveList extends Button
 	}
 
 	@Override
-	public void render(PoseStack transform, int mx, int my, float partialTicks)
+	public void render(GuiGraphics graphics, int mx, int my, float partialTicks)
 	{
 		recalculateEntries();
 		final List<String> entries = this.entries.get();
 		Font fr = ClientUtils.mc().font;
 
-		int mmY = my-this.y;
+		int mmY = my-this.getY();
 		int strWidth = width-padding[2]-padding[3]-(needsSlider?6: 0);
 		if(needsSlider)
 		{
-			ClientUtils.bindTexture(TEXTURE);
-			this.blit(transform, x+width-6, y, 16, 136, 6, 4);
-			this.blit(transform, x+width-6, y+height-4, 16, 144, 6, 4);
+			graphics.blit(TEXTURE, getX()+width-6, getY(), 16, 136, 6, 4);
+			graphics.blit(TEXTURE, getX()+width-6, getY()+height-4, 16, 144, 6, 4);
 			for(int i = 0; i < height-8; i += 2)
-				this.blit(transform, x+width-6, y+4+i, 16, 141, 6, 2);
+				graphics.blit(TEXTURE, getX()+width-6, getY()+4+i, 16, 141, 6, 2);
 
 			int sliderSize = Math.max(6, height-maxOffset*fr.lineHeight);
 			float silderShift = (height-sliderSize)/(float)maxOffset*offset;
 
-			this.blit(transform, x+width-5, (int)(y+silderShift+1), 20, 129, 4, 2);
-			this.blit(transform, x+width-5, (int)(y+silderShift+sliderSize-4), 20, 132, 4, 3);
+			graphics.blit(TEXTURE, getX()+width-5, (int)(getY()+silderShift+1), 20, 129, 4, 2);
+			graphics.blit(TEXTURE, getX()+width-5, (int)(getY()+silderShift+sliderSize-4), 20, 132, 4, 3);
 			for(int i = 0; i < sliderSize-7; i++)
-				this.blit(transform, x+width-5, (int)(y+silderShift+3+i), 20, 131, 4, 1);
+				graphics.blit(TEXTURE, getX()+width-5, (int)(getY()+silderShift+3+i), 20, 131, 4, 1);
 		}
 
-		transform.scale(textScale, textScale, 1);
-		this.isHovered = active && mx >= x&&mx < x+width&&my >= y&&my < y+height;
+		graphics.pose().scale(textScale, textScale, 1);
+		this.isHovered = active&&mx >= getX()&&mx < getX()+width&&my >= getY()&&my < getY()+height;
 		boolean hasTarget = false;
 		for(int i = 0; i < Math.min(perPage, entries.size()); i++)
 		{
@@ -143,13 +142,13 @@ public class GuiReactiveList extends Button
 				}
 				s = fr.plainSubstrByWidth(s, strWidth);
 			}
-			float tx = ((x+padding[2])/textScale);
-			float ty = ((y+padding[0]+(fr.lineHeight*i))/textScale);
-			transform.translate(tx, ty, 0);
-			fr.draw(transform, s, 0, 0, col);
-			transform.translate(-tx, -ty, 0);
+			float tx = ((getX()+padding[2])/textScale);
+			float ty = ((getY()+padding[0]+(fr.lineHeight*i))/textScale);
+			graphics.pose().translate(tx, ty, 0);
+			graphics.drawString(fr, s, 0, 0, col);
+			graphics.pose().translate(-tx, -ty, 0);
 		}
-		transform.scale(1/textScale, 1/textScale, 1);
+		graphics.pose().scale(1/textScale, 1/textScale, 1);
 		if(!hasTarget)
 		{
 			targetEntry = -1;
@@ -182,7 +181,7 @@ public class GuiReactiveList extends Button
 			if(this.isValidClickButton(key)&&this.clicked(mx, my))
 			{
 				Font fr = ClientUtils.mc().font;
-				double mmY = my-this.y;
+				double mmY = my-this.getY();
 				for(int i = 0; i < Math.min(perPage, entries.get().size()); i++)
 					if(mmY >= i*fr.lineHeight&&mmY < (i+1)*fr.lineHeight)
 						selectedOption = offset+i;

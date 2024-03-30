@@ -26,12 +26,11 @@ import blusunrize.immersiveengineering.common.util.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
@@ -167,15 +166,14 @@ public class ShaderItem extends IEBaseItem implements IShaderItem, IColouredItem
 	}
 
 	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> list)
+	public void fillCreativeTab(Output out)
 	{
-		if(this.allowedIn(tab))
-			for(ResourceLocation key : ShaderRegistry.shaderRegistry.keySet())
-			{
-				ItemStack s = new ItemStack(this);
-				ItemNBTHelper.putString(s, SHADER_NAME_KEY, key.toString());
-				list.add(s);
-			}
+		for(ResourceLocation key : ShaderRegistry.shaderRegistry.keySet())
+		{
+			ItemStack s = new ItemStack(this);
+			ItemNBTHelper.putString(s, SHADER_NAME_KEY, key.toString());
+			out.accept(s);
+		}
 	}
 
 	@Override

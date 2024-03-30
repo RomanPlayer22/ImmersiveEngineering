@@ -16,6 +16,7 @@ import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import blusunrize.immersiveengineering.common.util.Utils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -77,9 +78,9 @@ public class FluorescentTubeEntity extends Entity implements ITeslaEntity
 		this.move(MoverType.SELF, motion);
 		motion = motion.scale(0.98);
 
-		if(this.onGround)
+		if(this.onGround())
 			motion = new Vec3(motion.x*0.7, motion.y*-0.5, motion.z*0.7);
-		if(firstTick&&!level.isClientSide&&rgb!=null)
+		if(firstTick&&!level().isClientSide&&rgb!=null)
 		{
 			entityData.set(dataMarker_r, rgb[0]);
 			entityData.set(dataMarker_g, rgb[1]);
@@ -88,13 +89,13 @@ public class FluorescentTubeEntity extends Entity implements ITeslaEntity
 			firstTick = false;
 		}
 		// tube logic
-		if(timer > 0&&!level.isClientSide)
+		if(timer > 0&&!level().isClientSide)
 		{
 			timer--;
 			if(timer <= 0)
 				entityData.set(dataMarker_active, false);
 		}
-		if(level.isClientSide)
+		if(level().isClientSide)
 		{
 			active = entityData.get(dataMarker_active);
 			rgb = new float[]{entityData.get(dataMarker_r),
@@ -106,9 +107,11 @@ public class FluorescentTubeEntity extends Entity implements ITeslaEntity
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket()
+	public Packet<ClientGamePacketListener> getAddEntityPacket()
 	{
-		return NetworkHooks.getEntitySpawningPacket(this);
+		// TODO this cast is probably invalid, but should be fine at runtime. Need to talk to Forge about what the
+		//  proper fix is
+		return (Packet<ClientGamePacketListener>)NetworkHooks.getEntitySpawningPacket(this);
 	}
 
 	@Override
@@ -144,12 +147,12 @@ public class FluorescentTubeEntity extends Entity implements ITeslaEntity
 	@Override
 	public boolean hurt(DamageSource source, float amount)
 	{
-		if(isAlive()&&!level.isClientSide)
+		if(isAlive()&&!level().isClientSide)
 		{
 			ItemStack tube = new ItemStack(Misc.FLUORESCENT_TUBE);
 			FluorescentTubeItem.setRGB(tube, rgb);
-			ItemEntity ent = new ItemEntity(level, getX(), getY(), getZ(), tube);
-			level.addFreshEntity(ent);
+			ItemEntity ent = new ItemEntity(level(), getX(), getY(), getZ(), tube);
+			level().addFreshEntity(ent);
 			discard();
 		}
 		return super.hurt(source, amount);
@@ -184,12 +187,12 @@ public class FluorescentTubeEntity extends Entity implements ITeslaEntity
 		}
 		else if (player.isShiftKeyDown())
 		{
-			if(isAlive()&&!level.isClientSide&&player.getItemInHand(hand).isEmpty())
+			if(isAlive()&&!level().isClientSide&&player.getItemInHand(hand).isEmpty())
 			{
 				ItemStack tube = new ItemStack(Misc.FLUORESCENT_TUBE);
 				FluorescentTubeItem.setRGB(tube, rgb);
-				ItemEntity ent = new ItemEntity(level, player.getX(), player.getY(), player.getZ(), tube, 0, 0, 0);
-				level.addFreshEntity(ent);
+				ItemEntity ent = new ItemEntity(level(), player.getX(), player.getY(), player.getZ(), tube, 0, 0, 0);
+				level().addFreshEntity(ent);
 				discard();
 			}
 			return InteractionResult.SUCCESS;

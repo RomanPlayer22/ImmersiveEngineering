@@ -22,7 +22,6 @@ import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
@@ -54,9 +53,9 @@ public class SkylineHelper
 	public static void spawnHook(LivingEntity player, Connection connection, InteractionHand hand,
 								 boolean limitSpeed)
 	{
-		if(!player.level.isClientSide)
+		if(!player.level().isClientSide)
 		{
-			GlobalWireNetwork global = GlobalWireNetwork.getNetwork(player.level);
+			GlobalWireNetwork global = GlobalWireNetwork.getNetwork(player.level());
 			ConnectionPoint cpA = connection.getEndA();
 			ConnectionPoint cpB = connection.getEndB();
 			IImmersiveConnectable iicB = global.getExistingConnector(cpB);
@@ -86,7 +85,7 @@ public class SkylineHelper
 
 			double totalSpeed = playerMovement.dot(extendedWire);
 			double horSpeed = totalSpeed/Math.sqrt(1+slopeAtPos*slopeAtPos);
-			SkylineHookEntity hook = new SkylineHookEntity(player.level, connection, cpA, linePos, hand, horSpeed, limitSpeed);
+			SkylineHookEntity hook = new SkylineHookEntity(player.level(), connection, cpA, linePos, hand, horSpeed, limitSpeed);
 			IELogger.logger.info("Speed keeping: Player {}, wire {}, Pos: {}", playerMovement, extendedWire,
 					hook.position());
 			if(hook.isValidPosition(hook.getX(), hook.getY(), hook.getZ(), player))
@@ -95,11 +94,11 @@ public class SkylineHelper
 				double speedDiff = player.getDeltaMovement().y-vertSpeed;
 				if(speedDiff < 0)
 				{
-					player.causeFallDamage(fallDistanceFromSpeed(speedDiff), 1.2F, DamageSource.FALL);
+					player.causeFallDamage(fallDistanceFromSpeed(speedDiff), 1.2F, player.damageSources().fall());
 					player.fallDistance = 0;
 				}
 
-				player.level.addFreshEntity(hook);
+				player.level().addFreshEntity(hook);
 				player.getCapability(SKYHOOK_USER_DATA, Direction.UP).ifPresent(data -> {
 					data.startRiding();
 					data.hook = hook;

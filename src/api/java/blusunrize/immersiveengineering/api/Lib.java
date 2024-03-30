@@ -10,6 +10,9 @@ package blusunrize.immersiveengineering.api;
 
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -39,6 +42,8 @@ public class Lib
 	public static final int COLOUR_I_ImmersiveOrangeShadow = 0xff3e200d;
 
 	public static final String MAGNET_PREVENT_NBT = "PreventRemoteMovement";
+	public static final String MAGNET_SOURCE_NBT = "immersiveengineering:magnet_source";
+	public static final String MAGNET_TIME_NBT = "immersiveengineering:magnet_last_pulled";
 
 	/**
 	 * Gui IDs
@@ -82,26 +87,40 @@ public class Lib
 	public static final String NBT_Powerpack = "IE:Powerpack";
 	public static final String NBT_DAMAGE = "Damage";
 
-	public static final int colour_nixieTubeText = 0xff9900;
+	public static class DamageTypes
+	{
+		public static final TurretDamageType REVOLVER_CASULL = new TurretDamageType("revolver_casull");
+		public static final TurretDamageType REVOLVER_ARMORPIERCING = new TurretDamageType("revolver_armorpiercing");
+		public static final TurretDamageType REVOLVER_BUCKSHOT = new TurretDamageType("revolver_buckshot");
+		public static final TurretDamageType REVOLVER_DRAGONSBREATH = new TurretDamageType("revolver_dragonsbreath");
+		public static final TurretDamageType REVOLVER_HOMING = new TurretDamageType("revolver_homing");
+		public static final TurretDamageType REVOLVER_WOLFPACK = new TurretDamageType("revolver_wolfpack");
+		public static final TurretDamageType REVOLVER_SILVER = new TurretDamageType("revolver_silver");
+		public static final TurretDamageType REVOLVER_POTION = new TurretDamageType("revolver_potion");
+		public static final ResourceKey<DamageType> CRUSHER = ieDamage("crushed");
+		public static final ResourceKey<DamageType> SAWMILL = ieDamage("sawmill");
+		public static final ResourceKey<DamageType> TESLA = ieDamage("tesla");
+		public static final ResourceKey<DamageType> ACID = ieDamage("acid");
+		public static final TurretDamageType RAILGUN = new TurretDamageType("railgun");
+		public static final TurretDamageType SAWBLADE = new TurretDamageType("sawblade");
+		public static final ResourceKey<DamageType> TESLA_PRIMARY = ieDamage("tesla_primary");
+		public static final ResourceKey<DamageType> RAZOR_WIRE = ieDamage("razor_wire");
+		public static final ResourceKey<DamageType> RAZOR_SHOCK = ieDamage("razor_shock");
+		public static final ResourceKey<DamageType> WIRE_SHOCK = ieDamage("wire_shock");
+	}
 
-	public static String DMG_RevolverCasull = "ieRevolver_casull";
-	public static String DMG_RevolverAP = "ieRevolver_armorPiercing";
-	public static String DMG_RevolverBuck = "ieRevolver_buckshot";
-	public static String DMG_RevolverDragon = "ieRevolver_dragonsbreath";
-	public static String DMG_RevolverHoming = "ieRevolver_homing";
-	public static String DMG_RevolverWolfpack = "ieRevolver_wolfpack";
-	public static String DMG_RevolverSilver = "ieRevolver_silver";
-	public static String DMG_RevolverPotion = "ieRevolver_potion";
-	public static String DMG_Crusher = "ieCrushed";
-	public static String DMG_Sawmill = "ieSawmill";
-	public static String DMG_Tesla = "ieTesla";
-	public static String DMG_Acid = "ieAcid";
-	public static String DMG_Railgun = "ieRailgun";
-	public static String DMG_Sawblade = "ieSawblade";
-	public static String DMG_Tesla_prim = "ieTeslaPrimary";
-	public static String DMG_RazorWire = "ieRazorWire";
-	public static String DMG_RazorShock = "ieRazorShock";
-	public static String DMG_WireShock = "ieWireShock";
+	private static ResourceKey<DamageType> ieDamage(String path)
+	{
+		return ResourceKey.create(Registries.DAMAGE_TYPE, IEApi.ieLoc(path));
+	}
+
+	public record TurretDamageType(ResourceKey<DamageType> playerType, ResourceKey<DamageType> turretType)
+	{
+		private TurretDamageType(String path)
+		{
+			this(ieDamage(path), ieDamage(path+"_turret"));
+		}
+	}
 
 	public static final Tier MATERIAL_Steel = new Tier()
 	{

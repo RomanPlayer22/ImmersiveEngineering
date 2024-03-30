@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -145,7 +146,7 @@ public abstract class IEProjectileEntity extends AbstractArrow//Yes I have to ex
 		if(this.ticksInAir >= this.tickLimit||this.inGroundTime >= this.getMaxTicksInGround())
 			this.discard();
 
-		if(this.getOwner()==null&&this.level.isClientSide)
+		if(this.getOwner()==null&&this.level().isClientSide)
 			this.shooterUUID = getShooterSynced();
 
 		// store previous movement
@@ -169,7 +170,7 @@ public abstract class IEProjectileEntity extends AbstractArrow//Yes I have to ex
 		{
 			Vec3 vec32 = this.position();
 			Vec3 vec33 = vec32.add(delta);
-			BlockHitResult blockHitResult = this.level.clip(new ClipContext(vec32, vec33, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+			BlockHitResult blockHitResult = this.level().clip(new ClipContext(vec32, vec33, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 			if(blockHitResult.getType()!=HitResult.Type.MISS&&!ForgeEventFactory.onProjectileImpact(this, blockHitResult))
 			{
 				this.onHit(blockHitResult);
@@ -210,7 +211,7 @@ public abstract class IEProjectileEntity extends AbstractArrow//Yes I have to ex
 	@Override
 	public void playerTouch(Player player)
 	{
-		if(!this.level.isClientSide&&(this.inGround||this.isNoPhysics())&&this.shakeTime <= 0)
+		if(!this.level().isClientSide&&(this.inGround||this.isNoPhysics())&&this.shakeTime <= 0)
 		{
 			boolean flag = this.pickup==AbstractArrow.Pickup.ALLOWED
 					||this.pickup==AbstractArrow.Pickup.CREATIVE_ONLY&&player.getAbilities().instabuild
@@ -291,9 +292,10 @@ public abstract class IEProjectileEntity extends AbstractArrow//Yes I have to ex
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket()
+	public Packet<ClientGamePacketListener> getAddEntityPacket()
 	{
-		return NetworkHooks.getEntitySpawningPacket(this);
+		// TODO see fluorescent tube
+		return (Packet<ClientGamePacketListener>)NetworkHooks.getEntitySpawningPacket(this);
 	}
 
 	public void setOwner(@Nullable Entity entityIn)

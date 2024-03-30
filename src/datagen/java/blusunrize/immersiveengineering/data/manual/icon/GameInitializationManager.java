@@ -11,7 +11,7 @@ package blusunrize.immersiveengineering.data.manual.icon;
 
 import blusunrize.immersiveengineering.client.ClientProxy;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.NamedRenderTypeManager;
@@ -42,7 +42,7 @@ public class GameInitializationManager
 	}
 
 	@SuppressWarnings("UnstableApiUsage")
-	public void initialize(final ExistingFileHelper existingFileHelper, DataGenerator gen)
+	public void initialize(final ExistingFileHelper existingFileHelper, PackOutput output)
 	{
 		if(initialized)
 			return;
@@ -53,13 +53,19 @@ public class GameInitializationManager
 		initClient(ForgeRegistries.ITEMS, Item::initializeClient, Item.class);
 		initClient(ForgeRegistries.BLOCKS, Block::initializeClient, Block.class);
 		GLFWInitializationManager.getInstance().initialize();
-		MinecraftInstanceManager.getInstance().initialize(existingFileHelper, gen);
+		MinecraftInstanceManager.getInstance().initialize(existingFileHelper, output);
 		ClientProxy.initWithMC();
 		GeometryLoaderManager.init();
 		NamedRenderTypeManager.init();
 
-		final ExtendedModelManager extendedModelManager = (ExtendedModelManager)Minecraft.getInstance().getModelManager();
-		extendedModelManager.loadModels();
+		try
+		{
+			final ExtendedModelManager extendedModelManager = (ExtendedModelManager)Minecraft.getInstance().getModelManager();
+			extendedModelManager.loadModels();
+		} catch(ClassNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static <R, P> void initClient(IForgeRegistry<R> reg, BiConsumer<R, Consumer<P>> initialize, Class<R> type)

@@ -13,10 +13,12 @@ import blusunrize.immersiveengineering.common.crafting.fluidaware.TurnAndCopyRec
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import blusunrize.immersiveengineering.common.util.RecipeSerializers;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
@@ -32,10 +34,12 @@ public class TurnAndCopyRecipe extends AbstractShapedRecipe<MatchLocation>
 	protected int[] nbtCopyTargetSlot = null;
 	protected Pattern nbtCopyPredicate = null;
 
-	public TurnAndCopyRecipe(ResourceLocation id, String group, int width, int height, NonNullList<Ingredient> ingr,
-							 ItemStack output)
+	public TurnAndCopyRecipe(
+			ResourceLocation id, String group, int width, int height, NonNullList<Ingredient> ingr, ItemStack output,
+			CraftingBookCategory category
+	)
 	{
-		super(id, group, width, height, ingr, output);
+		super(id, group, width, height, ingr, output, category);
 	}
 
 	public void allowQuarterTurn()
@@ -61,11 +65,11 @@ public class TurnAndCopyRecipe extends AbstractShapedRecipe<MatchLocation>
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(@Nonnull CraftingContainer matrix)
+	public ItemStack assemble(@Nonnull CraftingContainer matrix, RegistryAccess access)
 	{
 		if(nbtCopyTargetSlot!=null)
 		{
-			ItemStack out = getResultItem().copy();
+			ItemStack out = getResultItem(access).copy();
 			CompoundTag tag = out.getOrCreateTag();
 			for(int targetSlot : nbtCopyTargetSlot)
 			{
@@ -77,7 +81,7 @@ public class TurnAndCopyRecipe extends AbstractShapedRecipe<MatchLocation>
 			return out;
 		}
 		else
-			return super.assemble(matrix);
+			return super.assemble(matrix, access);
 	}
 
 	@Nullable

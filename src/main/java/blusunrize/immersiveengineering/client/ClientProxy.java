@@ -15,18 +15,17 @@ import blusunrize.immersiveengineering.api.ManualHelper;
 import blusunrize.immersiveengineering.api.client.ieobj.DefaultCallback;
 import blusunrize.immersiveengineering.api.client.ieobj.IEOBJCallbacks;
 import blusunrize.immersiveengineering.api.client.ieobj.ItemCallback;
-import blusunrize.immersiveengineering.api.shader.ShaderCase;
-import blusunrize.immersiveengineering.api.shader.ShaderLayer;
-import blusunrize.immersiveengineering.api.shader.ShaderRegistry;
-import blusunrize.immersiveengineering.api.tool.conveyor.ConveyorHandler;
 import blusunrize.immersiveengineering.api.utils.SetRestrictedField;
 import blusunrize.immersiveengineering.api.wires.SectionConnectionRenderer;
 import blusunrize.immersiveengineering.client.gui.*;
 import blusunrize.immersiveengineering.client.manual.ManualElementBlueprint;
 import blusunrize.immersiveengineering.client.manual.ManualElementMultiblock;
-import blusunrize.immersiveengineering.client.models.*;
+import blusunrize.immersiveengineering.client.models.ModelConfigurableSides;
 import blusunrize.immersiveengineering.client.models.ModelConveyor.ConveyorLoader;
+import blusunrize.immersiveengineering.client.models.ModelCoresample;
 import blusunrize.immersiveengineering.client.models.ModelCoresample.CoresampleLoader;
+import blusunrize.immersiveengineering.client.models.ModelPowerpack;
+import blusunrize.immersiveengineering.client.models.PotionBucketModel;
 import blusunrize.immersiveengineering.client.models.PotionBucketModel.Loader;
 import blusunrize.immersiveengineering.client.models.connection.FeedthroughLoader;
 import blusunrize.immersiveengineering.client.models.connection.FeedthroughModel;
@@ -38,9 +37,7 @@ import blusunrize.immersiveengineering.client.models.obj.callback.item.*;
 import blusunrize.immersiveengineering.client.models.split.SplitModelLoader;
 import blusunrize.immersiveengineering.client.render.ConnectionRenderer;
 import blusunrize.immersiveengineering.client.render.IEBipedLayerRenderer;
-import blusunrize.immersiveengineering.client.render.IEOBJItemRenderer;
 import blusunrize.immersiveengineering.client.render.conveyor.RedstoneConveyorRender;
-import blusunrize.immersiveengineering.client.render.conveyor.SplitConveyorRender;
 import blusunrize.immersiveengineering.client.render.entity.*;
 import blusunrize.immersiveengineering.client.render.tile.*;
 import blusunrize.immersiveengineering.client.render.tooltip.RevolverClientTooltip;
@@ -51,21 +48,11 @@ import blusunrize.immersiveengineering.common.CommonProxy;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.ISoundBE;
 import blusunrize.immersiveengineering.common.blocks.metal.ConnectorProbeBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.metal.ConnectorRedstoneBlockEntity;
-import blusunrize.immersiveengineering.common.blocks.metal.conveyors.ConveyorBase;
-import blusunrize.immersiveengineering.common.blocks.metal.conveyors.DropConveyor;
-import blusunrize.immersiveengineering.common.blocks.metal.conveyors.SplitConveyor;
-import blusunrize.immersiveengineering.common.blocks.metal.conveyors.VerticalConveyor;
 import blusunrize.immersiveengineering.common.config.IEClientConfig;
 import blusunrize.immersiveengineering.common.entities.SkylineHookEntity;
 import blusunrize.immersiveengineering.common.gui.IEBaseContainerOld;
-import blusunrize.immersiveengineering.common.items.GrindingDiskItem;
-import blusunrize.immersiveengineering.common.items.RockcutterItem;
-import blusunrize.immersiveengineering.common.register.IEBannerPatterns;
-import blusunrize.immersiveengineering.common.register.IEBlockEntities;
-import blusunrize.immersiveengineering.common.register.IEEntityTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
-import blusunrize.immersiveengineering.common.util.IELogger;
+import blusunrize.immersiveengineering.common.register.*;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.sound.IEBlockEntitySound;
 import blusunrize.immersiveengineering.common.util.sound.SkyhookSound;
 import blusunrize.immersiveengineering.mixin.accessors.client.GuiSubtitleOverlayAccess;
@@ -99,6 +86,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
@@ -165,15 +153,12 @@ public class ClientProxy extends CommonProxy
 	public static void initWithMC()
 	{
 		populateAPI();
-		requestModelsAndTextures();
 
 		ClientEventHandler handler = new ClientEventHandler();
 		MinecraftForge.EVENT_BUS.register(handler);
 		ReloadableResourceManager reloadableManager = (ReloadableResourceManager)mc().getResourceManager();
 		reloadableManager.registerReloadListener(handler);
 		reloadableManager.registerReloadListener(new ConnectionRenderer());
-
-		IEModelLayers.registerDefinitions();
 	}
 
 	@SubscribeEvent
@@ -221,8 +206,6 @@ public class ClientProxy extends CommonProxy
 		if(IEClientConfig.stencilBufferEnabled.get())
 			ev.enqueueWork(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
 		registerContainersAndScreens();
-		ShaderHelper.initShaders();
-		IEDefaultColourHandlers.register();
 
 		IEManual.addIEManualEntries();
 		IEBannerPatterns.ALL_BANNERS.forEach(entry -> {
@@ -238,30 +221,6 @@ public class ClientProxy extends CommonProxy
 	)
 	{
 		ev.registerEntityRenderer(type.get(), renderer);
-	}
-
-	//TODO are these here rather than in ClientEventHandler for any particular reason???
-	@SubscribeEvent
-	public static void textureStichPre(TextureStitchEvent.Pre event)
-	{
-		ResourceLocation sheet = event.getAtlas().location();
-		if(sheet.equals(Sheets.BANNER_SHEET)||sheet.equals(Sheets.SHIELD_SHEET))
-			IEBannerPatterns.ALL_BANNERS.forEach(entry -> {
-				ResourceKey<BannerPattern> pattern = Objects.requireNonNull(entry.pattern().getKey());
-				event.addSprite(BannerPattern.location(pattern, sheet.equals(Sheets.BANNER_SHEET)));
-			});
-
-		if(!sheet.equals(InventoryMenu.BLOCK_ATLAS))
-			return;
-		IELogger.info("Stitching Revolver Textures!");
-		RevolverCallbacks.addRevolverTextures(event);
-		for(ShaderRegistry.ShaderRegistryEntry entry : ShaderRegistry.shaderRegistry.values())
-			for(ShaderCase sCase : entry.getCases())
-				if(sCase.stitchIntoSheet())
-					for(ShaderLayer layer : sCase.getLayers())
-						if(layer.getTexture()!=null)
-							event.addSprite(layer.getTexture());
-
 	}
 
 	@SubscribeEvent
@@ -286,9 +245,9 @@ public class ClientProxy extends CommonProxy
 		{
 			if(sound!=null)
 				stopTileSound(null, tile);
-			if(tile instanceof ISoundBE&&mc().player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) > ((ISoundBE)tile).getSoundRadiusSq())
+			if(tile instanceof ISoundBE soundBE&&mc().player.distanceToSqr(Vec3.atCenterOf(pos)) > soundBE.getSoundRadiusSq())
 				return;
-			sound = ClientUtils.generatePositionedIESound(soundEvent.get(), volume, pitch, true, 0, pos);
+			sound = ClientUtils.generatePositionedIESound(soundEvent.get(), volume, pitch, pos);
 			tileSoundMap.put(pos, sound);
 		}
 		else if(sound!=null&&(sound.donePlaying||!tileActive))
@@ -304,7 +263,6 @@ public class ClientProxy extends CommonProxy
 		}
 	}
 
-	@Override
 	public void stopTileSound(String soundName, BlockEntity tile)
 	{
 		IEBlockEntitySound sound = tileSoundMap.get(tile.getBlockPos());
@@ -476,6 +434,14 @@ public class ClientProxy extends CommonProxy
 
 	private static <T extends BlockEntity>
 	void registerBERenderNoContext(
+			RegisterRenderers event, Supplier<BlockEntityType<? extends T>> type, Supplier<BlockEntityRenderer<T>> render
+	)
+	{
+		ClientProxy.registerBERenderNoContext(event, type.get(), render);
+	}
+
+	private static <T extends BlockEntity>
+	void registerBERenderNoContext(
 			RegisterRenderers event, BlockEntityType<? extends T> type, Supplier<BlockEntityRenderer<T>> render
 	)
 	{
@@ -492,18 +458,18 @@ public class ClientProxy extends CommonProxy
 		registerBERenderNoContext(event, IEBlockEntities.CLOCHE.master(), ClocheRenderer::new);
 		registerBERenderNoContext(event, IEBlockEntities.BLASTFURNACE_PREHEATER.master(), BlastFurnacePreheaterRenderer::new);
 		// MULTIBLOCKS
-		registerBERenderNoContext(event, IEBlockEntities.METAL_PRESS.master(), MetalPressRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.CRUSHER.master(), CrusherRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.SAWMILL.master(), SawmillRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.SHEETMETAL_TANK.master(), SheetmetalTankRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.SILO.master(), SiloRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.SQUEEZER.master(), SqueezerRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.DIESEL_GENERATOR.master(), DieselGeneratorRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.BUCKET_WHEEL.master(), BucketWheelRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.ARC_FURNACE.master(), ArcFurnaceRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.AUTO_WORKBENCH.master(), AutoWorkbenchRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.BOTTLING_MACHINE.master(), BottlingMachineRenderer::new);
-		registerBERenderNoContext(event, IEBlockEntities.MIXER.master(), MixerRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.METAL_PRESS.masterBE(), MetalPressRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.CRUSHER.masterBE(), CrusherRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.SAWMILL.masterBE(), SawmillRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.TANK.masterBE(), SheetmetalTankRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.SILO.masterBE(), SiloRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.SQUEEZER.masterBE(), SqueezerRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.DIESEL_GENERATOR.masterBE(), DieselGeneratorRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.BUCKET_WHEEL.masterBE(), BucketWheelRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.ARC_FURNACE.masterBE(), ArcFurnaceRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.AUTO_WORKBENCH.masterBE(), AutoWorkbenchRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.BOTTLING_MACHINE.masterBE(), BottlingMachineRenderer::new);
+		registerBERenderNoContext(event, IEMultiblockLogic.MIXER.masterBE(), MixerRenderer::new);
 		//WOOD
 		registerBERenderNoContext(event, IEBlockEntities.WATERMILL.master(), WatermillRenderer::new);
 		registerBERenderNoContext(event, IEBlockEntities.WINDMILL.get(), WindmillRenderer::new);
@@ -521,36 +487,9 @@ public class ClientProxy extends CommonProxy
 	}
 
 	public static <C extends IEBaseContainerOld<?>, S extends Screen & MenuAccess<C>>
-	void registerTileScreen(BEContainer<?, C> type, ScreenConstructor<C, S> factory)
+	void registerTileScreen(ArgContainer<?, C> type, ScreenConstructor<C, S> factory)
 	{
 		MenuScreens.register(type.getType(), factory);
-	}
-
-	private static void requestModelsAndTextures()
-	{
-		DynamicModelLoader.requestTexture(SawbladeRenderer.SAWBLADE);
-		DynamicModelLoader.requestTexture(ArcFurnaceRenderer.HOT_METLA_FLOW);
-		DynamicModelLoader.requestTexture(ArcFurnaceRenderer.HOT_METLA_STILL);
-		DynamicModelLoader.requestTexture(RockcutterItem.TEXTURE);
-		DynamicModelLoader.requestTexture(GrindingDiskItem.TEXTURE);
-		DynamicModelLoader.requestTexture(new ResourceLocation(MODID, "block/wire"));
-		DynamicModelLoader.requestTexture(new ResourceLocation(MODID, "block/shaders/greyscale_fire"));
-
-		for(ResourceLocation rl : ModelConveyor.rl_casing)
-			DynamicModelLoader.requestTexture(rl);
-		DynamicModelLoader.requestTexture(ConveyorHandler.textureConveyorColour);
-		DynamicModelLoader.requestTexture(ConveyorBase.texture_off);
-		DynamicModelLoader.requestTexture(ConveyorBase.texture_on);
-		DynamicModelLoader.requestTexture(DropConveyor.texture_off);
-		DynamicModelLoader.requestTexture(DropConveyor.texture_on);
-		DynamicModelLoader.requestTexture(VerticalConveyor.texture_off);
-		DynamicModelLoader.requestTexture(VerticalConveyor.texture_on);
-		DynamicModelLoader.requestTexture(SplitConveyor.texture_off);
-		DynamicModelLoader.requestTexture(SplitConveyor.texture_on);
-		DynamicModelLoader.requestTexture(SplitConveyorRender.texture_casing);
-		DynamicModelLoader.requestTexture(RedstoneConveyorRender.texture_panel);
-
-		DynamicModelLoader.requestTexture(new ResourceLocation(MODID, "item/shader_slot"));
 	}
 
 	public static void populateAPI()
@@ -568,7 +507,7 @@ public class ClientProxy extends CommonProxy
 			return ManualHelper.MAKE_BLUEPRINT_ELEMENT_NEW.getValue().create(refs);
 		});
 		IEManual.initManual();
-		ItemCallback.DYNAMIC_IEOBJ_RENDERER.setValue(new IEOBJItemRenderer(
+		ItemCallback.DYNAMIC_IEOBJ_RENDERER.setValue(new blusunrize.immersiveengineering.client.render.IEOBJItemRenderer(
 				Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()
 		));
 		SectionConnectionRenderer.RENDER_CONNECTIONS.setValue(ConnectionRenderer::renderConnectionsInSection);

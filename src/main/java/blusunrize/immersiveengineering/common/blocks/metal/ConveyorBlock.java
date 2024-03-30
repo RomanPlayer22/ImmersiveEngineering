@@ -20,11 +20,10 @@ import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -41,7 +40,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -50,7 +49,8 @@ import java.util.function.Supplier;
 
 public class ConveyorBlock extends IEEntityBlock<ConveyorBeltBlockEntity<?>> implements ConveyorHandler.IConveyorBlock
 {
-	public static final Supplier<Properties> PROPERTIES = () -> Properties.of(Material.METAL)
+	public static final Supplier<Properties> PROPERTIES = () -> Properties.of()
+			.mapColor(MapColor.METAL)
 			.sound(SoundType.METAL)
 			.strength(3.0F, 15.0F)
 			.noOcclusion();
@@ -67,17 +67,19 @@ public class ConveyorBlock extends IEEntityBlock<ConveyorBeltBlockEntity<?>> imp
 	}
 
 	@Override
-	public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items)
+	public void fillCreativeTab(Output out)
 	{
-		super.fillItemCategory(group, items);
+		out.accept(this);
 		if(type.acceptsCovers())
-			items.add(makeCovered(this, MetalDecoration.STEEL_SCAFFOLDING.get(MetalScaffoldingType.STANDARD).get()));
+			out.accept(makeCovered(
+					this, MetalDecoration.STEEL_SCAFFOLDING.get(MetalScaffoldingType.STANDARD).get()
+			));
 	}
 
 	public static ItemStack makeCovered(ItemLike conveyor, Block cover)
 	{
 		ItemStack covered = new ItemStack(conveyor, 1);
-		covered.getOrCreateTag().putString(DEFAULT_COVER, Registry.BLOCK.getKey(cover).toString());
+		covered.getOrCreateTag().putString(DEFAULT_COVER, BuiltInRegistries.BLOCK.getKey(cover).toString());
 		return covered;
 	}
 

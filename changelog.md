@@ -1,15 +1,50 @@
-##### Version 1.19.2-9.2.4-pre
+##### Version 1.20.1-10.0.1-pre
+- Includes all features from 9.2.4
+- Add sounds for Arc Furnace, Excavator, and Automated Workbench (voidsong-dragonfly)
+- Add burn times for the diesel generator to the manual (BluSunrize)
+- Add support for armor trims on steel armor (BluSunrize)
+- Add additional uses for lead & nickel (voidsong-dragonfly)
+    - Lead can be crafted into red and white dyes
+    - Radiators now use constantan instead of copper
+    - Tinted glass can be made in larger quantities by using lead
+- Add randomized textures for various hempcrete & concrete blocks (voidsong-dragonfly)
+- Add the electromagnet block (BluSunrize)
+    - It attracts nearby items when given power! 
+- Add the portable electromagnet! (BluSunrize)
+    - Install it as an upgrade on your accumulator backpack to have a magnet on the go!
+- Add various blocks from Engineer's Decor (voidsong-dragonfly)
+    - Thank you wilechaote for giving us permission to include these blocks in the mod <3
+- Add additional fertilizers for the cloche (voidsong-dragonfly)
+    - This should allow people to use up their surplus suflur!
+- Add ability to place Engineer's Manual in a chiseled bookshelf (BluSunrize)
+- Change hemp blocks to notify their neighbours when they grow (jrtc27)
+- Change Jade Tooltips for multiblocks to work when looking at any part of the machine (HermitOwO)
+- Fix conveyor rendering in the manual (Malte)
+- Fix broken translation keys (Malte & BluSunrize)
+- Fix turret GUI textfield not being editable (BluSunrize)
+- Fix taiga villager houses being surrounded by air blocks (BluSunrize)
+- Fix redstone control not working on the assembler (BluSunrize)
+- Fix villager names not being translated in JER and EMI (BluSunrize)
+- Fix error related to deprecated unicode font (BluSunrize)
+- Fix bottling machine deleting items on the conveyor (BluSunrize)
+- Fix bottling machine not rendering bucket-filling recipes properly (BluSunrize)
+- Fix hemp replacing blocks above it when growing (BluSunrize)
+- Translations Added/Updated: ja_jo (karakufire)
+
+##### Version 1.19.2-9.2.4-170
 - Add new excavator veins for decoration blocks (voidsong-dragonfly)
-    - Amethyst Crevasse, a geode vein
-    - Hardened Claypan, a red sand & terracotta vein
-    - Ancient Seabed, a dead coral & dripstone vein
+  - Amethyst Crevasse, a geode vein
+  - Hardened Claypan, a red sand & terracotta vein
+  - Ancient Seabed, a dead coral & dripstone vein
 - Add cloche recipes to grow flowers (voidsong-dragonfly)
 - Add crusher recipes to make dyes (voidsong-dragonfly)
 - Add items directly to inventory when: (voidsong-dragonfly)
-    - Cutting wires
-    - Picking up fluorescent tubes, core samples or the toolbox 
+  - Cutting wires
+  - Picking up fluorescent tubes, core samples or the toolbox
+- Add the plated shield to the "forge:tools/shields" tag (BluSunrize)
 - Change turrets to accept generic entity terms like "Villager" for their black/whitelist (BluSunrize)
 - Change text rendering in GUIs to be more readable (BluSunrize)
+- Change assembler to handle buckets in recipes better (BluSunrize)
 - Fix issues with multiblocks being accessed before being full formed (Malte)
 - Fix items with obj renders breaking in the AE2 inscriber
 - Fix drill overlay highlighting too many blocks (Malte)
@@ -20,7 +55,25 @@
 - Fix synchronization errors in the garden clocke (voidsong-dragonfly, Malte)
 - Fix induction charging on the accumulator backpack not working (BluSunrize)
 - Fix multiblock sounds not triggering subtitles continuously (BluSunrize)
+- Fix hemp seeds being tagged as "rods" (BluSunrize)
+- Fix railgun rods applying damage like a normal arrow (BluSunrize)
+- Fix villager houses for structural engineer and machinist having the wrong workstation (BluSunrize)
+- Fix blueprint crafting with split up ingredients (BluSunrize)
 - Translations Added/Updated: cs_cz (RomanPlayer22)
+
+##### Version 1.20.1-10.0.0-169
+- First release for 1.20.1, now supporting NeoForged!
+- Includes all features from 9.4.1
+- Add sawmill support for stripped wood (BluSunrize)
+- Add sawmill support for cherry wood (BluSunrize)
+- Add cloche support for torchflowers (BluSunrize)
+- Change hemp blocks to extend vanilla's CropBlock (BluSunrize)
+
+##### Version 1.19.4-9.4.1-168
+- All features from 9.2.3
+- Fix localization of perks on revolver parts (BluSunrize)
+- Fix potential crashes when supplying power to arc furnace or excavator with other mod's cables (BluSunrize)
+- Fix metal press not rendering items in the correct direction (BluSunrize)
 
 ##### Version 1.19.2-9.2.3-167
 - Change "Superior Weaponry" advancement to hint at its potential to spawn new illagers in raids (BluSunrize)
@@ -37,6 +90,10 @@
 - Fix broken animations for revolvers in the left hand (BluSunrize)
 - Fix revolver perks trying to localize at "tier0" (BluSunrize)
 - Translations Added/Updated: cs_cz (RomanPlayer22), ja_jp (karakufire)
+
+##### Version 1.19.4-9.4.0-166
+- First release for 1.19.4!
+- Includes all features from 9.2.2
 
 ##### Version 1.19.2-9.2.2-165
 - Add Engineer Illagers (BluSunrize)
@@ -102,6 +159,11 @@
 - Fix possible crash with Vanilla Tweaks and hemp seeds (BluSunrize)
 - Translations Added/Updated: zh_cn (RevenXXX-a, mc-kaishixiaxue), uk_ua (SKZGx, hnufelka)
 
+##### Version 1.19.3-9.3.0-163
+- All features from 9.2.0
+- Fix cloche GUI not being transparent (BluSunrize)
+- Fix cloche farmland having a missing texture (BluSunrize)
+
 ##### Version 1.19.2-9.2.0-162
 - All features from 8.4.0
 - Add recipes to cut wooden slabs on the sawmill (BluSunrize)
@@ -143,6 +205,10 @@
 - Fix config settings not being applied to crafttweaker recipes (BluSunrize)
 - Fix tool GUIs being shifted ro the left by subtitles, this isn't necessary since we ove subtitles upwards instead (BluSunrize)
 - Fix crusher not animating or making noise when crushing entities (BluSunrize)
+
+##### Version 1.19.3-9.2.0-160
+- First alpha release for 1.19.3
+- All features from 8.4.0 (not yet released)
 
 ##### Version 1.19.2-9.1.2-159
 - Fix broken villager workstations

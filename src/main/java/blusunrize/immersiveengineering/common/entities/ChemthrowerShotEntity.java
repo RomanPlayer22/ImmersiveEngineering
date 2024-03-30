@@ -14,8 +14,9 @@ import blusunrize.immersiveengineering.common.register.IEEntityDataSerializers;
 import blusunrize.immersiveengineering.common.register.IEEntityTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.HitResult.Type;
@@ -105,10 +105,11 @@ public class ChemthrowerShotEntity extends IEProjectileEntity
 	@Override
 	public void baseTick()
 	{
-		if(this.level.isClientSide)
+		if(this.level().isClientSide)
 			this.fluid = getFluidSynced();
-		BlockState state = level.getBlockState(blockPosition());
-		if(this.canIgnite()&&(state.getMaterial()==Material.FIRE||state.getMaterial()==Material.LAVA))
+		BlockState state = level().getBlockState(blockPosition());
+		// TODO this is a very rough port of the previous material-based check
+		if(this.canIgnite()&&(state.is(BlockTags.FIRE)||state.getFluidState().is(FluidTags.LAVA)))
 			this.setSecondsOnFire(6);
 		super.baseTick();
 	}
@@ -124,7 +125,7 @@ public class ChemthrowerShotEntity extends IEProjectileEntity
 	@Override
 	public void onHit(HitResult mop)
 	{
-		if(this.level.isClientSide||getFluid().isEmpty())
+		if(this.level().isClientSide||getFluid().isEmpty())
 			return;
 		FluidStack fluidStack = getFluid();
 		Fluid fluid = fluidStack.getFluid();
@@ -140,14 +141,14 @@ public class ChemthrowerShotEntity extends IEProjectileEntity
 			if(mop.getType()==Type.ENTITY&&((EntityHitResult)mop).getEntity() instanceof LivingEntity)
 				effect.applyToEntity((LivingEntity)((EntityHitResult)mop).getEntity(), shooter, thrower, fluidStack);
 			else if(mop.getType()==Type.BLOCK)
-				effect.applyToBlock(level, mop, shooter, thrower, fluidStack);
+				effect.applyToBlock(level(), mop, shooter, thrower, fluidStack);
 		}
 		else if(mop.getType()==Type.ENTITY&&fluid.getFluidType().getTemperature(fluidStack) > 500)
 		{
 			int tempDiff = fluid.getFluidType().getTemperature(fluidStack)-300;
 			int damage = Math.abs(tempDiff)/500;
 			Entity hit = ((EntityHitResult)mop).getEntity();
-			if(hit.hurt(DamageSource.LAVA, damage))
+			if(hit.hurt(hit.damageSources().lava(), damage))
 				hit.invulnerableTime = (int)(hit.invulnerableTime*.75);
 		}
 		if(mop.getType()==Type.ENTITY)
@@ -157,7 +158,7 @@ public class ChemthrowerShotEntity extends IEProjectileEntity
 			{
 				Entity hit = ((EntityHitResult)mop).getEntity();
 				hit.setSecondsOnFire(f);
-				if(hit.hurt(DamageSource.IN_FIRE, 2))
+				if(hit.hurt(hit.damageSources().inFire(), 2))
 					hit.invulnerableTime = (int)(hit.invulnerableTime*.75);
 			}
 		}
@@ -172,7 +173,7 @@ public class ChemthrowerShotEntity extends IEProjectileEntity
 			int superBrightness = 0;
 			light = (superBrightness&(0xff<<20))|(light<<4);
 			if(light > 0)
-				return Math.max(light, superBrightness);
+				return light;
 		}
 		return 0;
 	}

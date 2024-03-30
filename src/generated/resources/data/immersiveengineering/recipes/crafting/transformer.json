@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "b": {
       "item": "immersiveengineering:coil_mv"
@@ -24,5 +25,6 @@
   ],
   "result": {
     "item": "immersiveengineering:transformer"
-  }
+  },
+  "show_notification": true
 }

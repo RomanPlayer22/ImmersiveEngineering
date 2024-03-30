@@ -16,7 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -39,7 +38,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -152,7 +150,7 @@ public class IEFluid extends FlowingFluid
 	}
 
 	@Override
-	protected boolean canConvertToSource()
+	public boolean canConvertToSource(Level level)
 	{
 		return false;
 	}

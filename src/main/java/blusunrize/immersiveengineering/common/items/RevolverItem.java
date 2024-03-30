@@ -371,10 +371,10 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 								}
 							}
 							else
-								world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_HAT, SoundSource.PLAYERS, 1f, 1f);
+								world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_HAT.get(), SoundSource.PLAYERS, 1f, 1f);
 						}
 						else
-							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_HAT, SoundSource.PLAYERS, 1f, 1f);
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_HAT.get(), SoundSource.PLAYERS, 1f, 1f);
 
 						rotateCylinder(revolver, player, true, bullets);
 						ItemNBTHelper.putInt(revolver, "cooldown", getMaxShootCooldown(revolver));
@@ -414,14 +414,14 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 		if(count==1)
 		{
 			Entity entBullet = getBullet(shooter, vec, bullet, electro);
-			shooter.level.addFreshEntity(bullet.getProjectile(player, bulletStack, entBullet, electro));
+			shooter.level().addFreshEntity(bullet.getProjectile(player, bulletStack, entBullet, electro));
 		}
 		else
 			for(int i = 0; i < count; i++)
 			{
 				Vec3 vecDir = vec.add(shooter.getRandom().nextGaussian()*.1, shooter.getRandom().nextGaussian()*.1, shooter.getRandom().nextGaussian()*.1);
 				Entity entBullet = getBullet(shooter, vecDir, bullet, electro);
-				shooter.level.addFreshEntity(bullet.getProjectile(player, bulletStack, entBullet, electro));
+				shooter.level().addFreshEntity(bullet.getProjectile(player, bulletStack, entBullet, electro));
 			}
 
 		float noise = 0.5f;
@@ -464,7 +464,7 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 
 	private static RevolvershotEntity getBullet(LivingEntity living, Vec3 vecDir, IBullet type, boolean electro)
 	{
-		RevolvershotEntity bullet = new RevolvershotEntity(living.level, living, vecDir.x*1.5, vecDir.y*1.5, vecDir.z*1.5, type);
+		RevolvershotEntity bullet = new RevolvershotEntity(living.level(), living, vecDir.x*1.5, vecDir.y*1.5, vecDir.z*1.5, type);
 		bullet.setDeltaMovement(vecDir.scale(2));
 		bullet.bulletElectro = electro;
 		return bullet;
@@ -663,22 +663,14 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 	public static final Multimap<String, SpecialRevolver> specialRevolvers = ArrayListMultimap.create();
 	public static final Map<String, SpecialRevolver> specialRevolversByTag = new HashMap<>();
 
-	public static class SpecialRevolver
+	public record SpecialRevolver(
+			String[] uuid,
+			String tag,
+			String flavour,
+			HashMap<String, Object> baseUpgrades,
+			String[] renderAdditions
+	)
 	{
-		public final String[] uuid;
-		public final String tag;
-		public final String flavour;
-		public final HashMap<String, Object> baseUpgrades;
-		public final String[] renderAdditions;
-
-		public SpecialRevolver(String[] uuid, String tag, String flavour, HashMap<String, Object> baseUpgrades, String[] renderAdditions)
-		{
-			this.uuid = uuid;
-			this.tag = tag;
-			this.flavour = flavour;
-			this.baseUpgrades = baseUpgrades;
-			this.renderAdditions = renderAdditions;
-		}
 	}
 
 	@ParametersAreNonnullByDefault
@@ -739,7 +731,7 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 				if(iTier==0)
 					iTier = 1;
 				String translate = Lib.DESC_INFO+"revolver.perk."+perk.name().toLowerCase(Locale.US)+".tier"+iTier;
-				name = Component.translatable(translate).append(name);
+				name = Component.translatable(translate, name);
 			}
 
 			int rarityTier = (int)Math.ceil(Mth.clamp(averageTier+3, 0, 6)/6*5);
@@ -813,5 +805,4 @@ public class RevolverItem extends UpgradeableToolItem implements IBulletContaine
 			return perkCompound;
 		}
 	}
-
 }

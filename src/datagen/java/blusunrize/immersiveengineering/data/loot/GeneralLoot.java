@@ -19,8 +19,9 @@ import blusunrize.immersiveengineering.common.register.IEItems.Metals;
 import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import blusunrize.immersiveengineering.common.util.loot.BluprintzLootFunction;
 import blusunrize.immersiveengineering.common.world.Villages;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem.Type;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
@@ -37,14 +38,13 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static blusunrize.immersiveengineering.ImmersiveEngineering.rl;
 
-public class GeneralLoot implements Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>
+public class GeneralLoot implements LootTableSubProvider
 {
 	@Override
-	public void accept(BiConsumer<ResourceLocation, LootTable.Builder> out)
+	public void generate(BiConsumer<ResourceLocation, LootTable.Builder> out)
 	{
 		LootPool.Builder mainPool = LootPool.lootPool();
 		mainPool
@@ -73,17 +73,17 @@ public class GeneralLoot implements Consumer<BiConsumer<ResourceLocation, LootTa
 		/* Add Advancement Loot Tables */
 
 		builder = LootTable.lootTable();
-		builder.withPool(LootPool.lootPool().name("rare_shader").setRolls(ConstantValue.exactly(1))
+		builder.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
 				.add(createEntry(Misc.SHADER_BAG.get(Rarity.RARE), 1, 1, 1)));
 		out.accept(rl("advancements/shader_rare"), builder);
 
 		builder = LootTable.lootTable();
-		builder.withPool(LootPool.lootPool().name("epic_shader").setRolls(ConstantValue.exactly(1))
+		builder.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
 				.add(createEntry(Misc.SHADER_BAG.get(Rarity.EPIC), 1, 1, 1)));
 		out.accept(rl("advancements/shader_epic"), builder);
 
 		builder = LootTable.lootTable();
-		builder.withPool(LootPool.lootPool().name("masterwork_shader").setRolls(ConstantValue.exactly(1))
+		builder.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
 				.add(createEntry(Misc.SHADER_BAG.get(Lib.RARITY_MASTERWORK), 1, 1, 1)));
 		out.accept(rl("advancements/shader_masterwork"), builder);
 
@@ -104,10 +104,10 @@ public class GeneralLoot implements Consumer<BiConsumer<ResourceLocation, LootTa
 
 		builder = LootTable.lootTable();
 		builder.withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1))
-				.add(createEntry(Misc.FARADAY_SUIT.get(EquipmentSlot.HEAD)))
-				.add(createEntry(Misc.FARADAY_SUIT.get(EquipmentSlot.CHEST)))
-				.add(createEntry(Misc.FARADAY_SUIT.get(EquipmentSlot.LEGS)))
-				.add(createEntry(Misc.FARADAY_SUIT.get(EquipmentSlot.FEET))));
+				.add(createEntry(Misc.FARADAY_SUIT.get(Type.HELMET)))
+				.add(createEntry(Misc.FARADAY_SUIT.get(Type.CHESTPLATE)))
+				.add(createEntry(Misc.FARADAY_SUIT.get(Type.LEGGINGS)))
+				.add(createEntry(Misc.FARADAY_SUIT.get(Type.BOOTS))));
 		out.accept(rl("gameplay/hero_of_the_village/"+Villages.ELECTRICIAN.getPath()), builder);
 
 		builder = LootTable.lootTable();

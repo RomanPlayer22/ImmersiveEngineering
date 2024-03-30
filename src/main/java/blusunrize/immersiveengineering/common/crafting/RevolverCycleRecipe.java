@@ -10,9 +10,11 @@ package blusunrize.immersiveengineering.common.crafting;
 
 import blusunrize.immersiveengineering.common.register.IEItems.Weapons;
 import blusunrize.immersiveengineering.common.util.RecipeSerializers;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -23,7 +25,7 @@ public class RevolverCycleRecipe extends CustomRecipe
 {
 	public RevolverCycleRecipe(ResourceLocation id)
 	{
-		super(id);
+		super(id, CraftingBookCategory.MISC);
 	}
 
 	@Override
@@ -46,7 +48,7 @@ public class RevolverCycleRecipe extends CustomRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(CraftingContainer inv)
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess access)
 	{
 		ItemStack revolver = ItemStack.EMPTY;
 		for(int i = 0; i < inv.getContainerSize(); i++)
@@ -71,7 +73,7 @@ public class RevolverCycleRecipe extends CustomRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return ItemStack.EMPTY;
 	}

@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "a": {
       "tag": "forge:plates/lead"
@@ -23,5 +24,6 @@
   ],
   "result": {
     "item": "immersiveengineering:capacitor_lv"
-  }
+  },
+  "show_notification": true
 }

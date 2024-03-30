@@ -8,7 +8,6 @@
 
 package blusunrize.immersiveengineering.common.items;
 
-import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes.ItemContainerType;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes.ItemContainerTypeNew;
@@ -21,7 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -42,12 +41,7 @@ public class IEBaseItem extends Item
 
 	public IEBaseItem(Properties props)
 	{
-		this(props, ImmersiveEngineering.ITEM_GROUP);
-	}
-
-	public IEBaseItem(Properties props, CreativeModeTab group)
-	{
-		super(props.tab(group));
+		super(props);
 	}
 
 	public IEBaseItem setBurnTime(int burnTime)
@@ -72,6 +66,11 @@ public class IEBaseItem extends Item
 		openGui(player, hand==InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND: EquipmentSlot.OFFHAND);
 	}
 
+	public void fillCreativeTab(Output out)
+	{
+		out.accept(this);
+	}
+
 	protected void openGui(Player player, EquipmentSlot slot)
 	{
 		ItemStack stack = player.getItemBySlot(slot);
@@ -86,7 +85,7 @@ public class IEBaseItem extends Item
 			ItemContainerType<?> typeOld = getContainerType();
 			if(typeOld!=null)
 				NetworkHooks.openScreen((ServerPlayer)player, new SimpleMenuProvider(
-						(id, inv, p) -> typeOld.create(id, inv, player.level, slot, stack),
+						(id, inv, p) -> typeOld.create(id, inv, player.level(), slot, stack),
 						Component.empty()
 				), buffer -> buffer.writeInt(slot.ordinal()));
 		}

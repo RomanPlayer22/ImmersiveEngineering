@@ -22,8 +22,9 @@ import blusunrize.immersiveengineering.common.blocks.metal.*;
 import blusunrize.immersiveengineering.common.blocks.metal.MetalLadderBlock.CoverType;
 import blusunrize.immersiveengineering.common.blocks.plant.HempBlock;
 import blusunrize.immersiveengineering.common.blocks.plant.PottedHempBlock;
-import blusunrize.immersiveengineering.common.blocks.stone.*;
-import blusunrize.immersiveengineering.common.blocks.stone.BlastFurnaceBlockEntity.CrudeBlastFurnaceBlockEntity;
+import blusunrize.immersiveengineering.common.blocks.stone.CoresampleBlockEntity;
+import blusunrize.immersiveengineering.common.blocks.stone.PartialConcreteBlock;
+import blusunrize.immersiveengineering.common.blocks.stone.SlagGravelBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.BarrelBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.CraftingTableBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.*;
@@ -31,7 +32,7 @@ import blusunrize.immersiveengineering.common.config.IEServerConfig;
 import com.google.common.base.Preconditions;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -40,8 +41,8 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -57,47 +58,78 @@ import java.util.function.Supplier;
 public final class IEBlocks
 {
 	public static final DeferredRegister<Block> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCKS, Lib.MODID);
-	private static final Supplier<Properties> STONE_DECO_PROPS = () -> Block.Properties.of(Material.STONE)
+	private static final Supplier<Properties> STONE_DECO_PROPS = () -> Block.Properties.of()
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
 			.sound(SoundType.STONE)
 			.requiresCorrectToolForDrops()
 			.strength(2, 10);
 
-	private static final Supplier<Properties> STONE_DECO_BRICK_PROPS = () -> Block.Properties.of(Material.STONE)
+	private static final Supplier<Properties> STONE_DECO_STONE_BRICK_PROPS = () -> Block.Properties.of()
 			.sound(SoundType.STONE)
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
 			.requiresCorrectToolForDrops()
 			.strength(1.75f, 10);
-	private static final Supplier<Properties> STONE_DECO_LEADED_PROPS = () -> Block.Properties.of(Material.STONE)
+	private static final Supplier<Properties> STONE_DECO_LEADED_PROPS = () -> Block.Properties.of()
 			.sound(SoundType.STONE)
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
 			.requiresCorrectToolForDrops()
 			.strength(2, 180);
-	private static final Supplier<Properties> STONE_DECO_PROPS_NOT_SOLID = () -> Block.Properties.of(Material.STONE)
+	private static final Supplier<Properties> STONE_DECO_PROPS_NOT_SOLID = () -> Block.Properties.of()
 			.sound(SoundType.STONE)
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
 			.requiresCorrectToolForDrops()
 			.strength(0.5f, 0.5f) //Glass & Tinted Glass are 0.3f,0.3f. These glasses are stronger, thus 0.5f,0.5f
 			.noOcclusion();
-	private static final Supplier<Properties> SHEETMETAL_PROPERTIES = () -> Block.Properties.of(Material.METAL)
+
+	private static final Supplier<Properties> STONE_DECO_BRICK_PROPS = () -> Block.Properties.of()
+			.sound(SoundType.NETHER_BRICKS)
+			.mapColor(MapColor.COLOR_RED)
+			.instrument(NoteBlockInstrument.BASEDRUM)
+			.requiresCorrectToolForDrops()
+			.strength(2f, 8);
+
+	private static final Supplier<Properties> STONE_DECO_GBRICK_PROPS = () -> Block.Properties.of()
+			.sound(SoundType.NETHER_BRICKS)
+			.mapColor(MapColor.STONE)
+			.instrument(NoteBlockInstrument.BASEDRUM)
+			.requiresCorrectToolForDrops()
+			.strength(2f, 8);
+	private static final Supplier<Properties> SHEETMETAL_PROPERTIES = () -> Block.Properties.of()
+			.mapColor(MapColor.METAL)
 			.sound(SoundType.METAL)
 			.strength(2, 2); //Cauldron props are 2,2 and sheetmetal is similar
-	private static final Supplier<Properties> STANDARD_WOOD_PROPERTIES = () -> Block.Properties.of(Material.WOOD)
+	private static final Supplier<Properties> STANDARD_WOOD_PROPERTIES = () -> Block.Properties.of()
+			.mapColor(MapColor.WOOD)
+			.ignitedByLava()
+			.instrument(NoteBlockInstrument.BASS)
 			.sound(SoundType.WOOD)
 			.strength(2, 5);
 	private static final Supplier<Properties> STANDARD_WOOD_PROPERTIES_NO_OVERLAY =
-			() -> Block.Properties.of(Material.WOOD)
+			() -> Block.Properties.of()
+					.mapColor(MapColor.WOOD)
+					.ignitedByLava()
+					.instrument(NoteBlockInstrument.BASS)
 					.sound(SoundType.WOOD)
 					.strength(2, 5)
 					.isViewBlocking((state, blockReader, pos) -> false);
 	private static final Supplier<Properties> STANDARD_WOOD_PROPERTIES_NO_OCCLUSION = () -> STANDARD_WOOD_PROPERTIES_NO_OVERLAY.get().noOcclusion();
-	private static final Supplier<Properties> DEFAULT_METAL_PROPERTIES = () -> Block.Properties.of(Material.METAL)
+	private static final Supplier<Properties> DEFAULT_METAL_PROPERTIES = () -> Block.Properties.of()
+			.mapColor(MapColor.METAL)
 			.sound(SoundType.METAL)
 			.requiresCorrectToolForDrops()
 			.strength(3, 15);
 	private static final Supplier<Properties> METAL_PROPERTIES_NO_OVERLAY =
-			() -> Block.Properties.of(Material.METAL)
+			() -> Block.Properties.of()
+					.mapColor(MapColor.METAL)
 					.sound(SoundType.METAL)
 					.strength(3, 15)
 					.requiresCorrectToolForDrops()
 					.isViewBlocking((state, blockReader, pos) -> false);
-	private static final Supplier<Properties> METAL_PROPERTIES_NO_OCCLUSION = () -> METAL_PROPERTIES_NO_OVERLAY.get().noOcclusion();
+	public static final Supplier<Properties> METAL_PROPERTIES_NO_OCCLUSION = () -> METAL_PROPERTIES_NO_OVERLAY.get().noOcclusion();
 	private static final Supplier<Properties> METAL_PROPERTIES_DYNAMIC = () -> METAL_PROPERTIES_NO_OCCLUSION.get().dynamicShape();
 
 	private IEBlocks()
@@ -106,32 +138,53 @@ public final class IEBlocks
 
 	public static final Map<ResourceLocation, BlockEntry<SlabBlock>> TO_SLAB = new HashMap<>();
 	public static final Map<ResourceLocation, BlockEntry<IEStairsBlock>> TO_STAIRS = new HashMap<>();
+	public static final Map<ResourceLocation, BlockEntry<IEWallBlock>> TO_WALL = new HashMap<>();
 
 	public static final class StoneDecoration
 	{
-		public static final BlockEntry<IEBaseBlock> COKEBRICK = BlockEntry.simple("cokebrick", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> COKEBRICK = BlockEntry.simple("cokebrick", STONE_DECO_GBRICK_PROPS);
 		public static final BlockEntry<IEBaseBlock> BLASTBRICK = BlockEntry.simple("blastbrick", STONE_DECO_BRICK_PROPS);
 		public static final BlockEntry<IEBaseBlock> BLASTBRICK_REINFORCED = BlockEntry.simple(
-				"blastbrick_reinforced", () -> Block.Properties.of(Material.STONE)
-						.sound(SoundType.STONE).requiresCorrectToolForDrops().strength(2.5f, 12)
+				"blastbrick_reinforced", () -> Block.Properties.of()
+						.mapColor(MapColor.COLOR_RED)
+						.instrument(NoteBlockInstrument.BASEDRUM)
+						.sound(SoundType.NETHER_BRICKS).requiresCorrectToolForDrops().strength(2.5f, 12)
 		);
+		public static final BlockEntry<IEBaseBlock> SLAG_BRICK = BlockEntry.simple("slag_brick", STONE_DECO_GBRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> CLINKER_BRICK = BlockEntry.simple("clinker_brick", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> CLINKER_BRICK_SILL = BlockEntry.simple("clinker_brick_sill", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<HorizontalFacingBlock> CLINKER_BRICK_QUOIN = new BlockEntry<>(
+				"clinker_brick_quoin", STONE_DECO_BRICK_PROPS, HorizontalFacingBlock::new);
 		public static final BlockEntry<IEBaseBlock> COKE = BlockEntry.simple(
-				"coke", () -> Block.Properties.of(Material.STONE)
-				.sound(SoundType.STONE).requiresCorrectToolForDrops().strength(5, 6));
+				"coke", () -> Block.Properties.of()
+						.mapColor(MapColor.STONE)
+						.instrument(NoteBlockInstrument.BASEDRUM)
+						.sound(SoundType.STONE).requiresCorrectToolForDrops().strength(5, 6));
 		public static final BlockEntry<SlagGravelBlock> SLAG_GRAVEL = new BlockEntry<>(
 				"slag_gravel",
-				() -> Block.Properties.of(Material.SAND, MaterialColor.STONE).strength(0.6F).sound(SoundType.GRAVEL),
+				() -> Block.Properties.of()
+						.mapColor(MapColor.STONE)
+						.instrument(NoteBlockInstrument.SNARE)
+						.strength(0.6F).sound(SoundType.GRAVEL),
+				SlagGravelBlock::new
+		);
+		public static final BlockEntry<FallingBlock> GRIT_SAND = new BlockEntry<>(
+				"grit_sand",
+				() -> Block.Properties.of()
+						.mapColor(MapColor.SAND)
+						.instrument(NoteBlockInstrument.SNARE)
+						.strength(0.6F).sound(SoundType.GRAVEL),
 				SlagGravelBlock::new
 		);
 
 		public static final BlockEntry<IEBaseBlock> HEMPCRETE = BlockEntry.simple("hempcrete", STONE_DECO_PROPS);
-		public static final BlockEntry<IEBaseBlock> HEMPCRETE_BRICK = BlockEntry.simple("hempcrete_brick", STONE_DECO_BRICK_PROPS);
-		public static final BlockEntry<IEBaseBlock> HEMPCRETE_BRICK_CRACKED = BlockEntry.simple("hempcrete_brick_cracked", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> HEMPCRETE_BRICK = BlockEntry.simple("hempcrete_brick", STONE_DECO_STONE_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> HEMPCRETE_BRICK_CRACKED = BlockEntry.simple("hempcrete_brick_cracked", STONE_DECO_STONE_BRICK_PROPS);
 		public static final BlockEntry<IEBaseBlock> HEMPCRETE_CHISELED = BlockEntry.simple("hempcrete_chiseled", STONE_DECO_PROPS);
 		public static final BlockEntry<IEBaseBlock> HEMPCRETE_PILLAR = BlockEntry.simple("hempcrete_pillar", STONE_DECO_PROPS);
 		public static final BlockEntry<IEBaseBlock> CONCRETE = BlockEntry.simple("concrete", STONE_DECO_PROPS);
-		public static final BlockEntry<IEBaseBlock> CONCRETE_BRICK = BlockEntry.simple("concrete_brick", STONE_DECO_BRICK_PROPS);
-		public static final BlockEntry<IEBaseBlock> CONCRETE_BRICK_CRACKED = BlockEntry.simple("concrete_brick_cracked", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> CONCRETE_BRICK = BlockEntry.simple("concrete_brick", STONE_DECO_STONE_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> CONCRETE_BRICK_CRACKED = BlockEntry.simple("concrete_brick_cracked", STONE_DECO_STONE_BRICK_PROPS);
 		public static final BlockEntry<IEBaseBlock> CONCRETE_CHISELED = BlockEntry.simple("concrete_chiseled", STONE_DECO_PROPS);
 		public static final BlockEntry<IEBaseBlock> CONCRETE_PILLAR = BlockEntry.simple("concrete_pillar", STONE_DECO_PROPS);
 		public static final BlockEntry<IEBaseBlock> CONCRETE_TILE = BlockEntry.simple("concrete_tile", STONE_DECO_PROPS);
@@ -145,10 +198,12 @@ public final class IEBlocks
 				"slag_glass", STONE_DECO_PROPS_NOT_SOLID, shouldHave -> shouldHave.setLightOpacity(8)
 		);
 		public static final BlockEntry<IEBaseBlock> CONCRETE_SPRAYED = BlockEntry.simple(
-				"concrete_sprayed", () -> Block.Properties.of(Material.STONE)
+				"concrete_sprayed", () -> Block.Properties.of()
+						.mapColor(MapColor.STONE)
+						.instrument(NoteBlockInstrument.BASEDRUM)
 						.strength(.2F, 1)
 						.noOcclusion());
-		public static final BlockEntry<IEBaseBlock> ALLOYBRICK = BlockEntry.simple("alloybrick", STONE_DECO_BRICK_PROPS);
+		public static final BlockEntry<IEBaseBlock> ALLOYBRICK = BlockEntry.simple("alloybrick", STONE_DECO_STONE_BRICK_PROPS);
 
 		//TODO possibly merge into a single block with "arbitrary" height?
 		public static final BlockEntry<PartialConcreteBlock> CONCRETE_SHEET = new BlockEntry<>(
@@ -162,87 +217,15 @@ public final class IEBlocks
 				PartialConcreteBlock::makeProperties, props -> new PartialConcreteBlock(props, 12)
 		);
 
-		public static final BlockEntry<HorizontalFacingBlock<CoresampleBlockEntity>> CORESAMPLE = new BlockEntry<>(
+		public static final BlockEntry<HorizontalFacingEntityBlock<CoresampleBlockEntity>> CORESAMPLE = new BlockEntry<>(
 				"coresample",
 				// TODO move bounds code into the block impl and get rid of dynamic shapes
 				dynamicShape(STONE_DECO_PROPS_NOT_SOLID),
-				p -> new HorizontalFacingBlock<>(IEBlockEntities.CORE_SAMPLE, p)
+				p -> new HorizontalFacingEntityBlock<>(IEBlockEntities.CORE_SAMPLE, p)
 		);
 
 		public static final BlockEntry<IEBaseBlock> DUROPLAST = BlockEntry.simple(
 				"duroplast", STONE_DECO_PROPS_NOT_SOLID
-		);
-
-		private static void init()
-		{
-		}
-	}
-
-	public static final class Multiblocks
-	{
-		public static final BlockEntry<StoneMultiBlock<CokeOvenBlockEntity>> COKE_OVEN = new BlockEntry<>(
-				"coke_oven", StoneMultiBlock.properties(true), p -> new StoneMultiBlock<>(p, IEBlockEntities.COKE_OVEN)
-		);
-		public static final BlockEntry<StoneMultiBlock<CrudeBlastFurnaceBlockEntity>> BLAST_FURNACE = new BlockEntry<>(
-				"blast_furnace", StoneMultiBlock.properties(true), p -> new StoneMultiBlock<>(p, IEBlockEntities.BLAST_FURNACE)
-		);
-		public static final BlockEntry<StoneMultiBlock<AlloySmelterBlockEntity>> ALLOY_SMELTER = new BlockEntry<>(
-				"alloy_smelter", StoneMultiBlock.properties(true), p -> new StoneMultiBlock<>(p, IEBlockEntities.ALLOY_SMELTER)
-		);
-		public static final BlockEntry<StoneMultiBlock<BlastFurnaceAdvancedBlockEntity>> ADVANCED_BLAST_FURNACE = new BlockEntry<>(
-				"advanced_blast_furnace", StoneMultiBlock.properties(false), p -> new StoneMultiBlock<>(p, IEBlockEntities.BLAST_FURNACE_ADVANCED)
-		);
-
-		public static final BlockEntry<MetalMultiblockBlock<MetalPressBlockEntity>> METAL_PRESS = new BlockEntry<>(
-				"metal_press", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.METAL_PRESS, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<CrusherBlockEntity>> CRUSHER = new BlockEntry<>(
-				"crusher", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.CRUSHER, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<SawmillBlockEntity>> SAWMILL = new BlockEntry<>(
-				"sawmill", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.SAWMILL, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<SheetmetalTankBlockEntity>> TANK = new BlockEntry<>(
-				"tank", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.SHEETMETAL_TANK, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<SiloBlockEntity>> SILO = new BlockEntry<>(
-				"silo", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.SILO, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<AssemblerBlockEntity>> ASSEMBLER = new BlockEntry<>(
-				"assembler", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.ASSEMBLER, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<AutoWorkbenchBlockEntity>> AUTO_WORKBENCH = new BlockEntry<>(
-				"auto_workbench", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.AUTO_WORKBENCH, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<BottlingMachineBlockEntity>> BOTTLING_MACHINE = new BlockEntry<>(
-				"bottling_machine", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.BOTTLING_MACHINE, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<SqueezerBlockEntity>> SQUEEZER = new BlockEntry<>(
-				"squeezer", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.SQUEEZER, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<FermenterBlockEntity>> FERMENTER = new BlockEntry<>(
-				"fermenter", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.FERMENTER, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<RefineryBlockEntity>> REFINERY = new BlockEntry<>(
-				"refinery", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.REFINERY, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<DieselGeneratorBlockEntity>> DIESEL_GENERATOR = new BlockEntry<>(
-				"diesel_generator", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.DIESEL_GENERATOR, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<ExcavatorBlockEntity>> EXCAVATOR = new BlockEntry<>(
-				"excavator", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.EXCAVATOR, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<BucketWheelBlockEntity>> BUCKET_WHEEL = new BlockEntry<>(
-				"bucket_wheel", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.BUCKET_WHEEL, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<ArcFurnaceBlockEntity>> ARC_FURNACE = new BlockEntry<>(
-				"arc_furnace", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.ARC_FURNACE, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<LightningrodBlockEntity>> LIGHTNING_ROD = new BlockEntry<>(
-				"lightning_rod", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.LIGHTNING_ROD, p)
-		);
-		public static final BlockEntry<MetalMultiblockBlock<MixerBlockEntity>> MIXER = new BlockEntry<>(
-				"mixer", METAL_PROPERTIES_DYNAMIC, p -> new MetalMultiblockBlock<>(IEBlockEntities.MIXER, p)
 		);
 
 		private static void init()
@@ -273,24 +256,31 @@ public final class IEBlocks
 				if(m.shouldAddOre())
 				{
 					ore = new BlockEntry<>(BlockEntry.simple("ore_"+name,
-							() -> Block.Properties.of(Material.STONE)
+							() -> Block.Properties.of()
+									.mapColor(MapColor.STONE)
+									.instrument(NoteBlockInstrument.BASEDRUM)
 									.strength(3, 3)
 									.requiresCorrectToolForDrops()));
 					deepslateOre = new BlockEntry<>(BlockEntry.simple("deepslate_ore_"+name,
-							() -> Block.Properties.of(Material.STONE)
-									.color(MaterialColor.DEEPSLATE)
+							() -> Block.Properties.of()
+									.mapColor(MapColor.STONE)
+									.instrument(NoteBlockInstrument.BASEDRUM)
+									.mapColor(MapColor.DEEPSLATE)
 									.sound(SoundType.DEEPSLATE)
 									.strength(4.5f, 3)
 									.requiresCorrectToolForDrops()));
 					rawOre = new BlockEntry<>(BlockEntry.simple("raw_block_"+name,
-							() -> Block.Properties.of(Material.STONE)
+							() -> Block.Properties.of()
+									.mapColor(MapColor.STONE)
+									.instrument(NoteBlockInstrument.BASEDRUM)
 									.strength(5, 6)
 									.requiresCorrectToolForDrops()));
 				}
 				if(!m.isVanillaMetal())
 				{
 					BlockEntry<IEBaseBlock> storageIE = BlockEntry.simple(
-							"storage_"+name, () -> Block.Properties.of(Material.METAL)
+							"storage_"+name, () -> Block.Properties.of()
+									.mapColor(MapColor.METAL)
 									.sound(m==EnumMetals.STEEL?SoundType.NETHERITE_BLOCK: SoundType.METAL)
 									.strength(5, 10)
 									.requiresCorrectToolForDrops());
@@ -339,14 +329,20 @@ public final class IEBlocks
 		public static final BlockEntry<PostBlock> TREATED_POST = BlockEntry.post("treated_post", STANDARD_WOOD_PROPERTIES_NO_OVERLAY);
 		public static final BlockEntry<SawdustBlock> SAWDUST = new BlockEntry<>(
 				"sawdust",
-				() -> Block.Properties.of(Material.WOOD, MaterialColor.SAND)
+				() -> Block.Properties.of()
+						.mapColor(MapColor.SAND)
+						.ignitedByLava()
+						.instrument(NoteBlockInstrument.BASS)
 						.sound(SoundType.SAND)
 						.strength(0.5F)
 						.noCollission().noOcclusion(),
 				SawdustBlock::new
 		);
 		public static final BlockEntry<IEBaseBlock> FIBERBOARD = BlockEntry.simple("fiberboard",
-				() -> Block.Properties.of(Material.WOOD, MaterialColor.WOOD)
+				() -> Block.Properties.of()
+						.mapColor(MapColor.WOOD)
+						.ignitedByLava()
+						.instrument(NoteBlockInstrument.BASS)
 						.strength(1.25f, 1)
 		);
 
@@ -385,7 +381,12 @@ public final class IEBlocks
 		);
 		public static final BlockEntry<IEEntityBlock<WoodenCrateBlockEntity>> REINFORCED_CRATE = new BlockEntry<>(
 				"reinforced_crate",
-				() -> Properties.of(Material.WOOD).sound(SoundType.WOOD).strength(2, 1200000),
+				() -> Properties.of()
+						.sound(SoundType.WOOD)
+						.strength(2, 1200000)
+						.mapColor(MapColor.WOOD)
+						.ignitedByLava()
+						.instrument(NoteBlockInstrument.BASS),
 				p -> new IEEntityBlock<>(IEBlockEntities.WOODEN_CRATE, p, false)
 		);
 		public static final BlockEntry<IEEntityBlock<SorterBlockEntity>> SORTER = new BlockEntry<>(
@@ -406,8 +407,8 @@ public final class IEBlocks
 		);
 		//TODO move to deco?
 		public static final BlockEntry<WallmountBlock> TREATED_WALLMOUNT = BlockEntry.wallmount("treated_wallmount", STANDARD_WOOD_PROPERTIES_NO_OVERLAY);
-		public static final BlockEntry<HorizontalFacingBlock<LogicUnitBlockEntity>> LOGIC_UNIT = new BlockEntry<>(
-				"logic_unit", STANDARD_WOOD_PROPERTIES_NO_OCCLUSION, p -> new HorizontalFacingBlock<>(IEBlockEntities.LOGIC_UNIT, p)
+		public static final BlockEntry<HorizontalFacingEntityBlock<LogicUnitBlockEntity>> LOGIC_UNIT = new BlockEntry<>(
+				"logic_unit", STANDARD_WOOD_PROPERTIES_NO_OCCLUSION, p -> new HorizontalFacingEntityBlock<>(IEBlockEntities.LOGIC_UNIT, p)
 		);
 
 		private static void init()
@@ -480,9 +481,9 @@ public final class IEBlocks
 		public static final BlockEntry<RazorWireBlock> RAZOR_WIRE = new BlockEntry<>(
 				"razor_wire", RazorWireBlock.PROPERTIES, RazorWireBlock::new
 		);
-		public static final BlockEntry<HorizontalFacingBlock<ToolboxBlockEntity>> TOOLBOX = new BlockEntry<>(
+		public static final BlockEntry<HorizontalFacingEntityBlock<ToolboxBlockEntity>> TOOLBOX = new BlockEntry<>(
 				// TODO move shape into block
-				"toolbox_block", dynamicShape(METAL_PROPERTIES_NO_OVERLAY), p -> new HorizontalFacingBlock<>(IEBlockEntities.TOOLBOX, p)
+				"toolbox_block", dynamicShape(METAL_PROPERTIES_NO_OVERLAY), p -> new HorizontalFacingEntityBlock<>(IEBlockEntities.TOOLBOX, p)
 		);
 		public static final BlockEntry<IEEntityBlock<CapacitorBlockEntity>> CAPACITOR_LV = new BlockEntry<>(
 				"capacitor_lv", DEFAULT_METAL_PROPERTIES, p -> new IEEntityBlock<>(IEBlockEntities.CAPACITOR_LV, p)
@@ -510,8 +511,8 @@ public final class IEBlocks
 		public static final BlockEntry<FurnaceHeaterBlock> FURNACE_HEATER = new BlockEntry<>(
 				"furnace_heater", DEFAULT_METAL_PROPERTIES, FurnaceHeaterBlock::new
 		);
-		public static final BlockEntry<HorizontalFacingBlock<DynamoBlockEntity>> DYNAMO = new BlockEntry<>(
-				"dynamo", DEFAULT_METAL_PROPERTIES, p -> new HorizontalFacingBlock<>(IEBlockEntities.DYNAMO, p)
+		public static final BlockEntry<HorizontalFacingEntityBlock<DynamoBlockEntity>> DYNAMO = new BlockEntry<>(
+				"dynamo", DEFAULT_METAL_PROPERTIES, p -> new HorizontalFacingEntityBlock<>(IEBlockEntities.DYNAMO, p)
 		);
 		public static final BlockEntry<IEEntityBlock<ThermoelectricGenBlockEntity>> THERMOELECTRIC_GEN = new BlockEntry<>(
 				"thermoelectric_generator", DEFAULT_METAL_PROPERTIES, p -> new IEEntityBlock<>(IEBlockEntities.THERMOELECTRIC_GEN, p)
@@ -519,9 +520,9 @@ public final class IEBlocks
 		public static final BlockEntry<ElectricLanternBlock> ELECTRIC_LANTERN = new BlockEntry<>(
 				"electric_lantern", ElectricLanternBlock.PROPERTIES, ElectricLanternBlock::new
 		);
-		public static final BlockEntry<HorizontalFacingBlock<ChargingStationBlockEntity>> CHARGING_STATION = new BlockEntry<>(
+		public static final BlockEntry<HorizontalFacingEntityBlock<ChargingStationBlockEntity>> CHARGING_STATION = new BlockEntry<>(
 				// TODO move shape into block impl
-				"charging_station", dynamicShape(METAL_PROPERTIES_NO_OVERLAY), p -> new HorizontalFacingBlock<>(IEBlockEntities.CHARGING_STATION, p)
+				"charging_station", dynamicShape(METAL_PROPERTIES_NO_OVERLAY), p -> new HorizontalFacingEntityBlock<>(IEBlockEntities.CHARGING_STATION, p)
 		);
 		public static final BlockEntry<FluidPipeBlock> FLUID_PIPE = new BlockEntry<>("fluid_pipe", METAL_PROPERTIES_DYNAMIC, FluidPipeBlock::new);
 		public static final BlockEntry<SampleDrillBlock> SAMPLE_DRILL = new BlockEntry<>("sample_drill", METAL_PROPERTIES_NO_OCCLUSION, SampleDrillBlock::new);
@@ -538,7 +539,9 @@ public final class IEBlocks
 		public static final BlockEntry<ClocheBlock> CLOCHE = new BlockEntry<>("cloche", METAL_PROPERTIES_NO_OCCLUSION, ClocheBlock::new);
 		public static final Map<IConveyorType<?>, BlockEntry<ConveyorBlock>> CONVEYORS = new HashMap<>();
 		public static final Map<EnumMetals, BlockEntry<ChuteBlock>> CHUTES = new EnumMap<>(EnumMetals.class);
-
+		public static final BlockEntry<AnyFacingEntityBlock<ElectromagnetBlockEntity>> ELECTROMAGNET = new BlockEntry<>(
+				"electromagnet", DEFAULT_METAL_PROPERTIES, p -> new AnyFacingEntityBlock<>(IEBlockEntities.ELECTROMAGNET, p)
+		);
 		private static void init()
 		{
 			for(EnumMetals metal : new EnumMetals[]{EnumMetals.IRON, EnumMetals.STEEL, EnumMetals.ALUMINUM, EnumMetals.COPPER})
@@ -653,6 +656,15 @@ public final class IEBlocks
 		));
 	}
 
+	private static <T extends Block & IIEBlock> void registerWall(BlockEntry<T> fullBlock)
+	{
+		TO_WALL.put(fullBlock.getId(), new BlockEntry<>(
+				"wall_"+fullBlock.getId().getPath(),
+				fullBlock::getProperties,
+				p -> new IEWallBlock(p, fullBlock)
+		));
+	}
+
 	private static Supplier<BlockBehaviour.Properties> dynamicShape(Supplier<BlockBehaviour.Properties> baseProps)
 	{
 		return () -> baseProps.get().dynamicShape();
@@ -662,7 +674,6 @@ public final class IEBlocks
 	{
 		REGISTER.register(FMLJavaModLoadingContext.get().getModEventBus());
 		StoneDecoration.init();
-		Multiblocks.init();
 		Metals.init();
 		WoodenDecoration.init();
 		WoodenDevices.init();
@@ -674,6 +685,8 @@ public final class IEBlocks
 		registerSlab(StoneDecoration.COKEBRICK);
 		registerSlab(StoneDecoration.BLASTBRICK);
 		registerSlab(StoneDecoration.BLASTBRICK_REINFORCED);
+		registerSlab(StoneDecoration.SLAG_BRICK);
+		registerSlab(StoneDecoration.CLINKER_BRICK);
 		registerSlab(StoneDecoration.COKE);
 		registerSlab(StoneDecoration.HEMPCRETE);
 		registerSlab(StoneDecoration.HEMPCRETE_BRICK);
@@ -683,12 +696,16 @@ public final class IEBlocks
 		registerSlab(StoneDecoration.CONCRETE_LEADED);
 		registerSlab(StoneDecoration.INSULATING_GLASS);
 		registerSlab(StoneDecoration.ALLOYBRICK);
+		registerStairs(StoneDecoration.SLAG_BRICK);
+		registerStairs(StoneDecoration.CLINKER_BRICK);
 		registerStairs(StoneDecoration.HEMPCRETE);
 		registerStairs(StoneDecoration.HEMPCRETE_BRICK);
 		registerStairs(StoneDecoration.CONCRETE);
 		registerStairs(StoneDecoration.CONCRETE_BRICK);
 		registerStairs(StoneDecoration.CONCRETE_TILE);
 		registerStairs(StoneDecoration.CONCRETE_LEADED);
+		registerWall(StoneDecoration.SLAG_BRICK);
+		registerWall(StoneDecoration.CLINKER_BRICK);
 
 		for(BlockEntry<?> entry : BlockEntry.ALL_ENTRIES)
 		{
@@ -771,7 +788,7 @@ public final class IEBlocks
 		public BlockEntry(T existing)
 		{
 			this.properties = () -> Properties.copy(existing);
-			this.regObject = RegistryObject.create(Registry.BLOCK.getKey(existing), ForgeRegistries.BLOCKS);
+			this.regObject = RegistryObject.create(BuiltInRegistries.BLOCK.getKey(existing), ForgeRegistries.BLOCKS);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -807,6 +824,11 @@ public final class IEBlocks
 		public Item asItem()
 		{
 			return get().asItem();
+		}
+
+		public RegistryObject<? extends Block> getRegObject()
+		{
+			return regObject;
 		}
 	}
 }

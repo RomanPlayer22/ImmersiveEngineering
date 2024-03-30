@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "f": {
       "item": "immersiveengineering:treated_fence"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "immersiveengineering:treated_post"
-  }
+  },
+  "show_notification": true
 }

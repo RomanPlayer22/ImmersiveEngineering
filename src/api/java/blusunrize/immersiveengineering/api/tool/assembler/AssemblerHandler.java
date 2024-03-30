@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * @author BluSunrize - 01.09.2016
@@ -55,26 +54,15 @@ public class AssemblerHandler
 	}
 
 	@Nonnull
-	public static IRecipeAdapter<?> findAdapter(Recipe recipe)
+	public static <R extends Recipe<CraftingContainer>>
+	IRecipeAdapter<R> findAdapter(R recipe)
 	{
-		return findAdapterForClass(recipe.getClass());
-	}
-
-	@Deprecated
-	public static void registerSpecialIngredientConverter(Function<Ingredient, RecipeQuery> func)
-	{
-		registerSpecialIngredientConverter((ingr, rem) -> func.apply(ingr));
+		return (IRecipeAdapter<R>)findAdapterForClass(recipe.getClass());
 	}
 
 	public static void registerSpecialIngredientConverter(BiFunction<Ingredient, ItemStack, RecipeQuery> func)
 	{
 		specialIngredientConverters.add(func);
-	}
-
-	@Deprecated
-	public static void registerSpecialItemStackConverter(Function<ItemStack, RecipeQuery> func)
-	{
-		registerSpecialItemStackConverter((stack, rem) -> func.apply(stack));
 	}
 
 	public static void registerSpecialItemStackConverter(BiFunction<ItemStack, ItemStack, RecipeQuery> func)
@@ -85,7 +73,7 @@ public class AssemblerHandler
 	public interface IRecipeAdapter<R extends Recipe<CraftingContainer>>
 	{
 		@Nullable
-		RecipeQuery[] getQueriedInputs(R recipe, NonNullList<ItemStack> input, Level world);
+		List<RecipeQuery> getQueriedInputs(R recipe, NonNullList<ItemStack> input, Level world);
 	}
 
 	private static <T> RecipeQuery fromFunctions(T in, ItemStack remaining, List<BiFunction<T, ItemStack, RecipeQuery>> converters)

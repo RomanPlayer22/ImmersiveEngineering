@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.data;
 
 import blusunrize.immersiveengineering.api.Lib;
@@ -9,8 +17,8 @@ import blusunrize.immersiveengineering.client.render.tile.*;
 import blusunrize.immersiveengineering.data.DynamicModels.SimpleModelBuilder;
 import blusunrize.immersiveengineering.data.blockstates.MultiblockStates;
 import blusunrize.immersiveengineering.data.models.IEOBJBuilder;
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.model.generators.ModelBuilder;
@@ -28,9 +36,9 @@ public class DynamicModels extends ModelProvider<SimpleModelBuilder>
 {
 	private final MultiblockStates multiblocks;
 
-	public DynamicModels(MultiblockStates multiblocks, DataGenerator generator, ExistingFileHelper existingFileHelper)
+	public DynamicModels(MultiblockStates multiblocks, PackOutput output, ExistingFileHelper existingFileHelper)
 	{
-		super(generator, Lib.MODID, "dynamic", rl -> new SimpleModelBuilder(rl, existingFileHelper), existingFileHelper);
+		super(output, Lib.MODID, "dynamic", rl -> new SimpleModelBuilder(rl, existingFileHelper), existingFileHelper);
 		this.multiblocks = multiblocks;
 	}
 
@@ -130,7 +138,7 @@ public class DynamicModels extends ModelProvider<SimpleModelBuilder>
 				.flipV(true)
 				.end();
 		for(Entry<Block, ModelFile> multiblock : multiblocks.unsplitModels.entrySet())
-			withExistingParent(Registry.BLOCK.getKey(multiblock.getKey()).getPath(), multiblock.getValue().getLocation());
+			withExistingParent(BuiltInRegistries.BLOCK.getKey(multiblock.getKey()).getPath(), multiblock.getValue().getLocation());
 	}
 
 	@Nonnull

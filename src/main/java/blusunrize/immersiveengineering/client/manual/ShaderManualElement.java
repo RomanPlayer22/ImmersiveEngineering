@@ -26,6 +26,7 @@ import blusunrize.lib.manual.gui.ManualScreen;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -163,40 +164,41 @@ public class ShaderManualElement extends SpecialManualElements
 	}
 
 	@Override
-	public void render(PoseStack transform, ManualScreen gui, int x, int y, int mouseX, int mouseY)
+	public void render(GuiGraphics graphics, ManualScreen gui, int x, int y, int mouseX, int mouseY)
 	{
 		Lighting.setupFor3DItems();
 		float scale = 2;
+		PoseStack transform = graphics.pose();
 		transform.pushPose();
 		transform.translate(x, y, 0);
 		transform.scale(scale, scale, scale);
 		boolean examples = exampleItems!=null&&exampleItems.length > 0;
 
-		ManualUtils.renderItemStack(transform, shaderItem, (int)((10+(examples?0: 34))/scale), (int)((-8)/scale), false);
+		ManualUtils.renderItemStack(graphics, shaderItem, (int)((10+(examples?0: 34))/scale), (int)((-8)/scale), false);
 		if(examples&&example >= 0&&example < exampleItems.length)
-			ManualUtils.renderItemStack(transform, exampleItems[example], (int)((63)/scale), (int)((-8)/scale), false);
+			ManualUtils.renderItemStack(graphics, exampleItems[example], (int)((63)/scale), (int)((-8)/scale), false);
 
 		transform.scale(1/scale, 1/scale, 1/scale);
 		if(unlocked)
-			ManualUtils.renderItemStack(transform, replicationCost.getRandomizedExampleStack(mc().player.tickCount), 102, 118, false);
+			ManualUtils.renderItemStack(graphics, replicationCost.getRandomizedExampleStack(mc().player.tickCount), 102, 118, false);
 
 		Lighting.setupForFlatItems();
 
 		int w = manual.fontRenderer().width(this.name.getString());
-		drawWrappedWithTransform(transform, this.name, 60-w/2, 24);
+		drawWrappedWithTransform(graphics, this.name, 60-w/2, 24);
 		if(this.text!=null&&!this.text.getString().isEmpty())
-			drawWrappedWithTransform(transform, this.text, 0, 38);
+			drawWrappedWithTransform(graphics, this.text, 0, 38);
 
 		transform.popPose();
 	}
 
 	private void drawWrappedWithTransform(
-			PoseStack transform, FormattedText text, int x, int y
+			GuiGraphics graphics, FormattedText text, int x, int y
 	)
 	{
 		for(FormattedCharSequence line : manual.fontRenderer().split(text, 120))
 		{
-			manual.fontRenderer().draw(transform, line, (float)x, (float)y, manual.getTextColour());
+			graphics.drawString(manual.fontRenderer(), line, (float)x, (float)y, manual.getTextColour(), false);
 			y += manual.fontRenderer().lineHeight;
 		}
 	}

@@ -21,25 +21,29 @@ import blusunrize.lib.manual.gui.GuiButtonManualNavigation;
 import blusunrize.lib.manual.gui.ManualScreen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraftforge.client.model.data.ModelData;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -62,6 +66,7 @@ public class ManualElementMultiblock extends SpecialManualElements
 	private final MultiblockRenderInfo renderInfo;
 	private final TemplateWorld structureWorld;
 	private final int yOffTotal;
+	private final ClientLevel level;
 
 	private long lastStep = -1;
 	private long lastPrintedErrorTimeMs = -1;
@@ -69,21 +74,22 @@ public class ManualElementMultiblock extends SpecialManualElements
 	public ManualElementMultiblock(ManualInstance manual, IMultiblock multiblock)
 	{
 		super(manual);
+		level = Objects.requireNonNull(Minecraft.getInstance().level);
 		this.multiblock = multiblock;
 		this.renderProperties = ClientMultiblocks.get(multiblock);
-		List<StructureBlockInfo> structure = multiblock.getStructure(Minecraft.getInstance().level);
+		List<StructureBlockInfo> structure = multiblock.getStructure(level);
 		renderInfo = new MultiblockRenderInfo(structure);
 		float diagLength = (float)Math.sqrt(renderInfo.structureHeight*renderInfo.structureHeight+
 				renderInfo.structureWidth*renderInfo.structureWidth+
 				renderInfo.structureLength*renderInfo.structureLength);
-		structureWorld = new TemplateWorld(structure, renderInfo);
+		structureWorld = new TemplateWorld(structure, renderInfo, level.registryAccess());
 		transX = 60+renderInfo.structureWidth/2F;
 		transY = 35+diagLength/2;
 		additionalTransform = new Transformation(
 				null,
-				new Quaternion(25, 0, 0, true),
+				new Quaternionf().rotateXYZ((float)Math.toRadians(25), 0, 0),
 				null,
-				new Quaternion(0, -45, 0, true)
+				new Quaternionf().rotateXYZ(0, (float)Math.toRadians(-45), 0)
 		);
 		scale = multiblock.getManualScale();
 		yOffTotal = (int)(transY+scale*diagLength/2);
@@ -97,12 +103,12 @@ public class ManualElementMultiblock extends SpecialManualElements
 	public void onOpened(ManualScreen gui, int x, int y, List<Button> pageButtons)
 	{
 		int yOff = 0;
-		if(multiblock.getStructure(null)!=null)
+		if(multiblock.getStructure(level)!=null)
 		{
 			boolean canRenderFormed = renderProperties.canRenderFormedStructure();
 
 			yOff = (int)(transY+scale*Math.sqrt(renderInfo.structureHeight*renderInfo.structureHeight+renderInfo.structureWidth*renderInfo.structureWidth+renderInfo.structureLength*renderInfo.structureLength)/2);
-			pageButtons.add(new GuiButtonManualNavigation(gui, x+4, (int)transY-(canRenderFormed?11: 5), 10, 10, 4, btn -> {
+			pageButtons.add(new GuiButtonManualNavigation(gui, x+4, y+(int)transY-(canRenderFormed?11: 5), 10, 10, 4, btn -> {
 				GuiButtonManualNavigation btnNav = (GuiButtonManualNavigation)btn;
 				canTick = !canTick;
 				lastStep = -1;
@@ -110,14 +116,14 @@ public class ManualElementMultiblock extends SpecialManualElements
 			}));
 			if(this.renderInfo.structureHeight > 1)
 			{
-				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, (int)transY-(canRenderFormed?14: 8)-16, 10, 16, 3,
+				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, y+(int)transY-(canRenderFormed?14: 8)-16, 10, 16, 3,
 						btn -> renderInfo.setShowLayer(Math.min(renderInfo.showLayer+1, renderInfo.structureHeight-1))
 				));
-				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, (int)transY+(canRenderFormed?14: 8), 10, 16, 2,
+				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, y+(int)transY+(canRenderFormed?14: 8), 10, 16, 2,
 						btn -> renderInfo.setShowLayer(Math.max(renderInfo.showLayer-1, -1))));
 			}
 			if(canRenderFormed)
-				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, (int)transY+1, 10, 10, 6,
+				pageButtons.add(new GuiButtonManualNavigation(gui, x+4, y+(int)transY+1, 10, 10, 6,
 						btn -> showCompleted = !showCompleted));
 		}
 
@@ -142,7 +148,7 @@ public class ManualElementMultiblock extends SpecialManualElements
 				for(int slot = 0; slot < ManualUtils.mc().player.getInventory().getContainerSize(); slot++)
 				{
 					ItemStack inSlot = ManualUtils.mc().player.getInventory().getItem(slot);
-					if(!inSlot.isEmpty()&&ItemStack.isSame(inSlot, req))
+					if(!inSlot.isEmpty()&&ItemStack.isSameItem(inSlot, req))
 						if((reqSize -= inSlot.getCount()) <= 0)
 							break;
 				}
@@ -179,11 +185,12 @@ public class ManualElementMultiblock extends SpecialManualElements
 	}
 
 	@Override
-	public void render(PoseStack transform, ManualScreen gui, int x, int y, int mouseX, int mouseY)
+	public void render(GuiGraphics graphics, ManualScreen gui, int x, int y, int mouseX, int mouseY)
 	{
-		if(multiblock.getStructure(null)!=null)
+		if(multiblock.getStructure(level)!=null)
 		{
 			MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+			PoseStack transform = graphics.pose();
 			PoseStack.Pose lastEntryBeforeTry = transform.last();
 			try
 			{
@@ -206,8 +213,8 @@ public class ManualElementMultiblock extends SpecialManualElements
 
 				transform.translate(transX, transY, Math.max(structureHeight, Math.max(structureWidth, structureLength)));
 				transform.scale(scale, -scale, 1);
-				additionalTransform.push(transform);
-				transform.mulPose(new Quaternion(0, 90, 0, true));
+				transform.pushTransformation(additionalTransform);
+				transform.mulPose(new Quaternionf().rotateXYZ(0, Mth.HALF_PI, 0));
 
 				transform.translate(structureLength/-2f, structureHeight/-2f, structureWidth/-2f);
 
@@ -242,8 +249,10 @@ public class ManualElementMultiblock extends SpecialManualElements
 									BlockEntity te = structureWorld.getBlockEntity(pos);
 									if(te!=null)
 										modelData = te.getModelData();
+									final BakedModel model = blockRender.getBlockModel(state);
+									modelData = model.getModelData(structureWorld, pos, state, modelData);
 									blockRender.getModelRenderer().tesselateBlock(
-											structureWorld, blockRender.getBlockModel(state), state, pos, transform,
+											structureWorld, model, state, pos, transform,
 											translucentFullbright, false, structureWorld.random, state.getSeed(pos),
 											overlay, modelData, null
 									);
@@ -268,11 +277,11 @@ public class ManualElementMultiblock extends SpecialManualElements
 
 			if(componentTooltip!=null)
 			{
-				manual.fontRenderer().draw(transform, "?", 116, yOffTotal/2-4, manual.getTextColour());
+				graphics.drawString(manual.fontRenderer(), "?", 116, yOffTotal/2-4, manual.getTextColour());
 				if(mouseX >= 116&&mouseX < 122&&mouseY >= yOffTotal/2-4&&mouseY < yOffTotal/2+4)
-					gui.renderTooltip(transform, Language.getInstance().getVisualOrder(
+					graphics.renderTooltip(manual.fontRenderer(), Language.getInstance().getVisualOrder(
 							Collections.unmodifiableList(componentTooltip)
-					), mouseX, mouseY, manual.fontRenderer());
+					), mouseX, mouseY);
 			}
 		}
 	}
@@ -291,15 +300,11 @@ public class ManualElementMultiblock extends SpecialManualElements
 	private Transformation forRotation(double rX, double rY)
 	{
 		Vector3f axis = new Vector3f((float)rY, (float)rX, 0);
-		float angle = (float)Math.sqrt(axis.dot(axis));
-		if(!axis.normalize())
+		if(axis.lengthSquared() < 1e-3)
 			return Transformation.identity();
-		return new Transformation(
-				null,
-				new Quaternion(axis, angle, true),
-				null,
-				null
-		);
+		float angle = (float)Math.sqrt(axis.dot(axis));
+		axis.normalize();
+		return new Transformation(null, new Quaternionf().rotateAxis((float)Math.toRadians(angle), axis), null, null);
 	}
 
 	@Override
@@ -338,10 +343,10 @@ public class ManualElementMultiblock extends SpecialManualElements
 			int structureLength = 0;
 			for(StructureBlockInfo block : structure)
 			{
-				structureHeight = Math.max(structureHeight, block.pos.getY()+1);
-				structureWidth = Math.max(structureWidth, block.pos.getZ()+1);
-				structureLength = Math.max(structureLength, block.pos.getX()+1);
-				data.put(block.pos, block);
+				structureHeight = Math.max(structureHeight, block.pos().getY()+1);
+				structureWidth = Math.max(structureWidth, block.pos().getZ()+1);
+				structureLength = Math.max(structureLength, block.pos().getX()+1);
+				data.put(block.pos(), block);
 			}
 			this.maxBlockIndex = this.blockIndex = structureHeight*structureLength*structureWidth;
 			this.structureHeight = structureHeight;

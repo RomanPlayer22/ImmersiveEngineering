@@ -17,25 +17,23 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.blaze3d.vertex.VertexFormatElement.Type;
 import com.mojang.blaze3d.vertex.VertexFormatElement.Usage;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.sounds.SoundInstance.Attenuation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.IOUtils;
+import org.joml.Quaternionf;
+import org.joml.Vector4f;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -50,6 +48,8 @@ public class ClientUtils
 		return Minecraft.getInstance();
 	}
 
+	// Should probably be replaced by passing the texture to blit directly in most cases
+	@Deprecated
 	public static void bindTexture(ResourceLocation texture)
 	{
 		RenderSystem.setShaderTexture(0, texture);
@@ -106,22 +106,22 @@ public class ClientUtils
 		return r<<16|g<<8|b;
 	}
 
-	public static IEBlockEntitySound generatePositionedIESound(SoundEvent soundEvent, float volume, float pitch, boolean repeat, int delay, BlockPos pos)
+	public static IEBlockEntitySound generatePositionedIESound(SoundEvent soundEvent, float volume, float pitch, BlockPos pos)
 	{
-		IEBlockEntitySound sound = new IEBlockEntitySound(soundEvent, volume, pitch, repeat, delay, pos, Attenuation.LINEAR, SoundSource.BLOCKS);
+		IEBlockEntitySound sound = new IEBlockEntitySound(soundEvent, volume, pitch, pos);
 		sound.evaluateVolume();
 		ClientUtils.mc().getSoundManager().play(sound);
 		return sound;
 	}
 
-	public static Quaternion degreeToQuaterion(double x, double y, double z)
+	public static Quaternionf degreeToQuaterion(double x, double y, double z)
 	{
 		x = Math.toRadians(x);
 		y = Math.toRadians(y);
 		z = Math.toRadians(z);
-		Quaternion qYaw = new Quaternion(0, (float)Math.sin(y/2), 0, (float)Math.cos(y/2));
-		Quaternion qPitch = new Quaternion((float)Math.sin(x/2), 0, 0, (float)Math.cos(x/2));
-		Quaternion qRoll = new Quaternion(0, 0, (float)Math.sin(z/2), (float)Math.cos(z/2));
+		Quaternionf qYaw = new Quaternionf(0, (float)Math.sin(y/2), 0, (float)Math.cos(y/2));
+		Quaternionf qPitch = new Quaternionf((float)Math.sin(x/2), 0, 0, (float)Math.cos(x/2));
+		Quaternionf qRoll = new Quaternionf(0, 0, (float)Math.sin(z/2), (float)Math.cos(z/2));
 
 		qYaw.mul(qRoll);
 		qYaw.mul(qPitch);
@@ -137,7 +137,7 @@ public class ClientUtils
 		{
 			Vector4f vec = new Vector4f((float)vertices[i].x, (float)vertices[i].y, (float)vertices[i].z, 1);
 			matrix.transformPosition(vec);
-			vec.perspectiveDivide();
+			vec.mul(1 / vec.w);
 			ret[i] = new Vec3(vec.x(), vec.y(), vec.z());
 		}
 		return ret;

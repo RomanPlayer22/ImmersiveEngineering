@@ -13,9 +13,10 @@ import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.chickenbones.Matrix4;
 import blusunrize.immersiveengineering.mixin.accessors.client.SimpleModelAccess;
-import com.mojang.math.Quaternion;
+import net.minecraft.util.Mth;
+import org.joml.Quaternionf;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
@@ -59,8 +60,8 @@ public class ModelUtils
 		Vector3f translate = transform.translation;
 		if(leftHand)
 		{
-			translate = translate.copy();
-			translate.setX(-translate.x());
+			translate = new Vector3f(translate);
+			translate.setComponent(0, -translate.x());
 		}
 
 		float leftRX = transform.rotation.x();
@@ -71,12 +72,16 @@ public class ModelUtils
 			leftRY = -leftRY;
 			leftRZ = -leftRZ;
 		}
-		Quaternion leftRotation = new Quaternion(leftRX, leftRY, leftRZ, true);
+		Quaternionf leftRotation = new Quaternionf().rotateXYZ(
+				Mth.DEG_TO_RAD * leftRX, Mth.DEG_TO_RAD * leftRY, Mth.DEG_TO_RAD * leftRZ
+		);
 
 		float rightRX = transform.rightRotation.x();
 		float rightRY = transform.rightRotation.y()*(leftHand?-1: 1);
 		float rightRZ = transform.rightRotation.z()*(leftHand?-1: 1);
-		Quaternion rightRotation = new Quaternion(rightRX, rightRY, rightRZ, true);
+		Quaternionf rightRotation = new Quaternionf().rotateXYZ(
+				Mth.DEG_TO_RAD * rightRX, Mth.DEG_TO_RAD * rightRY, Mth.DEG_TO_RAD * rightRZ
+		);
 
 		return new Transformation(translate, leftRotation, transform.scale, rightRotation);
 	}
@@ -193,7 +198,7 @@ public class ModelUtils
 			quads = model.getQuads(state, null, ApiUtils.RANDOM_SOURCE, ModelData.EMPTY, null);
 		if(quads.isEmpty())//no quads at all D:
 			return null;
-		return quads.get(0).getSprite().getName();
+		return quads.get(0).getSprite().contents().name();
 	}
 
 	public static BakedQuad reverseOrder(BakedQuad in)

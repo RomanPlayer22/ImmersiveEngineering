@@ -4,11 +4,12 @@ import net.minecraftforge.gradle.common.tasks.SignJar
 import org.gradle.work.Incremental
 
 plugins {
-    id 'net.minecraftforge.gradle' version '5.1.+'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'net.neoforged.gradle' version '6.0.+'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.6'
+    id 'eclipse'
 }
 
 version = buildVersionString()
@@ -187,7 +188,7 @@ minecraft {
 }
 
 repositories {
-    maven { // BlockModelSplitter
+    maven { // JEI & BlockModelSplitter
         name 'Jared maven'
         url 'https://maven.blamejared.com/'
     }
@@ -200,21 +201,24 @@ repositories {
     maven { // CC-Tweaked
         url 'https://squiddev.cc/maven/'
         content {
-            includeGroup 'org.squiddev'
+            includeGroup("cc.tweaked")
+            includeModule("org.squiddev", "Cobalt")
         }
     }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${version_minecraft}-${version_forge}"
+    minecraft "net.neoforged:forge:${version_minecraft}-${version_forge}"
 
-    compileOnly fg.deobf("mezz.jei:jei-1.19.2-forge-api:${version_jei}")
-    compileOnly fg.deobf("mezz.jei:jei-1.19.2-common-api:${version_jei}")
-    compileOnly fg.deobf("com.blamejared.crafttweaker:CraftTweaker-forge-1.18.2:9.1.137")
-    compileOnly fg.deobf("org.squiddev:cc-tweaked-${version_minecraft}:${version_cctweaked}")
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:${version_jei}")
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:${version_jei}")
+    compileOnly fg.deobf("com.blamejared.crafttweaker:CraftTweaker-forge-1.20.1:14.0.34")
+    //TODO only API. For some reason IPeripheral (an API class) does not show up in the API artifact
+    // compileOnly fg.deobf("cc.tweaked:cc-tweaked-1.19.3-forge-api:${version_cctweaked}")
+    compileOnly fg.deobf("cc.tweaked:cc-tweaked-1.19.3-forge:${version_cctweaked}")
     compileOnly fg.deobf("curse.maven:the-one-probe-245211:3825695")
-    compileOnly fg.deobf("curse.maven:curios-309927:4523009")
-    compileOnly fg.deobf("curse.maven:jade-324717:4433884")
+    compileOnly fg.deobf("curse.maven:curios-309927:4780213")
+    compileOnly fg.deobf("curse.maven:jade-324717:4801177")
     compileOnly fg.deobf("curse.maven:opencomputers2-437654:3630307")
 
     implementation "malte0811:BlockModelSplitter:2.0.1"
@@ -289,7 +293,7 @@ String buildVersionString() {
 }
 
 task datagenJar(type: Jar, dependsOn: datagenClasses) {
-    classifier = 'datagen'
+    archiveClassifier = 'datagen'
     from sourceSets.datagen.output
     manifest {
         attributes "FMLModType": "GAMELIBRARY"
@@ -297,13 +301,13 @@ task datagenJar(type: Jar, dependsOn: datagenClasses) {
 }
 
 task apiJar(type: Jar, dependsOn: apiClasses) {
-    classifier = 'api'
+    archiveClassifier = 'api'
     from sourceSets.api.output
     from sourceSets.manual.output
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
     from sourceSets.manual.allSource
     from sourceSets.api.allSource
@@ -318,7 +322,7 @@ artifacts {
 }
 
 shadowJar {
-    classifier = ''
+    archiveClassifier = ''
     dependencies {
         include(dependency('malte0811:BlockModelSplitter:.*'))
     }

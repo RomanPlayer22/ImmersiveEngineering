@@ -12,9 +12,11 @@ package blusunrize.immersiveengineering.common.crafting.fluidaware;
 import blusunrize.immersiveengineering.common.crafting.fluidaware.AbstractFluidAwareRecipe.IMatchLocation;
 import blusunrize.immersiveengineering.common.util.IELogger;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
@@ -57,7 +59,7 @@ public abstract class AbstractFluidAwareRecipe<MatchLocation extends IMatchLocat
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return this.recipeOutput;
 	}
@@ -80,9 +82,9 @@ public abstract class AbstractFluidAwareRecipe<MatchLocation extends IMatchLocat
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(@Nonnull CraftingContainer inv)
+	public ItemStack assemble(@Nonnull CraftingContainer inv, RegistryAccess access)
 	{
-		return this.getResultItem().copy();
+		return this.getResultItem(access).copy();
 	}
 
 	@Nonnull
@@ -125,6 +127,12 @@ public abstract class AbstractFluidAwareRecipe<MatchLocation extends IMatchLocat
 	private int getInventoryIndex(CraftingContainer inv, int x, int y)
 	{
 		return x+y*inv.getWidth();
+	}
+
+	@Override
+	public CraftingBookCategory category()
+	{
+		return CraftingBookCategory.MISC;
 	}
 
 	public interface IMatchLocation

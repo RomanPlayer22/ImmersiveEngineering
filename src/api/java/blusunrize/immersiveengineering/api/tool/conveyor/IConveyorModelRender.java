@@ -1,9 +1,20 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.tool.conveyor;
 
 import blusunrize.immersiveengineering.api.tool.conveyor.ConveyorHandler.ConveyorDirection;
 import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +23,7 @@ import net.minecraft.world.level.block.Block;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 
 public interface IConveyorModelRender<T extends IConveyorBelt>
 {
@@ -58,16 +70,7 @@ public interface IConveyorModelRender<T extends IConveyorBelt>
 	/**
 	 * @param renderType is null for item render
 	 */
-	default List<BakedQuad> modifyQuads(List<BakedQuad> baseModel, RenderContext<T> context, @Nullable RenderType renderType)
-	{
-		return this.modifyQuads(baseModel, context);
-	}
-
-	@Deprecated
-	default List<BakedQuad> modifyQuads(List<BakedQuad> baseModel, RenderContext<T> context)
-	{
-		return baseModel;
-	}
+	List<BakedQuad> modifyQuads(List<BakedQuad> baseModel, RenderContext<T> context, @Nullable RenderType renderType);
 
 	/**
 	 * @return whether the wall should be drawn on the model. Also used for they cache key
@@ -80,6 +83,10 @@ public interface IConveyorModelRender<T extends IConveyorBelt>
 		Direction side = wall.getWallSide(facing);
 		BlockPos pos = instance.getBlockEntity().getBlockPos().relative(side);
 		return ConveyorHandler.connectsToConveyor(instance.getBlockEntity().getLevel(), pos, side);
+	}
+
+	default void updateCachedModels(ModelBaker baker, Function<Material, TextureAtlasSprite> getTexture)
+	{
 	}
 
 	record RenderContext<T extends IConveyorBelt>(

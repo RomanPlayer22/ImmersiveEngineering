@@ -11,9 +11,9 @@ package blusunrize.immersiveengineering.client.models.obj.callback.block;
 
 import blusunrize.immersiveengineering.api.client.ieobj.BlockCallback;
 import blusunrize.immersiveengineering.common.blocks.metal.ConnectorStructuralBlockEntity;
-import com.mojang.math.Quaternion;
+import org.joml.Quaternionf;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -42,7 +42,7 @@ public class StructuralConnectorCallbacks implements BlockCallback<Float>
 	{
 		return transform.compose(new Transformation(
 				new Vector3f(0, 0, 0),
-				new Quaternion(0, rotation, 0, true),
+				new Quaternionf().rotateXYZ(0, (float)Math.toRadians(rotation), 0),
 				null, null
 		));
 	}

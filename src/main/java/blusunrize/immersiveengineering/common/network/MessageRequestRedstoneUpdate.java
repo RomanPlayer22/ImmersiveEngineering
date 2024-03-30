@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.network;
 
 import blusunrize.immersiveengineering.ImmersiveEngineering;
@@ -34,7 +42,7 @@ public record MessageRequestRedstoneUpdate(BlockPos pos) implements IMessage
 	{
 		Context ctx = context.get();
 		ctx.enqueueWork(() -> {
-			ServerLevel level = Objects.requireNonNull(ctx.getSender()).getLevel();
+			ServerLevel level = Objects.requireNonNull(ctx.getSender()).serverLevel();
 			ICapabilityProvider provider;
 			BlockState blockState = level.getBlockState(pos);
 			RemoteRedstoneData data = new RemoteRedstoneData(pos, level.getGameTime(), blockState.isSignalSource(), redstoneLevel(level, pos));

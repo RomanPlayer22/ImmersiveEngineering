@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.utils;
 
 import net.minecraft.core.BlockPos;
@@ -45,7 +53,7 @@ public class Raytracer
 		}
 		if(checked.isEmpty())
 		{
-			BlockPos pos = new BlockPos(start);
+			BlockPos pos = BlockPos.containing(start);
 			BlockState state = world.getBlockState(pos);
 			HitResult rtr = state.getCollisionShape(world, pos).clip(start, end, pos);
 			if(rtr!=null&&rtr.getType()!=Type.MISS)
@@ -66,7 +74,7 @@ public class Raytracer
 			Vec3 posPrev = start.add(mov.scale(i+lengthAdd-standardOff));
 			Vec3 posVeryPrev = start.add(mov.scale(i-1+lengthAdd-standardOff));
 
-			BlockPos blockPos = new BlockPos(pos);
+			BlockPos blockPos = BlockPos.containing(pos);
 			BlockState state;
 			if(!checked.contains(blockPos)&&i+lengthAdd+standardOff < dif)
 			{
@@ -77,7 +85,7 @@ public class Raytracer
 				checked.add(blockPos);
 				out.accept(blockPos);
 			}
-			blockPos = new BlockPos(posPrev);
+			blockPos = BlockPos.containing(posPrev);
 			if(!checked.contains(blockPos)&&i+lengthAdd-standardOff < dif)
 			{
 				state = world.getBlockState(blockPos);

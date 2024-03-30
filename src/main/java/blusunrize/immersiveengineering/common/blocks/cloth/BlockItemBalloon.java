@@ -8,7 +8,6 @@
 
 package blusunrize.immersiveengineering.common.blocks.cloth;
 
-import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.common.blocks.BlockItemIE;
 import blusunrize.immersiveengineering.common.register.IEBlocks.Cloth;
 import net.minecraft.core.BlockPos;
@@ -19,7 +18,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -32,7 +30,7 @@ public class BlockItemBalloon extends BlockItemIE
 {
 	public BlockItemBalloon(Block b)
 	{
-		super(b, new Item.Properties().tab(ImmersiveEngineering.ITEM_GROUP));
+		super(b);
 	}
 
 	@Override
@@ -44,7 +42,7 @@ public class BlockItemBalloon extends BlockItemIE
 		{
 			ItemStack itemStackIn = playerIn.getItemInHand(hand);
 			Vec3 pos = playerIn.position().add(0, playerIn.getEyeHeight(), 0).add(playerIn.getLookAngle());
-			BlockPos bPos = new BlockPos(pos);
+			BlockPos bPos = BlockPos.containing(pos);
 			int offset = getOffset(itemStackIn);
 			bPos = bPos.above(offset);
 			if(worldIn.isEmptyBlock(bPos))

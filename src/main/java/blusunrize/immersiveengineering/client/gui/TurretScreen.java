@@ -16,7 +16,7 @@ import blusunrize.immersiveengineering.client.gui.info.EnergyInfoArea;
 import blusunrize.immersiveengineering.client.gui.info.InfoArea;
 import blusunrize.immersiveengineering.common.gui.TurretMenu;
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
@@ -27,8 +27,6 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-
-import static blusunrize.immersiveengineering.client.ClientUtils.mc;
 
 public abstract class TurretScreen<C extends TurretMenu> extends IEContainerScreen<C>
 {
@@ -54,12 +52,12 @@ public abstract class TurretScreen<C extends TurretMenu> extends IEContainerScre
 	public void init()
 	{
 		super.init();
-		mc().keyboardHandler.setSendRepeatsToGui(true);
 		this.nameField = new EditBox(this.font, leftPos+11, topPos+88, 58, 12, Component.empty());
 		this.nameField.setTextColor(-1);
 		this.nameField.setTextColorUneditable(-1);
 		this.nameField.setBordered(false);
 		this.nameField.setMaxLength(30);
+		this.addWidget(this.nameField);
 
 		this.clearWidgets();
 		this.addRenderableWidget(new GuiReactiveList(leftPos+10, topPos+10, 60, 72,
@@ -122,32 +120,24 @@ public abstract class TurretScreen<C extends TurretMenu> extends IEContainerScre
 	}
 
 	@Override
-	public void render(@Nonnull PoseStack transform, int mx, int my, float partial)
+	public void render(@Nonnull GuiGraphics graphics, int mx, int my, float partial)
 	{
-		super.render(transform, mx, my, partial);
-		this.nameField.render(transform, mx, my, partial);
-	}
-
-	@Override
-	public void removed()
-	{
-		super.removed();
-		mc().keyboardHandler.setSendRepeatsToGui(false);
+		super.render(graphics, mx, my, partial);
+		this.nameField.render(graphics, mx, my, partial);
 	}
 
 	@Override
 	public boolean keyPressed(int key, int scancode, int p_keyPressed_3_)
 	{
 		if(this.nameField.isFocused())
-		{
 			if(key==GLFW.GLFW_KEY_ENTER)
+			{
 				addName();
-			else
-				this.nameField.keyPressed(key, scancode, p_keyPressed_3_);
-			return true;
-		}
-		else
-			return super.keyPressed(key, scancode, p_keyPressed_3_);
+				return true;
+			}
+			else if(this.nameField.keyPressed(key, scancode, p_keyPressed_3_))
+				return true;
+		return super.keyPressed(key, scancode, p_keyPressed_3_);
 	}
 
 	private void addName()
@@ -173,7 +163,11 @@ public abstract class TurretScreen<C extends TurretMenu> extends IEContainerScre
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton)
 	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-		return this.nameField.mouseClicked(mouseX, mouseY, mouseButton);
+		boolean ret = super.mouseClicked(mouseX, mouseY, mouseButton);
+		if (this.nameField.mouseClicked(mouseX, mouseY, mouseButton)) {
+			this.nameField.setFocused(true);
+			ret = true;
+		}
+		return ret;
 	}
 }

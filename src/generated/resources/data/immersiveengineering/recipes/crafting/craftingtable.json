@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "item": "minecraft:crafting_table"
@@ -18,5 +19,6 @@
   ],
   "result": {
     "item": "immersiveengineering:craftingtable"
-  }
+  },
+  "show_notification": true
 }

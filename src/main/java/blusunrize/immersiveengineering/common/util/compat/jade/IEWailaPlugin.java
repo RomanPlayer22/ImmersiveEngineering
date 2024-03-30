@@ -8,27 +8,33 @@
 
 package blusunrize.immersiveengineering.common.util.compat.jade;
 
-import blusunrize.immersiveengineering.common.blocks.IEMultiblockBlock;
-import blusunrize.immersiveengineering.common.blocks.metal.SheetmetalTankBlockEntity;
-import blusunrize.immersiveengineering.common.blocks.plant.HempBlock;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityDummy;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityMaster;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockPartBlock;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 @WailaPlugin
 public class IEWailaPlugin implements IWailaPlugin
 {
 	@Override
-	public void registerClient(IWailaClientRegistration registrar)
+	public void registerClient(IWailaClientRegistration registration)
 	{
-		registrar.registerBlockComponent(new HempDataProvider(), HempBlock.class);
-		registrar.registerBlockIcon(new MultiblockIconProvider(), IEMultiblockBlock.class);
+		registration.registerBlockIcon(new MultiblockIconProvider(), MultiblockPartBlock.class);
+
+		registration.registerFluidStorageClient(new MultiblockTankDataProvider());
+		registration.registerItemStorageClient(new MultiblockInventoryDataProvider());
 	}
 
 	@Override
 	public void register(IWailaCommonRegistration registration)
 	{
-		registration.registerFluidStorage(new SheetmetalTankDataProvider(), SheetmetalTankBlockEntity.class);
+		registration.registerFluidStorage(new MultiblockTankDataProvider(), MultiblockBlockEntityDummy.class);
+		registration.registerFluidStorage(new MultiblockTankDataProvider(), MultiblockBlockEntityMaster.class);
+		registration.registerItemStorage(new MultiblockInventoryDataProvider(), MultiblockBlockEntityDummy.class);
+		registration.registerItemStorage(new MultiblockInventoryDataProvider(), MultiblockBlockEntityMaster.class);
 	}
 }

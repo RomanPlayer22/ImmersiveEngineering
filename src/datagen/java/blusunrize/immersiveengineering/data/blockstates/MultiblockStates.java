@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.data.blockstates;
 
 import blusunrize.immersiveengineering.api.IEProperties;
@@ -9,8 +17,8 @@ import blusunrize.immersiveengineering.common.blocks.multiblocks.IEMultiblocks;
 import blusunrize.immersiveengineering.common.blocks.multiblocks.IETemplateMultiblock;
 import blusunrize.immersiveengineering.common.blocks.wooden.ModWorkbenchBlockEntity;
 import blusunrize.immersiveengineering.common.register.IEBlocks.MetalDevices;
-import blusunrize.immersiveengineering.common.register.IEBlocks.Multiblocks;
 import blusunrize.immersiveengineering.common.register.IEBlocks.WoodenDevices;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import blusunrize.immersiveengineering.data.models.NongeneratedModels.NongeneratedModel;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -19,11 +27,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Vec3i;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.PackOutput;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
@@ -32,6 +46,8 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +76,9 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 	public ModelFile alloySmelterOff;
 	public ModelFile alloySmelterOn;
 
-	public MultiblockStates(DataGenerator gen, ExistingFileHelper exFileHelper)
+	public MultiblockStates(PackOutput output, ExistingFileHelper exFileHelper)
 	{
-		super(gen, exFileHelper);
+		super(output, exFileHelper);
 	}
 
 	@Override
@@ -125,12 +141,13 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 				modLoc("block/multiblocks/alloy_smelter_side"),
 				modLoc("block/multiblocks/alloy_smelter_on")
 		);
-		createMultiblock(Multiblocks.COKE_OVEN, cokeOvenOff, cokeOvenOn,
-				IEProperties.ACTIVE);
-		createMultiblock(Multiblocks.ALLOY_SMELTER, alloySmelterOff, alloySmelterOn,
-				IEProperties.ACTIVE);
-		createMultiblock(Multiblocks.BLAST_FURNACE, blastFurnaceOff, blastFurnaceOn,
-				IEProperties.ACTIVE);
+		createMultiblock(
+				IEMultiblockLogic.COKE_OVEN.block(), cokeOvenOff, cokeOvenOn, IEProperties.ACTIVE
+		);
+		createMultiblock(IEMultiblockLogic.ALLOY_SMELTER.block(), alloySmelterOff, alloySmelterOn, IEProperties.ACTIVE);
+		createMultiblock(
+				IEMultiblockLogic.BLAST_FURNACE.block(), blastFurnaceOff, blastFurnaceOn, IEProperties.ACTIVE
+		);
 	}
 
 	private void createMetalMultiblocks()
@@ -138,19 +155,13 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 		createMultiblock(innerObj("block/metal_multiblock/sawmill.obj"), IEMultiblocks.SAWMILL);
 		createMultiblock(innerObj("block/metal_multiblock/excavator.obj"), IEMultiblocks.EXCAVATOR);
 		createMultiblock(innerObj("block/metal_multiblock/crusher.obj"), IEMultiblocks.CRUSHER);
-		createMultiblock(Multiblocks.METAL_PRESS, split(
-				innerObj("block/metal_multiblock/metal_press.obj"),
-				IEMultiblocks.METAL_PRESS,
-				p -> new BlockPos(p.getZ()+1, p.getY(), p.getX()-1),
-				false
-		));
-		createMultiblock(Multiblocks.ASSEMBLER,
-				split(innerObj("block/metal_multiblock/assembler.obj"), IEMultiblocks.ASSEMBLER));
+		createMultiblock(innerObj("block/metal_multiblock/metal_press.obj"), IEMultiblocks.METAL_PRESS);
+		createMultiblock(innerObj("block/metal_multiblock/assembler.obj"), IEMultiblocks.ASSEMBLER);
 		createMultiblock(innerObj("block/metal_multiblock/arc_furnace.obj"), IEMultiblocks.ARC_FURNACE);
 
-		createMultiblock(Multiblocks.ADVANCED_BLAST_FURNACE, split(innerObj("block/blastfurnace_advanced.obj"), IEMultiblocks.ADVANCED_BLAST_FURNACE));
-		createMultiblock(Multiblocks.SILO, split(innerObj("block/metal_multiblock/silo.obj"), IEMultiblocks.SILO));
-		createMultiblock(Multiblocks.TANK, split(innerObj("block/metal_multiblock/tank.obj", cutoutMipped()), IEMultiblocks.SHEETMETAL_TANK));
+		createMultiblock(innerObj("block/blastfurnace_advanced.obj"), IEMultiblocks.ADVANCED_BLAST_FURNACE);
+		createMultiblock(innerObj("block/metal_multiblock/silo.obj"), IEMultiblocks.SILO);
+		createMultiblock(innerObj("block/metal_multiblock/tank.obj", cutoutMipped()), IEMultiblocks.SHEETMETAL_TANK);
 		createDynamicMultiblock(
 				ieObjBuilder("block/metal_multiblock/bottling_machine.obj.ie", innerModels)
 						.callback(BottlingMachineCallbacks.INSTANCE)
@@ -163,8 +174,10 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 		createMultiblock(innerObj("block/metal_multiblock/mixer.obj"), IEMultiblocks.MIXER);
 		createMultiblock(innerObj("block/metal_multiblock/refinery.obj"), IEMultiblocks.REFINERY);
 		createMultiblock(innerObj("block/metal_multiblock/diesel_generator.obj", cutoutMipped()), IEMultiblocks.DIESEL_GENERATOR);
-		createMultiblock(Multiblocks.LIGHTNING_ROD,
-				split(innerObj("block/metal_multiblock/lightningrod.obj"), IEMultiblocks.LIGHTNING_ROD));
+		createMultiblock(
+				IEMultiblockLogic.LIGHTNING_ROD.block(),
+				split(innerObj("block/metal_multiblock/lightningrod.obj"), IEMultiblocks.LIGHTNING_ROD)
+		);
 		createMultiblock(WoodenDevices.WORKBENCH,
 				splitDynamic(
 						ieObjBuilder("block/wooden_device/workbench.obj.ie", innerModels).callback(WorkbenchCallbacks.INSTANCE).end(),
@@ -226,12 +239,16 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 
 	private void createMultiblock(NongeneratedModel unsplitModel, IETemplateMultiblock multiblock, boolean dynamic)
 	{
-		createMultiblock(
-				multiblock::getBlock,
-				split(unsplitModel, multiblock, false, dynamic),
-				split(mirror(unsplitModel, innerModels), multiblock, true, dynamic),
-				IEProperties.FACING_HORIZONTAL, IEProperties.MIRRORED
-		);
+		final ModelFile mainModel = split(unsplitModel, multiblock, false, dynamic);
+		if(multiblock.getBlock().getStateDefinition().getProperties().contains(IEProperties.MIRRORED))
+			createMultiblock(
+					multiblock::getBlock,
+					mainModel,
+					split(mirror(unsplitModel, innerModels), multiblock, true, dynamic),
+					IEProperties.FACING_HORIZONTAL, IEProperties.MIRRORED
+			);
+		else
+			createMultiblock(multiblock::getBlock, mainModel, null, IEProperties.FACING_HORIZONTAL, null);
 	}
 
 	private void createMultiblock(Supplier<? extends Block> b, ModelFile masterModel)
@@ -298,6 +315,7 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 		UnaryOperator<BlockPos> transform = UnaryOperator.identity();
 		if(mirror)
 		{
+			loadTemplateFor(mb);
 			Vec3i size = mb.getSize(null);
 			transform = p -> new BlockPos(size.getX()-p.getX()-1, p.getY(), p.getZ());
 		}
@@ -308,14 +326,41 @@ public class MultiblockStates extends ExtendedBlockstateProvider
 			NongeneratedModel name, TemplateMultiblock multiblock, UnaryOperator<BlockPos> transform, boolean dynamic
 	)
 	{
+		loadTemplateFor(multiblock);
 		final Vec3i offset = multiblock.getMasterFromOriginOffset();
-		Stream<Vec3i> partsStream = multiblock.getStructure(null)
+		Stream<Vec3i> partsStream = multiblock.getTemplate(null).blocksWithoutAir()
 				.stream()
-				.filter(info -> !info.state.isAir())
-				.map(info -> info.pos)
+				.map(info -> info.pos())
 				.map(transform)
 				.map(p -> p.subtract(offset));
 		return split(name, partsStream.collect(Collectors.toList()), dynamic);
 	}
 
+	private void loadTemplateFor(TemplateMultiblock multiblock)
+	{
+		final ResourceLocation name = multiblock.getUniqueName();
+		if(TemplateMultiblock.SYNCED_CLIENT_TEMPLATES.containsKey(name))
+			return;
+		final String filePath = "structures/"+name.getPath()+".nbt";
+		int slash = filePath.indexOf('/');
+		String prefix = filePath.substring(0, slash);
+		ResourceLocation shortLoc = new ResourceLocation(
+				name.getNamespace(),
+				filePath.substring(slash+1)
+		);
+		try
+		{
+			final Resource resource = existingFileHelper.getResource(shortLoc, PackType.SERVER_DATA, "", prefix);
+			try(final InputStream input = resource.open())
+			{
+				final CompoundTag nbt = NbtIo.readCompressed(input);
+				final StructureTemplate template = new StructureTemplate();
+				template.load(BuiltInRegistries.BLOCK.asLookup(), nbt);
+				TemplateMultiblock.SYNCED_CLIENT_TEMPLATES.put(name, template);
+			}
+		} catch(IOException e)
+		{
+			throw new RuntimeException("Failed on "+name, e);
+		}
+	}
 }

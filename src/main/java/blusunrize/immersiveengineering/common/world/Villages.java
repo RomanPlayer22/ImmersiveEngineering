@@ -16,7 +16,6 @@ import blusunrize.immersiveengineering.api.excavator.MineralVein;
 import blusunrize.immersiveengineering.api.tool.BulletHandler;
 import blusunrize.immersiveengineering.api.wires.WireType;
 import blusunrize.immersiveengineering.common.blocks.metal.MetalScaffoldingType;
-import blusunrize.immersiveengineering.common.blocks.wooden.TreatedWoodStyles;
 import blusunrize.immersiveengineering.common.items.BulletItem;
 import blusunrize.immersiveengineering.common.items.RevolverItem;
 import blusunrize.immersiveengineering.common.items.ToolUpgradeItem.ToolUpgrade;
@@ -28,20 +27,14 @@ import blusunrize.immersiveengineering.common.register.IEItems.Tools;
 import blusunrize.immersiveengineering.common.util.IESounds;
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import blusunrize.immersiveengineering.mixin.accessors.HeroGiftsTaskAccess;
-import blusunrize.immersiveengineering.mixin.accessors.SingleJigsawAccess;
-import com.google.common.collect.ImmutableList;
+import blusunrize.immersiveengineering.mixin.accessors.TemplatePoolAccess;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
-import net.minecraft.data.BuiltinRegistries;
-import net.minecraft.data.worldgen.*;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -52,7 +45,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -63,14 +55,17 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection;
 import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.event.TagsUpdatedEvent.UpdateCause;
 import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.DeferredRegister;
@@ -79,7 +74,10 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -88,6 +86,7 @@ import static blusunrize.immersiveengineering.ImmersiveEngineering.rl;
 import static blusunrize.immersiveengineering.common.register.IEItems.Misc.TOOL_UPGRADES;
 import static blusunrize.immersiveengineering.common.register.IEItems.Misc.WIRE_COILS;
 
+@EventBusSubscriber(modid = Lib.MODID, bus = Bus.FORGE)
 public class Villages
 {
 	public static final ResourceLocation ENGINEER = rl("engineer");
@@ -96,19 +95,23 @@ public class Villages
 	public static final ResourceLocation OUTFITTER = rl("outfitter");
 	public static final ResourceLocation GUNSMITH = rl("gunsmith");
 
-	public static void init()
+	@SubscribeEvent
+	public static void onTagsUpdated(TagsUpdatedEvent ev)
 	{
-		PlainVillagePools.bootstrap();
-		SnowyVillagePools.bootstrap();
-		SavannaVillagePools.bootstrap();
-		DesertVillagePools.bootstrap();
-		TaigaVillagePools.bootstrap();
-
+		if(ev.getUpdateCause()!=UpdateCause.SERVER_DATA_LOAD)
+			return;
 		// Register engineer's houses for each biome
 		for(String biome : new String[]{"plains", "snowy", "savanna", "desert", "taiga"})
 			for(String type : new String[]{"engineer", "machinist", "electrician", "gunsmith", "outfitter"})
-				addToPool(new ResourceLocation("village/"+biome+"/houses"), rl("village/houses/"+biome+"_"+type), 1);
+				addToPool(
+						new ResourceLocation("village/"+biome+"/houses"),
+						rl("village/houses/"+biome+"_"+type),
+						ev.getRegistryAccess()
+				);
+	}
 
+	public static void init()
+	{
 		// Register gifts
 		HeroGiftsTaskAccess.getGifts().put(Registers.PROF_ENGINEER.get(), rl("gameplay/hero_of_the_village/engineer"));
 		HeroGiftsTaskAccess.getGifts().put(Registers.PROF_MACHINIST.get(), rl("gameplay/hero_of_the_village/machinist"));
@@ -117,34 +120,17 @@ public class Villages
 		HeroGiftsTaskAccess.getGifts().put(Registers.PROF_GUNSMITH.get(), rl("gameplay/hero_of_the_village/gunsmith"));
 	}
 
-	private static void addToPool(ResourceLocation pool, ResourceLocation toAdd, int weight)
+	private static void addToPool(ResourceLocation poolId, ResourceLocation toAdd, RegistryAccess regAccess)
 	{
-		StructureTemplatePool old = BuiltinRegistries.TEMPLATE_POOL.get(pool);
-		int id = BuiltinRegistries.TEMPLATE_POOL.getId(old);
+		Registry<StructureTemplatePool> registry = regAccess.registryOrThrow(Registries.TEMPLATE_POOL);
+		StructureTemplatePool pool = Objects.requireNonNull(registry.get(poolId), poolId.getPath());
+		TemplatePoolAccess poolAccess = (TemplatePoolAccess)pool;
+		if(!(poolAccess.getRawTemplates() instanceof ArrayList))
+			poolAccess.setRawTemplates(new ArrayList<>(poolAccess.getRawTemplates()));
 
-		// Fixed seed to prevent inconsistencies between different worlds
-		List<StructurePoolElement> shuffled;
-		if(old!=null)
-			shuffled = old.getShuffledTemplates(RandomSource.create(0));
-		else
-			shuffled = ImmutableList.of();
-		Object2IntMap<StructurePoolElement> newPieces = new Object2IntLinkedOpenHashMap<>();
-		for(StructurePoolElement p : shuffled)
-			newPieces.computeInt(p, (StructurePoolElement pTemp, Integer i) -> (i==null?0: i)+1);
-		newPieces.put(SingleJigsawAccess.construct(
-				Either.left(toAdd), ProcessorLists.EMPTY, Projection.RIGID
-		), weight);
-		List<Pair<StructurePoolElement, Integer>> newPieceList = newPieces.object2IntEntrySet().stream()
-				.map(e -> Pair.of(e.getKey(), e.getIntValue()))
-				.collect(Collectors.toList());
-
-		ResourceLocation name = old.getName();
-		((WritableRegistry<StructureTemplatePool>)BuiltinRegistries.TEMPLATE_POOL).registerOrOverride(
-				OptionalInt.of(id),
-				ResourceKey.create(BuiltinRegistries.TEMPLATE_POOL.key(), name),
-				new StructureTemplatePool(pool, name, newPieceList),
-				Lifecycle.stable()
-		);
+		SinglePoolElement addedElement = SinglePoolElement.single(toAdd.toString()).apply(Projection.RIGID);
+		poolAccess.getRawTemplates().add(Pair.of(addedElement, 1));
+		poolAccess.getTemplates().add(addedElement);
 	}
 
 	@Mod.EventBusSubscriber(modid = MODID, bus = Bus.MOD)
@@ -291,13 +277,13 @@ public class Villages
 				trades.get(2).add(new TradeListing(EMERALD_FOR_ITEM, IETags.electrumWire, new PriceInterval(6, 12), 16, 5));
 				trades.get(2).add(new TradeListing(ITEMS_FOR_ONE_EMERALD, WIRE_COILS.get(WireType.ELECTRUM), new PriceInterval(1, 4), 16, 5));
 				trades.get(2).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, Tools.VOLTMETER, new PriceInterval(1, 3), 12, 5).setMultiplier(0.2f));
-				trades.get(2).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(EquipmentSlot.FEET), new PriceInterval(5, 7), 3, 15).setMultiplier(0.2f));
-				trades.get(2).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(EquipmentSlot.LEGS), new PriceInterval(9, 11), 3, 15).setMultiplier(0.2f));
+				trades.get(2).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(ArmorItem.Type.BOOTS), new PriceInterval(5, 7), 3, 15).setMultiplier(0.2f));
+				trades.get(2).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(ArmorItem.Type.LEGGINGS), new PriceInterval(9, 11), 3, 15).setMultiplier(0.2f));
 
 				trades.get(3).add(new TradeListing(EMERALD_FOR_ITEM, IETags.aluminumWire, new PriceInterval(4, 8), 16, 10));
 				trades.get(3).add(new TradeListing(ITEMS_FOR_ONE_EMERALD, WIRE_COILS.get(WireType.STEEL), new PriceInterval(1, 2), 16, 10));
-				trades.get(3).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(EquipmentSlot.CHEST), new PriceInterval(11, 15), 3, 20).setMultiplier(0.2f));
-				trades.get(3).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(EquipmentSlot.HEAD), new PriceInterval(5, 7), 3, 20).setMultiplier(0.2f));
+				trades.get(3).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(ArmorItem.Type.CHESTPLATE), new PriceInterval(11, 15), 3, 20).setMultiplier(0.2f));
+				trades.get(3).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, IEItems.Misc.FARADAY_SUIT.get(ArmorItem.Type.HELMET), new PriceInterval(5, 7), 3, 20).setMultiplier(0.2f));
 
 				trades.get(4).add(new TradeListing(EMERALD_FOR_ITEM, Ingredients.ELECTRON_TUBE, new PriceInterval(2, 6), 16, 10));
 				trades.get(4).add(new TradeListing(ONE_ITEM_FOR_EMERALDS, Ingredients.COMPONENT_ELECTRONIC, new PriceInterval(1, 3), 16, 15));
@@ -406,7 +392,7 @@ public class Villages
 		@Override
 		public MerchantOffer getOffer(@Nullable Entity trader, @Nonnull RandomSource rand)
 		{
-			ItemStack buying = this.lazyItem.apply(trader!=null?trader.level: null);
+			ItemStack buying = this.lazyItem.apply(trader!=null?trader.level(): null);
 			return this.outline.generateOffer(buying, priceInfo, rand, maxUses, xp, priceMultiplier);
 		}
 	}

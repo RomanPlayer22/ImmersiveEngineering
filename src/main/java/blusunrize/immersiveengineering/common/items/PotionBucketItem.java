@@ -1,17 +1,24 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.items;
 
 import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import blusunrize.immersiveengineering.common.fluids.PotionFluid;
 import blusunrize.immersiveengineering.common.register.IEItems.Misc;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
@@ -42,7 +49,7 @@ public class PotionBucketItem extends IEBaseItem
 {
 	public PotionBucketItem()
 	{
-		super(new Properties().stacksTo(1), CreativeModeTab.TAB_BREWING);
+		super(new Properties().stacksTo(1));
 	}
 
 	public static ItemStack forPotion(Potion type)
@@ -50,7 +57,7 @@ public class PotionBucketItem extends IEBaseItem
 		if(type==Potions.WATER||type==null)
 			return new ItemStack(Items.WATER_BUCKET);
 		ItemStack result = new ItemStack(Misc.POTION_BUCKET);
-		result.getOrCreateTag().putString("Potion", Registry.POTION.getKey(type).toString());
+		result.getOrCreateTag().putString("Potion", BuiltInRegistries.POTION.getKey(type).toString());
 		return result;
 	}
 
@@ -60,15 +67,13 @@ public class PotionBucketItem extends IEBaseItem
 	}
 
 	@Override
-	public void fillItemCategory(@Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> items)
+	public void fillCreativeTab(Output out)
 	{
-		if(!allowedIn(group))
-			return;
 		List<Potion> sortedPotions = new ArrayList<>(ForgeRegistries.POTIONS.getValues());
 		sortedPotions.sort(Comparator.comparing(e -> getPotionName(e).getString()));
 		for(Potion p : sortedPotions)
 			if(p!=Potions.WATER&&p!=Potions.EMPTY)
-				items.add(forPotion(p));
+				out.accept(forPotion(p));
 	}
 
 	@Nullable

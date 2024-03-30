@@ -1,5 +1,6 @@
 {
   "type": "immersiveengineering:turn_and_copy",
+  "category": "misc",
   "group": "ie_concrete",
   "key": {
     "b": {
@@ -26,5 +27,6 @@
   "result": {
     "count": 8,
     "item": "immersiveengineering:concrete"
-  }
+  },
+  "show_notification": true
 }

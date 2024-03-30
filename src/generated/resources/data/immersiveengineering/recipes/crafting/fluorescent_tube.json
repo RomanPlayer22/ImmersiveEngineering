@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "G": {
       "tag": "forge:glass"
@@ -18,5 +19,6 @@
   ],
   "result": {
     "item": "immersiveengineering:fluorescent_tube"
-  }
+  },
+  "show_notification": true
 }

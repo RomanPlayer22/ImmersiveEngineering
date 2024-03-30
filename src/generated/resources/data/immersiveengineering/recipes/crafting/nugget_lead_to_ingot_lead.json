@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "i": {
       "item": "immersiveengineering:nugget_lead"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "immersiveengineering:ingot_lead"
-  }
+  },
+  "show_notification": true
 }

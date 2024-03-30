@@ -16,12 +16,13 @@ import blusunrize.immersiveengineering.common.util.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -41,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.SoundActions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -59,7 +61,7 @@ public class PotionFluid extends Fluid
 		if(type==Potions.WATER||type==null)
 			return new FluidStack(Fluids.WATER, amount);
 		FluidStack stack = new FluidStack(IEFluids.POTION.get(), amount);
-		stack.getOrCreateTag().putString("Potion", Registry.POTION.getKey(type).toString());
+		stack.getOrCreateTag().putString("Potion", BuiltInRegistries.POTION.getKey(type).toString());
 		return stack;
 	}
 
@@ -181,7 +183,7 @@ public class PotionFluid extends Fluid
 			Potion potionType = PotionUtils.getPotion(fluidStack.getTag());
 			if(potionType!=Potions.EMPTY)
 			{
-				String modID = Registry.POTION.getKey(potionType).getNamespace();
+				String modID = BuiltInRegistries.POTION.getKey(potionType).getNamespace();
 				tooltip.accept(Component.translatable(Lib.DESC_INFO+"potionMod", Utils.getModName(modID)).withStyle(ChatFormatting.DARK_GRAY));
 			}
 		}
@@ -194,7 +196,9 @@ public class PotionFluid extends Fluid
 
 		public PotionFluidType()
 		{
-			super(Properties.create());
+			super(Properties.create()
+					.sound(SoundActions.BUCKET_FILL, SoundEvents.BUCKET_FILL)
+					.sound(SoundActions.BUCKET_EMPTY, SoundEvents.BUCKET_EMPTY));
 		}
 
 		@Override

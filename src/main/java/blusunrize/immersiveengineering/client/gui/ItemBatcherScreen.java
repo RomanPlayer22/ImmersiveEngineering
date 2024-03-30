@@ -15,8 +15,8 @@ import blusunrize.immersiveengineering.client.gui.elements.GuiButtonState;
 import blusunrize.immersiveengineering.common.blocks.wooden.ItemBatcherBlockEntity.BatchMode;
 import blusunrize.immersiveengineering.common.gui.ItemBatcherMenu;
 import blusunrize.immersiveengineering.common.gui.sync.GetterAndSetter;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,8 +25,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
 
 import java.util.List;
-
-import static blusunrize.immersiveengineering.client.ClientUtils.mc;
 
 public class ItemBatcherScreen extends IEContainerScreen<ItemBatcherMenu>
 {
@@ -42,7 +40,6 @@ public class ItemBatcherScreen extends IEContainerScreen<ItemBatcherMenu>
 	public void init()
 	{
 		super.init();
-		mc().keyboardHandler.setSendRepeatsToGui(true);
 
 		this.clearWidgets();
 		this.addRenderableWidget(new GuiButtonState<>(leftPos+7, topPos+92, 18, 18, Component.empty(),
@@ -80,12 +77,12 @@ public class ItemBatcherScreen extends IEContainerScreen<ItemBatcherMenu>
 	}
 
 	@Override
-	protected void renderLabels(PoseStack transform, int mouseX, int mouseY)
+	protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
 	{
-		this.font.drawShadow(transform, I18n.get("block.immersiveengineering.item_batcher"), 8, 6, Lib.COLOUR_I_ImmersiveOrange);
+		graphics.drawString(this.font, I18n.get("block.immersiveengineering.item_batcher"), 8, 6,  Lib.COLOUR_I_ImmersiveOrange, true);
 
-		this.font.draw(transform, I18n.get(Lib.GUI_CONFIG+"item_batcher.filter"), 8, 20, 0xE0E0E0);
-		this.font.draw(transform, I18n.get(Lib.GUI_CONFIG+"item_batcher.buffer"), 8, 49, 0xE0E0E0);
+		graphics.drawString(this.font, I18n.get(Lib.GUI_CONFIG+"item_batcher.filter"), 8, 20, 0xE0E0E0);
+		graphics.drawString(this.font, I18n.get(Lib.GUI_CONFIG+"item_batcher.buffer"), 8, 49, 0xE0E0E0);
 	}
 
 	private static void gatherBatchmodeTooltip(List<Component> out, BatchMode mode) {

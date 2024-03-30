@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.util;
 
 import blusunrize.immersiveengineering.api.tool.ExternalHeaterHandler;
@@ -36,8 +44,8 @@ public class VanillaFurnaceHeater implements IExternalHeatable
 		ItemStack existingOutput = furnace.getItem(2);
 		if(existingOutput.isEmpty())
 			return true;
-		ItemStack outStack = output.get().getResultItem();
-		if(!existingOutput.sameItem(outStack))
+		ItemStack outStack = output.get().getResultItem(furnace.getLevel().registryAccess());
+		if(!ItemStack.isSameItem(existingOutput, outStack))
 			return false;
 		int stackSize = existingOutput.getCount()+outStack.getCount();
 		return stackSize <= furnace.getMaxStackSize()&&stackSize <= outStack.getMaxStackSize();

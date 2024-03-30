@@ -1,9 +1,18 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.util.fakeworld;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -26,21 +35,21 @@ public class TemplateChunk extends LevelChunk
 	public TemplateChunk(Level worldIn, ChunkPos chunkPos, List<StructureBlockInfo> blocksInChunk, Predicate<BlockPos> shouldShow)
 	{
 		super(worldIn, chunkPos);
-		Registry<Biome> biomeRegistry = worldIn.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+		Registry<Biome> biomeRegistry = worldIn.registryAccess().registryOrThrow(Registries.BIOME);
 		for(int i = 0; i < getSections().length; ++i)
 			getSections()[i] = new TemplateChunkSection(i, biomeRegistry, shouldShow, chunkPos);
 		this.shouldShow = shouldShow;
 		this.biome = worldIn.getUncachedNoiseBiome(0, 0, 0);
 		for(StructureBlockInfo info : blocksInChunk)
 		{
-			actuallSetBlockState(info.pos, info.state);
-			if(info.nbt!=null)
+			actuallSetBlockState(info.pos(), info.state());
+			if(info.nbt()!=null)
 			{
-				BlockEntity tile = BlockEntity.loadStatic(info.pos, info.state, info.nbt);
+				BlockEntity tile = BlockEntity.loadStatic(info.pos(), info.state(), info.nbt());
 				if(tile!=null)
 				{
 					tile.setLevel(worldIn);
-					getBlockEntities().put(info.pos, tile);
+					getBlockEntities().put(info.pos(), tile);
 				}
 			}
 		}
@@ -116,9 +125,9 @@ public class TemplateChunk extends LevelChunk
 
 	@Nonnull
 	@Override
-	public ChunkHolder.FullChunkStatus getFullStatus()
+	public FullChunkStatus getFullStatus()
 	{
-		return ChunkHolder.FullChunkStatus.BORDER;
+		return FullChunkStatus.INACCESSIBLE;
 	}
 
 	@Nonnull

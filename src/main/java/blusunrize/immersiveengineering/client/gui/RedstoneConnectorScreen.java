@@ -18,8 +18,8 @@ import blusunrize.immersiveengineering.client.gui.elements.GuiButtonState;
 import blusunrize.immersiveengineering.common.blocks.metal.ConnectorRedstoneBlockEntity;
 import blusunrize.immersiveengineering.common.network.MessageBlockEntitySync;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -50,7 +50,6 @@ public class RedstoneConnectorScreen extends ClientBlockEntityScreen<ConnectorRe
 	public void init()
 	{
 		super.init();
-		mc().keyboardHandler.setSendRepeatsToGui(true);
 
 		clearWidgets();
 
@@ -78,13 +77,13 @@ public class RedstoneConnectorScreen extends ClientBlockEntityScreen<ConnectorRe
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(PoseStack transform, int mouseX, int mouseY, float partialTick)
+	protected void drawGuiContainerBackgroundLayer(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
 	{
 
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(PoseStack transform, int mouseX, int mouseY, float partialTick)
+	protected void drawGuiContainerForegroundLayer(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
 	{
 		ArrayList<Component> tooltip = new ArrayList<>();
 
@@ -108,7 +107,7 @@ public class RedstoneConnectorScreen extends ClientBlockEntityScreen<ConnectorRe
 			}
 
 		if(!tooltip.isEmpty())
-			renderTooltip(transform, tooltip, Optional.empty(), mouseX, mouseY);
+			graphics.renderTooltip(font, tooltip, Optional.empty(), mouseX, mouseY);
 	}
 
 	@Override
@@ -134,7 +133,7 @@ public class RedstoneConnectorScreen extends ClientBlockEntityScreen<ConnectorRe
 						onClick.accept((GuiButtonBoolean)btn);
 					for(int j = 0; j < buttons.length; j++)
 						if(j!=color.ordinal()&&buttons[j].getState())
-							buttons[j].onClick(buttons[j].x, buttons[j].y);
+							buttons[j].onClick(buttons[j].getX(), buttons[j].getY());
 				})
 		{
 			@Override
@@ -144,16 +143,16 @@ public class RedstoneConnectorScreen extends ClientBlockEntityScreen<ConnectorRe
 			}
 
 			@Override
-			public void render(PoseStack transform, int mouseX, int mouseY, float partialTicks)
+			public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
 			{
-				super.render(transform, mouseX, mouseY, partialTicks);
+				super.render(graphics, mouseX, mouseY, partialTicks);
 				if(this.visible)
 				{
 					int col = color.getTextColor();
 					if(!getState())
 						col = ClientUtils.getDarkenedTextColour(col);
 					col = 0xff000000|col;
-					this.fillGradient(transform, x+3, y+3, x+9, y+9, col, col);
+					graphics.fillGradient(getX()+3, getY()+3, getX()+9, getY()+9, col, col);
 				}
 			}
 		};

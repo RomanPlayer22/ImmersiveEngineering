@@ -18,7 +18,7 @@ import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IBlockEnt
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IInteractionObjectIE;
 import blusunrize.immersiveengineering.common.register.IEBlockEntities;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
@@ -40,6 +40,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static net.minecraftforge.common.capabilities.ForgeCapabilities.FLUID_HANDLER;
 
@@ -141,7 +142,7 @@ public class FluidSorterBlockEntity extends IEBaseBlockEntity implements IIntera
 	}
 
 	@Override
-	public BEContainer<FluidSorterBlockEntity, ?> getContainerType()
+	public ArgContainer<FluidSorterBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.FLUID_SORTER;
 	}
@@ -218,11 +219,11 @@ public class FluidSorterBlockEntity extends IEBaseBlockEntity implements IIntera
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		ItemStack stack = new ItemStack(getBlockState().getBlock(), 1);
 		writeCustomNBT(stack.getOrCreateTag(), false);
-		return ImmutableList.of(stack);
+		drop.accept(stack);
 	}
 
 	@Override

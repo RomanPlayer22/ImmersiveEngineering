@@ -14,13 +14,12 @@ import blusunrize.immersiveengineering.client.models.obj.callback.item.RailgunCa
 import blusunrize.immersiveengineering.common.entities.illager.Fusilier;
 import blusunrize.immersiveengineering.common.items.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Quaternionf;
 
 public class RailgunCallbacks implements ItemCallback<Key>
 {
@@ -46,27 +45,27 @@ public class RailgunCallbacks implements ItemCallback<Key>
 	}
 
 	@Override
-	public void handlePerspective(Key key, LivingEntity holder, TransformType cameraTransformType, PoseStack mat)
+	public void handlePerspective(Key key, LivingEntity holder, ItemDisplayContext cameraTransformType, PoseStack mat)
 	{
-		if(holder instanceof Fusilier fusilier&&(cameraTransformType==TransformType.THIRD_PERSON_RIGHT_HAND||cameraTransformType==TransformType.THIRD_PERSON_LEFT_HAND))
+		if(holder instanceof Fusilier fusilier&&(cameraTransformType==ItemDisplayContext.THIRD_PERSON_RIGHT_HAND||cameraTransformType==ItemDisplayContext.THIRD_PERSON_LEFT_HAND))
 		{
 			switch(fusilier.getArmPose())
 			{
 				case CROSSBOW_HOLD ->
 				{
-					mat.mulPose(new Quaternion(-10, -15, -40, true));
+					mat.mulPose(new Quaternionf().rotateXYZ(-0.174533f, -0.261799f, -0.698132f));
 					mat.translate(.5, -2.5, .75);
 				}
 				case CELEBRATING ->
 				{
 					mat.translate(-4.5, -4, 2);
-					mat.mulPose(Vector3f.YP.rotationDegrees(-95));
-					mat.mulPose(Vector3f.ZP.rotationDegrees(-50));
-					mat.mulPose(Vector3f.XP.rotationDegrees(20));
+					mat.mulPose(new Quaternionf().rotateY(-1.65806f));
+					mat.mulPose(new Quaternionf().rotateZ(-0.872665f));
+					mat.mulPose(new Quaternionf().rotateX(0.349066f));
 				}
 				default ->
 				{
-					mat.mulPose(new Quaternion(-8, 0, 110, true));
+					mat.mulPose(new Quaternionf().rotateXYZ(-0.139626f, 0, 1.91986f));
 					mat.translate(4.75, 4, 0);
 				}
 			}

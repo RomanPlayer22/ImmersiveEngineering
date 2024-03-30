@@ -1,9 +1,17 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.wires.utils;
 
 import blusunrize.immersiveengineering.api.TargetingInfo;
 import blusunrize.immersiveengineering.api.wires.ConnectionPoint;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceKey;
@@ -49,6 +57,6 @@ public class WireLink
 		ResourceLocation dim = new ResourceLocation(nbt.getString("linkingDim"));
 		BlockPos offset = NbtUtils.readBlockPos(nbt.getCompound("linkingOffset"));
 		TargetingInfo info = TargetingInfo.readFromNBT(nbt.getCompound("linkingTarget"));
-		return new WireLink(cp, ResourceKey.create(Registry.DIMENSION_REGISTRY, dim), offset, info);
+		return new WireLink(cp, ResourceKey.create(Registries.DIMENSION, dim), offset, info);
 	}
 }

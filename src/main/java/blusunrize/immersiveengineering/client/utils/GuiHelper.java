@@ -11,22 +11,23 @@ package blusunrize.immersiveengineering.client.utils;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
+import org.joml.Matrix4f;
 
 import static blusunrize.immersiveengineering.client.ClientUtils.getSprite;
 import static blusunrize.immersiveengineering.client.ClientUtils.mc;
@@ -50,7 +51,6 @@ public class GuiHelper
 		Matrix4f mat = transform.last().pose();
 		BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
 		RenderSystem.enableBlend();
-		RenderSystem.disableTexture();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
@@ -61,7 +61,6 @@ public class GuiHelper
 		bufferbuilder.vertex(mat, x, y, 0).color(color[0], color[1], color[2], 1).endVertex();
 		bufferbuilder.unsetDefaultColor();
 		BufferUploader.drawWithShader(bufferbuilder.end());
-		RenderSystem.enableTexture();
 		RenderSystem.disableBlend();
 	}
 
@@ -102,8 +101,8 @@ public class GuiHelper
 		IClientFluidTypeExtensions props = IClientFluidTypeExtensions.of(fluid.getFluid());
 		TextureAtlasSprite sprite = getSprite(props.getStillTexture(fluid));
 		int col = props.getTintColor(fluid);
-		int iW = sprite.getWidth();
-		int iH = sprite.getHeight();
+		int iW = sprite.contents().width();
+		int iH = sprite.contents().height();
 		if(iW > 0&&iH > 0)
 			drawRepeatedSprite(builder, transform, x, y, w, h, iW, iH,
 					sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(),
@@ -140,36 +139,37 @@ public class GuiHelper
 		}
 	}
 
-	public static void drawSlot(int x, int y, int w, int h, PoseStack transform)
+	public static void drawSlot(int x, int y, int w, int h, GuiGraphics graphics)
 	{
-		drawSlot(x, y, w, h, 0xff, transform);
+		drawSlot(x, y, w, h, 0xff, graphics);
 	}
 
-	public static void drawSlot(PoseStack transform, int x, int y, int w, int h, int dark, int main, int light)
+	public static void drawSlot(GuiGraphics graphics, int x, int y, int w, int h, int dark, int main, int light)
 	{
 		final int minX = x+8-w/2;
 		final int minY = y+8-h/2;
 		final int maxX = minX+w;
 		final int maxY = minY+h;
-		GuiComponent.fill(transform, minX, minY-1, maxX, minY, dark);
-		GuiComponent.fill(transform, minX-1, minY-1, minX, maxY, dark);
-		GuiComponent.fill(transform, minX, minY, maxX, maxY, main);
-		GuiComponent.fill(transform, minX, maxY, maxX+1, maxY+1, light);
-		GuiComponent.fill(transform, maxX, minY, maxX+1, maxY, light);
+		graphics.fill(minX, minY-1, maxX, minY, dark);
+		graphics.fill(minX-1, minY-1, minX, maxY, dark);
+		graphics.fill(minX, minY, maxX, maxY, main);
+		graphics.fill(minX, maxY, maxX+1, maxY+1, light);
+		graphics.fill(maxX, minY, maxX+1, maxY, light);
 	}
 
-	public static void drawSlot(int x, int y, int w, int h, int alpha, PoseStack transform)
+	public static void drawSlot(int x, int y, int w, int h, int alpha, GuiGraphics graphics)
 	{
-		drawSlot(transform, x, y, w, h, (alpha<<24)|0x373737, (alpha<<24)|0x8b8b8b, (alpha<<24)|0xffffff);
+		drawSlot(graphics, x, y, w, h, (alpha<<24)|0x373737, (alpha<<24)|0x8b8b8b, (alpha<<24)|0xffffff);
 	}
 
-	public static void drawDarkSlot(PoseStack transform, int x, int y, int w, int h)
+	public static void drawDarkSlot(GuiGraphics graphics, int x, int y, int w, int h)
 	{
-		drawSlot(transform, x, y, w, h, 0x77222222, 0x77111111, 0x77999999);
+		drawSlot(graphics, x, y, w, h, 0x77222222, 0x77111111, 0x77999999);
 	}
 
-	public static void renderItemWithOverlayIntoGUI(MultiBufferSource buffer, PoseStack transform,
-													ItemStack stack, int x, int y)
+	public static void renderItemWithOverlayIntoGUI(
+			MultiBufferSource buffer, PoseStack transform, ItemStack stack, int x, int y, Level level
+	)
 	{
 		ItemRenderer itemRenderer = mc().getItemRenderer();
 		BakedModel bakedModel = itemRenderer.getModel(stack, null, mc().player, 0);
@@ -182,8 +182,9 @@ public class GuiHelper
 		transform.scale(1, -1, 1);
 		transform.scale(16, 16, 16);
 		BatchingRenderTypeBuffer batchBuffer = new BatchingRenderTypeBuffer();
-		itemRenderer.renderStatic(stack, TransformType.GUI, 0xf000f0, OverlayTexture.NO_OVERLAY,
-				transform, batchBuffer, 0);
+		itemRenderer.renderStatic(
+				stack, ItemDisplayContext.GUI, 0xf000f0, OverlayTexture.NO_OVERLAY, transform, batchBuffer, level, 0
+		);
 		batchBuffer.pipe(buffer);
 		transform.popPose();
 		renderDurabilityBar(stack, buffer, transform);

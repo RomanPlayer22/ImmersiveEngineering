@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "B": {
       "item": "immersiveengineering:metal_barrel"
@@ -14,5 +15,6 @@
   ],
   "result": {
     "item": "immersiveengineering:minecart_metalbarrel"
-  }
+  },
+  "show_notification": true
 }

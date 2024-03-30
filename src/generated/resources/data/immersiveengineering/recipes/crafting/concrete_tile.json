@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "ie_concrete",
   "key": {
     "c": {
@@ -13,5 +14,6 @@
   "result": {
     "count": 4,
     "item": "immersiveengineering:concrete_tile"
-  }
+  },
+  "show_notification": true
 }

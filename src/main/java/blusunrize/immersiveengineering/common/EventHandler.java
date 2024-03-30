@@ -11,6 +11,7 @@ package blusunrize.immersiveengineering.common;
 import blusunrize.immersiveengineering.ImmersiveEngineering;
 import blusunrize.immersiveengineering.api.IETags;
 import blusunrize.immersiveengineering.api.Lib;
+import blusunrize.immersiveengineering.api.Lib.DamageTypes;
 import blusunrize.immersiveengineering.api.shader.CapabilityShader;
 import blusunrize.immersiveengineering.api.shader.CapabilityShader.ShaderWrapper;
 import blusunrize.immersiveengineering.api.shader.CapabilityShader.ShaderWrapper_Direct;
@@ -21,9 +22,6 @@ import blusunrize.immersiveengineering.api.tool.IDrillHead;
 import blusunrize.immersiveengineering.api.utils.CapabilityUtils;
 import blusunrize.immersiveengineering.api.wires.GlobalWireNetwork;
 import blusunrize.immersiveengineering.common.blocks.IEBlockInterfaces.IEntityProof;
-import blusunrize.immersiveengineering.common.blocks.IEMultiblockBlock;
-import blusunrize.immersiveengineering.common.blocks.generic.MultiblockPartBlockEntity;
-import blusunrize.immersiveengineering.common.blocks.metal.CrusherBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.metal.RazorWireBlockEntity;
 import blusunrize.immersiveengineering.common.entities.CapabilitySkyhookData.SimpleSkyhookProvider;
 import blusunrize.immersiveengineering.common.entities.illager.EngineerIllager;
@@ -50,6 +48,7 @@ import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -89,7 +88,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -97,6 +95,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -225,19 +224,19 @@ public class EventHandler
 		}
 	}
 
-	public static Map<UUID, CrusherBlockEntity> crusherMap = new HashMap<>();
+	public static Map<UUID, Consumer<ItemStack>> crusherMap = new HashMap<>();
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onLivingDropsLowest(LivingDropsEvent event)
 	{
-		if(!event.isCanceled()&&Lib.DMG_Crusher.equals(event.getSource().getMsgId()))
+		if(!event.isCanceled()&&event.getSource().is(DamageTypes.CRUSHER))
 		{
-			CrusherBlockEntity crusher = crusherMap.get(event.getEntity().getUUID());
+			final Consumer<ItemStack> crusher = crusherMap.get(event.getEntity().getUUID());
 			if(crusher!=null)
 			{
 				for(ItemEntity item : event.getDrops())
 					if(item!=null&&!item.getItem().isEmpty())
-						crusher.doProcessOutput(item.getItem());
+						crusher.accept(item.getItem());
 				crusherMap.remove(event.getEntity().getUUID());
 				event.setCanceled(true);
 			}
@@ -253,7 +252,7 @@ public class EventHandler
 			if(!isBoss||event.getEntity().getType().is(IETags.shaderbagBlacklist))
 				return;
 			ItemStack bag = new ItemStack(Misc.SHADER_BAG.get(Rarity.EPIC));
-			event.getDrops().add(new ItemEntity(event.getEntity().level, event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(), bag));
+			event.getDrops().add(new ItemEntity(event.getEntity().level(), event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(), bag));
 		}
 	}
 
@@ -277,10 +276,10 @@ public class EventHandler
 					if(EnergyHelper.extractFlux(powerpack, PowerpackItem.TESLA_CONSUMPTION, true)==PowerpackItem.TESLA_CONSUMPTION)
 					{
 						EnergyHelper.extractFlux(powerpack, PowerpackItem.TESLA_CONSUMPTION, false);
-						ElectricDamageSource dmgsrc = IEDamageSources.causeTeslaDamage(2+player.getRandom().nextInt(4), true);
+						ElectricDamageSource dmgsrc = IEDamageSources.causeTeslaDamage(player.level(), 2+player.getRandom().nextInt(4), true);
 						if(dmgsrc.apply(attacker))
 							attacker.addEffect(new MobEffectInstance(IEPotions.STUNNED.get(), 60));
-						player.level.playSound(null, player.getX(), player.getY(), player.getZ(), IESounds.spark.get(),
+						player.level().playSound(null, player.getX(), player.getY(), player.getZ(), IESounds.spark.get(),
 								SoundSource.BLOCKS, 2.5F, 0.5F+rng.nextFloat());
 					}
 		}
@@ -290,13 +289,13 @@ public class EventHandler
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onLivingHurt(LivingHurtEvent event)
 	{
-		if(event.getSource().isFire()&&event.getEntity().getEffect(IEPotions.FLAMMABLE.get())!=null)
+		if(event.getSource().is(DamageTypeTags.IS_FIRE)&&event.getEntity().getEffect(IEPotions.FLAMMABLE.get())!=null)
 		{
 			int amp = event.getEntity().getEffect(IEPotions.FLAMMABLE.get()).getAmplifier();
 			float mod = 1.5f+((amp*amp)*.5f);
 			event.setAmount(event.getAmount()*mod);
 		}
-		if(("flux".equals(event.getSource().getMsgId())||IEDamageSources.razorShock.equals(event.getSource())||
+		if(("flux".equals(event.getSource().getMsgId())||event.getSource().is(DamageTypes.RAZOR_SHOCK)||
 				event.getSource() instanceof ElectricDamageSource)&&event.getEntity().getEffect(IEPotions.CONDUCTIVE.get())!=null)
 		{
 			int amp = event.getEntity().getEffect(IEPotions.CONDUCTIVE.get()).getAmplifier();
@@ -424,13 +423,14 @@ public class EventHandler
 				itementity.setDefaultPickUpDelay();
 				event.getLevel().addFreshEntity(itementity);
 				lectern.clearContent();
-				LecternBlock.resetBookState(event.getLevel(), pos, state, false);
+				LecternBlock.resetBookState(null, event.getLevel(), pos, state, false);
 			}
 			event.setCanceled(true);
 		}
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	// TODO test if multiblocks are still bad when broken with a drill or similar
+	/*@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void breakLast(BlockEvent.BreakEvent event)
 	{
 		if(event.getState().getBlock() instanceof IEMultiblockBlock)
@@ -439,7 +439,7 @@ public class EventHandler
 			if(te instanceof MultiblockPartBlockEntity<?> multiblockBE)
 				multiblockBE.onlyLocalDissassembly = event.getLevel().getLevelData().getGameTime();
 		}
-	}
+	}*/
 
 	@SubscribeEvent
 	public void onLivingDeath(LivingDeathEvent event)
@@ -496,7 +496,7 @@ public class EventHandler
 	}
 
 	private static final Function<Raid, Predicate<ServerPlayer>> canTriggerEngineerRaid = raid -> serverPlayer -> {
-		ServerLevel level = serverPlayer.getLevel();
+		ServerLevel level = serverPlayer.serverLevel();
 		ServerAdvancementManager manager = level.getServer().getAdvancements();
 		Advancement advancement = manager.getAdvancement(new ResourceLocation(ImmersiveEngineering.MODID, "main/kill_illager"));
 		return level.getRaidAt(serverPlayer.blockPosition())==raid&&advancement!=null&&serverPlayer.getAdvancements().getOrStartProgress(advancement).isDone();

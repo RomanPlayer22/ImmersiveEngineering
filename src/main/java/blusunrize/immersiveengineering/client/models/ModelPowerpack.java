@@ -26,10 +26,6 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.EntityModel;
@@ -43,7 +39,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -52,18 +47,23 @@ import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.ForgeHooksClient;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector4f;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -133,11 +133,11 @@ public class ModelPowerpack
 
 		ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
 		matrixStackIn.pushPose();
-		matrixStackIn.mulPose(new Quaternion(180, 0, 0, true));
+		matrixStackIn.mulPose(new Quaternionf().rotateXYZ((float)Math.PI, 0, 0));
 		if(isCrouching)
 		{
 			matrixStackIn.translate(0, -.2f, 0);
-			matrixStackIn.mulPose(new Quaternion(0.5f, 0, 0, false));
+			matrixStackIn.mulPose(new Quaternionf().rotateXYZ(0.5f, 0, 0));
 		}
 		matrixStackIn.translate(0, -.37, -.187);
 
@@ -153,8 +153,8 @@ public class ModelPowerpack
 			{
 				// set up to render the large-texture banner
 				PowerpackCallbacks.THIRD_PERSON_PASS = 3;
-				BakedModel bakedModel = renderer.getModel(powerpack, toRender.getLevel(), toRender, 0);
-				bakedModel = ForgeHooksClient.handleCameraTransforms(matrixStackIn, bakedModel, TransformType.FIXED, false);
+				BakedModel bakedModel = renderer.getModel(powerpack, toRender.level(), toRender, 0);
+				bakedModel = ForgeHooksClient.handleCameraTransforms(matrixStackIn, bakedModel, ItemDisplayContext.FIXED, false);
 				matrixStackIn.translate(-0.5D, -0.5D, -0.5D);
 				VertexConsumer consumer = buffers.getBuffer(RenderType.entitySolid(shaderTexture));
 				Minecraft.getInstance().getItemRenderer().renderModelLists(
@@ -165,8 +165,8 @@ public class ModelPowerpack
 			{
 				// set up to render the small-texture banner
 				PowerpackCallbacks.THIRD_PERSON_PASS = 2;
-				BakedModel bakedModel = renderer.getModel(powerpack, toRender.getLevel(), toRender, 0);
-				bakedModel = ForgeHooksClient.handleCameraTransforms(matrixStackIn, bakedModel, TransformType.FIXED, false);
+				BakedModel bakedModel = renderer.getModel(powerpack, toRender.level(), toRender, 0);
+				bakedModel = ForgeHooksClient.handleCameraTransforms(matrixStackIn, bakedModel, ItemDisplayContext.FIXED, false);
 				matrixStackIn.translate(-0.5D, -0.5D, -0.5D);
 				for(BannerLayer layer : getBannerLayers(banner, bakedModel))
 				{
@@ -182,10 +182,10 @@ public class ModelPowerpack
 			PowerpackCallbacks.THIRD_PERSON_PASS = 1;
 		}
 		Minecraft.getInstance().getItemRenderer().render(
-				powerpack, TransformType.FIXED, false,
+				powerpack, ItemDisplayContext.FIXED, false,
 				matrixStackIn, buffers,
 				LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
-				renderer.getModel(powerpack, toRender.getLevel(), toRender, 0)
+				renderer.getModel(powerpack, toRender.level(), toRender, 0)
 		);
 		PowerpackCallbacks.THIRD_PERSON_PASS = 0;
 		matrixStackIn.popPose();
@@ -239,7 +239,7 @@ public class ModelPowerpack
 			}
 			matrixStackIn.pushPose();
 			// undo player rotation to allow absolute positioning
-			matrixStackIn.mulPose(new Quaternion(Vector3f.YP, -toRender.yBodyRotO, true));
+			matrixStackIn.mulPose(new Quaternionf().rotationY(-toRender.yBodyRotO*Mth.DEG_TO_RAD));
 			matrixStackIn.scale(-1.0F, 1.0F, 1.0F);
 			CatenaryData renderCat = Connection.makeCatenaryData(antennaBase, antennaTip, 1.0+distFromWire*0.005);
 			ConnectionRenderer.renderConnection(
@@ -304,13 +304,12 @@ public class ModelPowerpack
 			.build(CacheLoader.from(key -> {
 				Vector4f vec4f = new Vector4f(key.right?-.0625f: .0265f, -.625f, 0, 1);
 				Matrix4f mat4f = new Matrix4f();
-				mat4f.setIdentity();
 				mat4f.setTranslation(key.arm.x/16f, -key.arm.y/16f, key.arm.z/16f);
-				mat4f.multiply(Vector3f.ZP.rotation(-key.arm.zRot));
-				mat4f.multiply(Vector3f.YP.rotation(key.arm.yRot));
-				mat4f.multiply(Vector3f.XP.rotation(-key.arm.xRot));
-				vec4f.transform(mat4f);
-				vec4f.mul(new Vector3f(key.arm.xScale, key.arm.yScale, key.arm.zScale));
+				mat4f.rotate(new Quaternionf().rotationZ(-key.arm.zRot));
+				mat4f.rotate(new Quaternionf().rotationY(key.arm.yRot));
+				mat4f.rotate(new Quaternionf().rotationX(-key.arm.xRot));
+				vec4f.mul(mat4f);
+				vec4f.mul(key.arm.xScale, key.arm.yScale, key.arm.zScale, 1);
 				double zFrom = key.crouched?.625: .25;
 				double slack = key.crouched?1.25: 1.5;
 				return Connection.makeCatenaryData(

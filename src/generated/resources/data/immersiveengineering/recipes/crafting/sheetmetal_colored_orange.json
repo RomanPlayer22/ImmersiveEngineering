@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "d": {
       "tag": "forge:dyes/orange"
@@ -16,5 +17,6 @@
   "result": {
     "count": 8,
     "item": "immersiveengineering:sheetmetal_colored_orange"
-  }
+  },
+  "show_notification": true
 }

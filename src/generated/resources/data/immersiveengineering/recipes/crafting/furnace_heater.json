@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "p": {
       "tag": "forge:plates/copper"
@@ -21,5 +22,6 @@
   ],
   "result": {
     "item": "immersiveengineering:furnace_heater"
-  }
+  },
+  "show_notification": true
 }

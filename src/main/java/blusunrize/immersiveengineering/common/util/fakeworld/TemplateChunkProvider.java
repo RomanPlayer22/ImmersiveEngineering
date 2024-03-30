@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.common.util.fakeworld;
 
 import com.mojang.datafixers.util.Pair;
@@ -34,7 +42,7 @@ public class TemplateChunkProvider extends ChunkSource
 		this.lightManager = new LevelLightEngine(this, true, true);
 		Map<ChunkPos, List<StructureBlockInfo>> byChunk = new HashMap<>();
 		for(StructureBlockInfo info : blocks)
-			byChunk.computeIfAbsent(new ChunkPos(info.pos), $ -> new ArrayList<>()).add(info);
+			byChunk.computeIfAbsent(new ChunkPos(info.pos()), $ -> new ArrayList<>()).add(info);
 		chunks = byChunk.entrySet().stream()
 				.map(e -> Pair.of(e.getKey(), new TemplateChunk(world, e.getKey(), e.getValue(), shouldShow)))
 				.collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));

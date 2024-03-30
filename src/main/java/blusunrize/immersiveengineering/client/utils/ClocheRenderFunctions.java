@@ -11,15 +11,14 @@ package blusunrize.immersiveengineering.client.utils;
 
 import blusunrize.immersiveengineering.api.crafting.ClocheRecipe;
 import blusunrize.immersiveengineering.api.crafting.ClocheRenderFunction;
-import blusunrize.immersiveengineering.common.blocks.plant.EnumHempGrowth;
 import blusunrize.immersiveengineering.common.blocks.plant.HempBlock;
 import blusunrize.immersiveengineering.common.register.IEBlocks.Misc;
+import blusunrize.immersiveengineering.mixin.accessors.CropBlockAccess;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.joml.Vector3f;
 
 import java.util.Collection;
 
@@ -61,7 +61,7 @@ public class ClocheRenderFunctions
 			if(cropBlock instanceof CropBlock)
 			{
 				this.maxAge = ((CropBlock)cropBlock).getMaxAge();
-				this.ageProperty = ((CropBlock)cropBlock).getAgeProperty();
+				this.ageProperty = ((CropBlockAccess)cropBlock).invokeGetAgeProperty();
 			}
 			else
 			{
@@ -94,7 +94,12 @@ public class ClocheRenderFunctions
 		public Collection<Pair<BlockState, Transformation>> getBlocks(ItemStack stack, float growth)
 		{
 			int age = Math.min(this.maxAge, Math.round(this.maxAge*growth));
-			return ImmutableList.of(Pair.of(this.cropBlock.defaultBlockState().setValue(this.ageProperty, age), new Transformation(null)));
+			BlockState state;
+			if(this.cropBlock instanceof CropBlock crop)
+				state = crop.getStateForAge(age);
+			else
+				state = this.cropBlock.defaultBlockState().setValue(this.ageProperty, age);
+			return ImmutableList.of(Pair.of(state, new Transformation(null)));
 		}
 	}
 
@@ -236,11 +241,11 @@ public class ClocheRenderFunctions
 			{
 				Transformation top = new Transformation(new Vector3f(0, 1, 0), null, null, null);
 				return ImmutableList.of(
-						Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.GROWTH, EnumHempGrowth.BOTTOM4), new Transformation(null)),
-						Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.GROWTH, EnumHempGrowth.TOP0), top)
+						Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.AGE, 4), new Transformation(null)),
+						Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.TOP, true), top)
 				);
 			}
-			return ImmutableList.of(Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.GROWTH, EnumHempGrowth.values()[age]), new Transformation(null)));
+			return ImmutableList.of(Pair.of(Misc.HEMP_PLANT.defaultBlockState().setValue(HempBlock.AGE, age), new Transformation(null)));
 		}
 	}
 }

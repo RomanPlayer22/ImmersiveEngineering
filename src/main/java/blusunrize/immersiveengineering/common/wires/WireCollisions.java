@@ -18,7 +18,6 @@ import blusunrize.immersiveengineering.api.wires.localhandlers.ICollisionHandler
 import blusunrize.immersiveengineering.api.wires.localhandlers.LocalNetworkHandler;
 import blusunrize.immersiveengineering.api.wires.utils.WireUtils;
 import blusunrize.immersiveengineering.common.config.IEServerConfig;
-import blusunrize.immersiveengineering.common.util.IEDamageSources;
 import blusunrize.immersiveengineering.common.util.Utils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,11 +38,10 @@ public class WireCollisions
 {
 	public static void handleEntityCollision(BlockPos p, Entity e)
 	{
-		if(!e.level.isClientSide&&IEServerConfig.WIRES.enableWireDamage.get()&&e instanceof LivingEntity living&&
-				!e.isInvulnerableTo(IEDamageSources.wireShock)&&
+		if(!e.level().isClientSide&&IEServerConfig.WIRES.enableWireDamage.get()&&e instanceof LivingEntity living&&
 				!(e instanceof Player player&&player.getAbilities().invulnerable))
 		{
-			GlobalWireNetwork global = GlobalWireNetwork.getNetwork(e.level);
+			GlobalWireNetwork global = GlobalWireNetwork.getNetwork(e.level());
 			WireCollisionData wireData = global.getCollisionData();
 			Collection<WireCollisionData.CollisionInfo> atBlock = wireData.getCollisionInfo(p);
 			for(CollisionInfo info : atBlock)

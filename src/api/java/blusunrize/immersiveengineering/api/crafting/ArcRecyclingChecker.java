@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.crafting;
 
 import blusunrize.immersiveengineering.api.IETags;
@@ -7,8 +15,8 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -76,7 +84,7 @@ public class ArcRecyclingChecker
 	public static void allowPrefixedTagForRecycling(String prefix)
 	{
 		allowEnumeratedItemsForRecycling(
-				tags -> tags.registryOrThrow(Registry.ITEM_REGISTRY).getTags()
+				tags -> tags.registryOrThrow(Registries.ITEM).getTags()
 						.filter(e -> e.getFirst().location().getPath().startsWith(prefix))
 						.map(Pair::getSecond)
 						.flatMap(HolderSet::stream)
@@ -86,7 +94,7 @@ public class ArcRecyclingChecker
 
 	public static void allowItemTagForRecycling(TagKey<Item> tagKey)
 	{
-		allowEnumeratedItemsForRecycling(tags -> TagUtils.elementStream(tags.registryOrThrow(Registry.ITEM_REGISTRY), tagKey));
+		allowEnumeratedItemsForRecycling(tags -> TagUtils.elementStream(tags.registryOrThrow(Registries.ITEM), tagKey));
 	}
 
 	/**
@@ -143,7 +151,7 @@ public class ArcRecyclingChecker
 		return Pair.of(iRecipe -> {
 			if(!RECYCLING_RECIPE_TYPES.contains(iRecipe.getType()))
 				return false;
-			return checker.isAllowed(tags, iRecipe.getResultItem());
+			return checker.isAllowed(tags, iRecipe.getResultItem(tags));
 		}, checker);
 	}
 

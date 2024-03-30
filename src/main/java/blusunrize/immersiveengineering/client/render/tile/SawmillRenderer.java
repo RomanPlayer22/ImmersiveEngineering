@@ -8,61 +8,59 @@
 
 package blusunrize.immersiveengineering.client.render.tile;
 
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockBEHelperMaster;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.env.IMultiblockLevel;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.registry.MultiblockBlockEntityMaster;
 import blusunrize.immersiveengineering.client.ClientUtils;
 import blusunrize.immersiveengineering.client.utils.RenderUtils;
-import blusunrize.immersiveengineering.common.blocks.metal.SawmillBlockEntity;
-import blusunrize.immersiveengineering.common.blocks.metal.SawmillBlockEntity.SawmillProcess;
-import blusunrize.immersiveengineering.common.register.IEBlocks.Multiblocks;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.sawmill.SawmillLogic.ActiveState;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.sawmill.SawmillLogic.State;
+import blusunrize.immersiveengineering.common.blocks.multiblocks.logic.sawmill.SawmillProcess;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
+import org.joml.Quaternionf;
 
-public class SawmillRenderer extends IEBlockEntityRenderer<SawmillBlockEntity>
+public class SawmillRenderer extends IEBlockEntityRenderer<MultiblockBlockEntityMaster<State>>
 {
 	public static final String NAME = "sawmill_blade";
 	public static DynamicModel BLADE;
 
 	@Override
-	public void render(SawmillBlockEntity te, float partialTicks, PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn)
+	public void render(MultiblockBlockEntityMaster<State> te, float partialTicks, PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn)
 	{
-		if(!te.formed||te.isDummy()||!te.getLevelNonnull().hasChunkAt(te.getBlockPos()))
-			return;
-
-		//Grab model
-		BlockPos blockPos = te.getBlockPos();
-		BlockState state = te.getLevel().getBlockState(blockPos);
-		if(state.getBlock()!=Multiblocks.SAWMILL.get())
-			return;
+		final IMultiblockBEHelperMaster<State> helper = te.getHelper();
+		final IMultiblockLevel level = helper.getContext().getLevel();
+		final State state = helper.getState();
 
 		//Outer GL Wrapping, initial translation
 		matrixStack.pushPose();
 		matrixStack.translate(.5, 0, .5);
-		bufferIn = BERenderUtils.mirror(te, matrixStack, bufferIn);
+		bufferIn = BERenderUtils.mirror(level.getOrientation(), matrixStack, bufferIn);
 
 
 		VertexConsumer solidBuilder = bufferIn.getBuffer(RenderType.solid());
 
-		Direction facing = te.getFacing();
-		float dir = facing==Direction.SOUTH?180: facing==Direction.NORTH?0: facing==Direction.EAST?-90: 90;
-		matrixStack.mulPose(new Quaternion(0, dir, 0, true));
+		Direction facing = level.getOrientation().front();
+		float dir = facing==Direction.SOUTH?Mth.PI: facing==Direction.NORTH?0: facing==Direction.EAST?-Mth.HALF_PI: Mth.HALF_PI;
+		matrixStack.mulPose(new Quaternionf().rotateY(dir));
 
 		// Sawblade
-		boolean sawblade = !te.sawblade.isEmpty();
+		boolean sawblade = !state.sawblade.isEmpty();
 		if(sawblade)
 		{
 			matrixStack.pushPose();
 			matrixStack.translate(1, .125, -.5);
-			float spin = te.animation_bladeRotation;
-			if(te.shouldRenderAsActive() && !te.isRSDisabled())
+			float spin = state.animation_bladeRotation;
+			if(state.active!=ActiveState.DISABLED)
 				spin += 36f*partialTicks;
-			matrixStack.mulPose(new Quaternion(0, 0, spin, true));
+			matrixStack.mulPose(new Quaternionf().rotateZ(spin*Mth.DEG_TO_RAD));
 			RenderUtils.renderModelTESRFast(
 					BLADE.getNullQuads(), solidBuilder, matrixStack, combinedLightIn, combinedOverlayIn
 			);
@@ -70,23 +68,29 @@ public class SawmillRenderer extends IEBlockEntityRenderer<SawmillBlockEntity>
 		}
 
 		// Items
-		for(SawmillProcess process : te.sawmillProcessQueue)
+		for(SawmillProcess process : state.sawmillProcessQueue)
 		{
 			float relative = process.getRelativeProcessStep(te.getLevel());
 			ItemStack rendered = process.getCurrentStack(te.getLevel(), sawblade);
-			renderItem(rendered, relative, matrixStack, bufferIn, combinedLightIn, combinedOverlayIn);
+			renderItem(rendered, relative, matrixStack, bufferIn, combinedLightIn, combinedOverlayIn, te.getLevel());
 		}
 		matrixStack.popPose();
 	}
 
-	private void renderItem(ItemStack stack, float progress, PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn)
+	private void renderItem(
+			ItemStack stack, float progress,
+			PoseStack matrixStack, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, Level level
+	)
 	{
 		float xOffset = -2.5f+progress*5;
 		matrixStack.pushPose();
 		matrixStack.translate(xOffset, .375, 0);
-		matrixStack.mulPose(new Quaternion(0, 0, 90, true));
-		ClientUtils.mc().getItemRenderer().renderStatic(stack, TransformType.FIXED,
-				combinedLightIn, combinedOverlayIn, matrixStack, bufferIn, 0);
+		matrixStack.mulPose(new Quaternionf().rotateZ(Mth.HALF_PI));
+		ClientUtils.mc().getItemRenderer().renderStatic(
+				stack, ItemDisplayContext.FIXED,
+				combinedLightIn, combinedOverlayIn, matrixStack, bufferIn,
+				level, 0
+		);
 		matrixStack.popPose();
 	}
 }

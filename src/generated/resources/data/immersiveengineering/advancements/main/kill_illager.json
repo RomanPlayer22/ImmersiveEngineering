@@ -32,7 +32,6 @@
           }
         ],
         "killing_blow": {
-          "is_projectile": true,
           "source_entity": {
             "equipment": {
               "mainhand": {
@@ -41,7 +40,13 @@
                 ]
               }
             }
-          }
+          },
+          "tags": [
+            {
+              "expected": true,
+              "id": "minecraft:is_projectile"
+            }
+          ]
         }
       },
       "trigger": "minecraft:player_killed_entity"
@@ -93,5 +98,6 @@
     "loot": [
       "immersiveengineering:advancements/shader_rare"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

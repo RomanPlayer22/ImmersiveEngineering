@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "b": {
       "tag": "minecraft:banners"
@@ -21,5 +22,6 @@
     "nbt": {
       "blueprint": "bannerpatterns"
     }
-  }
+  },
+  "show_notification": true
 }

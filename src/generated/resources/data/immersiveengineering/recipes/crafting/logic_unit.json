@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "item": "immersiveengineering:circuit_board"
@@ -18,5 +19,6 @@
   ],
   "result": {
     "item": "immersiveengineering:logic_unit"
-  }
+  },
+  "show_notification": true
 }

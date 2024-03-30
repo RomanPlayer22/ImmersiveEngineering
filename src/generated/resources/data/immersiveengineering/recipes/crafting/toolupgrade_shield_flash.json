@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "e": {
       "item": "immersiveengineering:light_bulb"
@@ -14,5 +15,6 @@
   ],
   "result": {
     "item": "immersiveengineering:toolupgrade_shield_flash"
-  }
+  },
+  "show_notification": true
 }

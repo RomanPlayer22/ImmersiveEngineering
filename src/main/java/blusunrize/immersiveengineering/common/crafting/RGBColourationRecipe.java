@@ -11,10 +11,12 @@ package blusunrize.immersiveengineering.common.crafting;
 import blusunrize.immersiveengineering.common.util.RecipeSerializers;
 import blusunrize.immersiveengineering.common.util.Utils;
 import com.google.common.collect.Lists;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -60,7 +62,7 @@ public class RGBColourationRecipe implements CraftingRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack assemble(CraftingContainer inv)
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess access)
 	{
 		int[] colourArray = new int[3];
 		int j = 0;
@@ -127,7 +129,7 @@ public class RGBColourationRecipe implements CraftingRecipe
 
 	@Nonnull
 	@Override
-	public ItemStack getResultItem()
+	public ItemStack getResultItem(RegistryAccess access)
 	{
 		return ItemStack.EMPTY;
 	}
@@ -160,5 +162,11 @@ public class RGBColourationRecipe implements CraftingRecipe
 	public String getColorKey()
 	{
 		return colorKey;
+	}
+
+	@Override
+	public CraftingBookCategory category()
+	{
+		return CraftingBookCategory.MISC;
 	}
 }

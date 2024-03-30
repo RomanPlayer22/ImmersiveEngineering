@@ -23,7 +23,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.*;
+import com.mojang.math.Transformation;
 import malte0811.modelsplitter.model.Group;
 import malte0811.modelsplitter.model.MaterialLibrary.OBJMaterial;
 import malte0811.modelsplitter.model.Polygon;
@@ -33,17 +33,21 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -149,13 +153,13 @@ public class SpecificIEOBJModel<T> implements BakedModel
 			return baseModel.getRenderTypes(itemStack, fabulous);
 	}
 
-	private static final Matrix4f INVERT = Matrix4f.createScaleMatrix(-1, -1, -1);
+	private static final Matrix4f INVERT = new Matrix4f().scale(-1, -1, -1);
 	private static final Matrix3f INVERT_NORMAL = new Matrix3f(INVERT);
 
 	@Nonnull
 	@Override
 	public BakedModel applyTransform(
-			@Nonnull TransformType transformType, @Nonnull PoseStack transforms, boolean applyLeftHandTransform
+			@Nonnull ItemDisplayContext transformType, @Nonnull PoseStack transforms, boolean applyLeftHandTransform
 	)
 	{
 		BakedModel result = this;
@@ -163,12 +167,12 @@ public class SpecificIEOBJModel<T> implements BakedModel
 		Vector3f scale = baseItemTransform.scale;
 		if(scale.x()*scale.y()*scale.z() < 0)
 		{
-			Vector3f newScale = scale.copy();
+			Vector3f newScale = new Vector3f(scale);
 			newScale.mul(-1);
 			new ItemTransform(
 					baseItemTransform.rotation, baseItemTransform.translation, newScale, baseItemTransform.rightRotation
 			).apply(applyLeftHandTransform, transforms);
-			transforms.last().pose().multiply(INVERT);
+			transforms.last().pose().mul(INVERT);
 			transforms.last().normal().mul(INVERT_NORMAL);
 			// The custom renderer handles inversion on its own, for the default renderer we need to invert the quads
 			if(!isCustomRenderer())

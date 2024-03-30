@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "b": {
       "tag": "immersiveengineering:connector_insulator"
@@ -21,5 +22,6 @@
   ],
   "result": {
     "item": "immersiveengineering:current_transformer"
-  }
+  },
+  "show_notification": true
 }

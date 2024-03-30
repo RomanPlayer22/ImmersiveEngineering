@@ -25,6 +25,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -54,7 +55,7 @@ public class CoresampleItem extends IEBaseItem
 {
 	public CoresampleItem()
 	{
-		super(new Properties().tab(ImmersiveEngineering.ITEM_GROUP));
+		super();
 	}
 
 	@Override
@@ -244,7 +245,7 @@ public class CoresampleItem extends IEBaseItem
 		if(stack.hasTag()&&stack.getOrCreateTag().contains("dimension"))
 		{
 			ResourceLocation name = new ResourceLocation(stack.getOrCreateTag().getString("dimension"));
-			return ResourceKey.create(Registry.DIMENSION_REGISTRY, name);
+			return ResourceKey.create(Registries.DIMENSION, name);
 		}
 		return null;
 	}

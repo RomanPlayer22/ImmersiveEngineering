@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "i": {
       "item": "immersiveengineering:nugget_silver"
@@ -15,5 +16,6 @@
   ],
   "result": {
     "item": "immersiveengineering:ingot_silver"
-  }
+  },
+  "show_notification": true
 }

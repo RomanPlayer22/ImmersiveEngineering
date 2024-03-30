@@ -9,10 +9,10 @@
 package blusunrize.immersiveengineering.data.loot;
 
 import blusunrize.immersiveengineering.api.EnumMetals;
+import blusunrize.immersiveengineering.api.multiblocks.blocks.MultiblockRegistration;
 import blusunrize.immersiveengineering.common.blocks.IEEntityBlock;
 import blusunrize.immersiveengineering.common.blocks.metal.CapacitorBlockEntity;
 import blusunrize.immersiveengineering.common.blocks.metal.ConveyorBlock;
-import blusunrize.immersiveengineering.common.blocks.plant.EnumHempGrowth;
 import blusunrize.immersiveengineering.common.blocks.plant.HempBlock;
 import blusunrize.immersiveengineering.common.blocks.wooden.SawdustBlock;
 import blusunrize.immersiveengineering.common.register.IEBlocks;
@@ -21,16 +21,19 @@ import blusunrize.immersiveengineering.common.register.IEItems;
 import blusunrize.immersiveengineering.common.register.IEItems.Ingredients;
 import blusunrize.immersiveengineering.common.register.IEItems.ItemRegObject;
 import blusunrize.immersiveengineering.common.register.IEItems.Misc;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import blusunrize.immersiveengineering.common.util.loot.*;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ItemLike;
@@ -59,10 +62,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>
+public class BlockLoot implements LootTableSubProvider
 {
 	private final Set<ResourceLocation> generatedTables = new HashSet<>();
 	private BiConsumer<ResourceLocation, LootTable.Builder> out;
@@ -73,7 +75,7 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 	}
 
 	@Override
-	public void accept(BiConsumer<ResourceLocation, Builder> out)
+	public void generate(BiConsumer<ResourceLocation, Builder> out)
 	{
 		this.out = out;
 		registerHemp();
@@ -94,8 +96,8 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 		register(WoodenDevices.FLUID_SORTER, tileDrop());
 		register(StoneDecoration.CORESAMPLE, tileDrop());
 		register(MetalDevices.TOOLBOX, tileDrop());
-		register(Cloth.SHADER_BANNER, tileDrop());
-		register(Cloth.SHADER_BANNER_WALL, tileDrop());
+		register(Cloth.SHADER_BANNER, singleItem(Items.WHITE_BANNER));
+		register(Cloth.SHADER_BANNER_WALL, singleItem(Items.WHITE_BANNER));
 		register(Cloth.STRIP_CURTAIN, tileDrop());
 		for(BlockEntry<? extends IEEntityBlock<? extends CapacitorBlockEntity>> cap : ImmutableList.of(
 				MetalDevices.CAPACITOR_LV, MetalDevices.CAPACITOR_MV, MetalDevices.CAPACITOR_HV, MetalDevices.CAPACITOR_CREATIVE
@@ -132,28 +134,28 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 
 	private void registerMultiblocks()
 	{
-		registerMultiblock(Multiblocks.COKE_OVEN);
-		registerMultiblock(Multiblocks.BLAST_FURNACE);
-		registerMultiblock(Multiblocks.ALLOY_SMELTER);
-		registerMultiblock(Multiblocks.ADVANCED_BLAST_FURNACE);
+		registerMultiblock(IEMultiblockLogic.COKE_OVEN);
+		registerMultiblock(IEMultiblockLogic.BLAST_FURNACE);
+		registerMultiblock(IEMultiblockLogic.ALLOY_SMELTER);
+		registerMultiblock(IEMultiblockLogic.ADV_BLAST_FURNACE);
 
-		registerMultiblock(Multiblocks.METAL_PRESS);
-		registerMultiblock(Multiblocks.CRUSHER);
-		registerMultiblock(Multiblocks.SAWMILL);
-		registerMultiblock(Multiblocks.TANK);
-		registerMultiblock(Multiblocks.SILO);
-		registerMultiblock(Multiblocks.ASSEMBLER);
-		registerMultiblock(Multiblocks.AUTO_WORKBENCH);
-		registerMultiblock(Multiblocks.BOTTLING_MACHINE);
-		registerMultiblock(Multiblocks.SQUEEZER);
-		registerMultiblock(Multiblocks.FERMENTER);
-		registerMultiblock(Multiblocks.REFINERY);
-		registerMultiblock(Multiblocks.DIESEL_GENERATOR);
-		registerMultiblock(Multiblocks.EXCAVATOR);
-		registerMultiblock(Multiblocks.BUCKET_WHEEL);
-		registerMultiblock(Multiblocks.ARC_FURNACE);
-		registerMultiblock(Multiblocks.LIGHTNING_ROD);
-		registerMultiblock(Multiblocks.MIXER);
+		registerMultiblock(IEMultiblockLogic.METAL_PRESS);
+		registerMultiblock(IEMultiblockLogic.CRUSHER);
+		registerMultiblock(IEMultiblockLogic.SAWMILL);
+		registerMultiblock(IEMultiblockLogic.TANK);
+		registerMultiblock(IEMultiblockLogic.SILO);
+		registerMultiblock(IEMultiblockLogic.ASSEMBLER);
+		registerMultiblock(IEMultiblockLogic.AUTO_WORKBENCH);
+		registerMultiblock(IEMultiblockLogic.BOTTLING_MACHINE);
+		registerMultiblock(IEMultiblockLogic.SQUEEZER);
+		registerMultiblock(IEMultiblockLogic.FERMENTER);
+		registerMultiblock(IEMultiblockLogic.REFINERY);
+		registerMultiblock(IEMultiblockLogic.DIESEL_GENERATOR);
+		registerMultiblock(IEMultiblockLogic.EXCAVATOR);
+		registerMultiblock(IEMultiblockLogic.BUCKET_WHEEL);
+		registerMultiblock(IEMultiblockLogic.ARC_FURNACE);
+		registerMultiblock(IEMultiblockLogic.LIGHTNING_ROD);
+		registerMultiblock(IEMultiblockLogic.MIXER);
 	}
 
 	private void registerSlabs()
@@ -176,6 +178,11 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 				registerSelfDropping(b);
 	}
 
+	private void registerMultiblock(MultiblockRegistration<?> registration)
+	{
+		registerMultiblock(registration.block());
+	}
+
 	private void registerMultiblock(Supplier<? extends Block> b)
 	{
 		register(b, dropInv(), dropOriginalBlock());
@@ -196,7 +203,7 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 	private LootPool.Builder dropOriginalBlock()
 	{
 		return createPoolBuilder()
-				.add(MBOriginalBlockLootEntry.builder());
+				.add(LootUtils.getMultiblockDropBuilder());
 	}
 
 	private void register(Supplier<? extends Block> b, LootPool.Builder... pools)
@@ -209,7 +216,7 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 
 	private void register(Supplier<? extends Block> b, LootTable.Builder table)
 	{
-		register(Registry.BLOCK.getKey(b.get()), table);
+		register(BuiltInRegistries.BLOCK.getKey(b.get()), table);
 	}
 
 	private void register(ResourceLocation name, LootTable.Builder table)
@@ -248,14 +255,18 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
 	{
 		LootTable.Builder ret = LootTable.lootTable()
 				.withPool(singleItem(Misc.HEMP_SEEDS));
-		for(EnumHempGrowth g : EnumHempGrowth.values())
-			if(g==g.getMax())
-			{
-				ret.withPool(
-						binBonusLootPool(Ingredients.HEMP_FIBER, Enchantments.BLOCK_FORTUNE, g.ordinal()/8f, 3)
-								.when(propertyIs(IEBlocks.Misc.HEMP_PLANT, HempBlock.GROWTH, g))
-				);
-			}
+		ret.withPool(
+				binBonusLootPool(Ingredients.HEMP_FIBER, Enchantments.BLOCK_FORTUNE, 4/8f, 3).when(
+						LootItemBlockStatePropertyCondition.hasBlockStateProperties(IEBlocks.Misc.HEMP_PLANT.get())
+								.setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(HempBlock.AGE, 4))
+				)
+		);
+		ret.withPool(
+				binBonusLootPool(Ingredients.HEMP_FIBER, Enchantments.BLOCK_FORTUNE, 5/8f, 3).when(
+						LootItemBlockStatePropertyCondition.hasBlockStateProperties(IEBlocks.Misc.HEMP_PLANT.get())
+								.setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(HempBlock.TOP, true))
+				)
+		);
 		register(IEBlocks.Misc.HEMP_PLANT, ret);
 	}
 

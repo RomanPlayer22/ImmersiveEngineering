@@ -11,10 +11,10 @@ package blusunrize.immersiveengineering.common.crafting.serializers;
 import blusunrize.immersiveengineering.api.crafting.IERecipeSerializer;
 import blusunrize.immersiveengineering.api.crafting.StackWithChance;
 import blusunrize.immersiveengineering.api.excavator.MineralMix;
-import blusunrize.immersiveengineering.common.register.IEBlocks.Multiblocks;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -37,7 +37,7 @@ public class MineralMixSerializer extends IERecipeSerializer<MineralMix>
 	@Override
 	public ItemStack getIcon()
 	{
-		return new ItemStack(Multiblocks.CRUSHER);
+		return IEMultiblockLogic.CRUSHER.iconStack();
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class MineralMixSerializer extends IERecipeSerializer<MineralMix>
 		List<ResourceKey<Level>> dimensions = new ArrayList<>();
 		for(int i = 0; i < array.size(); i++)
 			dimensions.add(ResourceKey.create(
-					Registry.DIMENSION_REGISTRY,
+					Registries.DIMENSION,
 					new ResourceLocation(array.get(i).getAsString())
 			));
 		ResourceLocation rl = new ResourceLocation(GsonHelper.getAsString(json, "sample_background", "minecraft:stone"));
@@ -112,7 +112,7 @@ public class MineralMixSerializer extends IERecipeSerializer<MineralMix>
 		List<ResourceKey<Level>> dimensions = new ArrayList<>();
 		for(int i = 0; i < count; i++)
 			dimensions.add(ResourceKey.create(
-					Registry.DIMENSION_REGISTRY,
+					Registries.DIMENSION,
 					buffer.readResourceLocation()
 			));
 		Block bg = ForgeRegistries.BLOCKS.getValue(buffer.readResourceLocation());

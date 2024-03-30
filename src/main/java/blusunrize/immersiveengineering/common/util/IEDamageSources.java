@@ -9,56 +9,38 @@
 package blusunrize.immersiveengineering.common.util;
 
 import blusunrize.immersiveengineering.api.Lib;
+import blusunrize.immersiveengineering.api.Lib.TurretDamageType;
 import blusunrize.immersiveengineering.api.tool.IElectricEquipment;
 import blusunrize.immersiveengineering.api.tool.IElectricEquipment.ElectricSource;
 import blusunrize.immersiveengineering.api.wires.utils.IElectricDamageSource;
 import blusunrize.immersiveengineering.common.entities.RailgunShotEntity;
 import blusunrize.immersiveengineering.common.entities.RevolvershotEntity;
 import blusunrize.immersiveengineering.common.entities.SawbladeEntity;
-import net.minecraft.network.chat.Component;
+import blusunrize.immersiveengineering.mixin.accessors.DamageSourcesAccess;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.EntityDamageSource;
-import net.minecraft.world.damagesource.IndirectEntityDamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+
+import javax.annotation.Nullable;
 
 public class IEDamageSources
 {
-	public static class IEDamageSource_Indirect extends IndirectEntityDamageSource
-	{
-		public IEDamageSource_Indirect(String tag, Entity shot, Entity shooter)
-		{
-			super(tag, shot, shooter);
-		}
-	}
-
-	public static class IEDamageSource_Direct extends EntityDamageSource
-	{
-		public IEDamageSource_Direct(String tag, Entity attacker)
-		{
-			super(tag, attacker);
-		}
-	}
-
-	public static class IEDamageSource extends DamageSource
-	{
-		public IEDamageSource(String tag)
-		{
-			super(tag);
-		}
-	}
-
 	public static class ElectricDamageSource extends DamageSource implements IElectricDamageSource
 	{
 		public IElectricEquipment.ElectricSource source;
 		public float dmg;
 
-		public ElectricDamageSource(String tag, IElectricEquipment.ElectricSource source, float amount)
+		public ElectricDamageSource(Holder<DamageType> tag, IElectricEquipment.ElectricSource source, float amount)
 		{
 			super(tag);
 			this.source = source;
 			dmg = amount;
-			bypassArmor();
 		}
 
 		@Override
@@ -78,119 +60,125 @@ public class IEDamageSources
 		}
 	}
 
-	public static class TurretDamageSource extends IEDamageSource
-	{
-		public TurretDamageSource(String damageTypeIn)
-		{
-			super(damageTypeIn);
-		}
-
-		@Override
-		public Component getLocalizedDeathMessage(LivingEntity entityLivingBaseIn)
-		{
-			String s = "death.attack."+this.msgId+".turret";
-			return Component.translatable(s, entityLivingBaseIn.getDisplayName());
-		}
-	}
-
 	public static DamageSource causeCasullDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverCasull);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverCasull, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_CASULL);
 	}
 
 	public static DamageSource causePiercingDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverAP).bypassArmor();
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverAP, shot, shooter).bypassArmor();
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_ARMORPIERCING);
 	}
 
 	public static DamageSource causeBuckshotDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverBuck);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverBuck, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_BUCKSHOT);
 	}
 
 	public static DamageSource causeDragonsbreathDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverDragon).setIsFire();
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverDragon, shot, shooter).setIsFire();
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_DRAGONSBREATH);
 	}
 
 	public static DamageSource causeHomingDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverHoming);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverHoming, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_HOMING);
 	}
 
 	public static DamageSource causeWolfpackDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverWolfpack);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverWolfpack, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_WOLFPACK);
 	}
 
 	public static DamageSource causeSilverDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverSilver);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverSilver, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_SILVER);
 	}
 
 	public static DamageSource causePotionDamage(RevolvershotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_RevolverPotion);
-		return new IEDamageSource_Indirect(Lib.DMG_RevolverPotion, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.REVOLVER_POTION);
 	}
 
-	public static DamageSource acid = new IEDamageSource(Lib.DMG_Acid);
+	public static DamageSource acid(Level level)
+	{
+		return sources(level).invokeSource(Lib.DamageTypes.ACID, null, null);
+	}
 
-	public static DamageSource crusher = new IEDamageSource(Lib.DMG_Crusher);
+	public static DamageSource crusher(Level level)
+	{
+		return sources(level).invokeSource(Lib.DamageTypes.CRUSHER, null, null);
+	}
 
-	public static DamageSource sawmill = new IEDamageSource(Lib.DMG_Sawmill);
+	public static DamageSource sawmill(Level level)
+	{
+		return sources(level).invokeSource(Lib.DamageTypes.SAWMILL, null, null);
+	}
 
-	public static DamageSource razorWire = new IEDamageSource(Lib.DMG_RazorWire);
+	public static DamageSource razorWire(Level level)
+	{
+		return sources(level).invokeSource(Lib.DamageTypes.RAZOR_WIRE, null, null);
+	}
 
-	public static DamageSource razorShock = new IEDamageSource(Lib.DMG_RazorShock);
+	public static DamageSource razorShock(Level level)
+	{
+		return sources(level).invokeSource(Lib.DamageTypes.RAZOR_SHOCK, null, null);
+	}
 
 	// DO NOT USE EXCEPT FOR CHECKING WHETHER AN ENTITY IS VULNERABLE
-	public static DamageSource wireShock = new ElectricDamageSource(Lib.DMG_WireShock, new ElectricSource(1), 1);
+	public static DamageSource wireShock(Level level)
+	{
+		return new ElectricDamageSource(typeHolder(level, Lib.DamageTypes.WIRE_SHOCK), new ElectricSource(1), 1);
+	}
 
 	private static final IElectricEquipment.ElectricSource TC_LOW = new IElectricEquipment.ElectricSource(.25F);
 	private static final IElectricEquipment.ElectricSource TC_HIGH = new IElectricEquipment.ElectricSource(2);
 
-	public static ElectricDamageSource causeTeslaDamage(float amount, boolean lowPower)
+	public static ElectricDamageSource causeTeslaDamage(Level level, float amount, boolean lowPower)
 	{
-		return new ElectricDamageSource(Lib.DMG_Tesla, lowPower?TC_LOW: TC_HIGH, amount);
+		return new ElectricDamageSource(typeHolder(level, Lib.DamageTypes.TESLA), lowPower?TC_LOW: TC_HIGH, amount);
 	}
 
-	public static ElectricDamageSource causeWireDamage(float amount, IElectricEquipment.ElectricSource source)
+	public static ElectricDamageSource causeWireDamage(Level level, float amount, IElectricEquipment.ElectricSource source)
 	{
-		return new ElectricDamageSource(Lib.DMG_WireShock, source, amount);
+		return new ElectricDamageSource(typeHolder(level, Lib.DamageTypes.WIRE_SHOCK), source, amount);
 	}
 
 	public static DamageSource causeRailgunDamage(RailgunShotEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_Railgun).bypassArmor();
-		return new IEDamageSource_Indirect(Lib.DMG_Railgun, shot, shooter).bypassArmor();
+		return maybeTurret(shot, shooter, Lib.DamageTypes.RAILGUN);
 	}
 
 	public static DamageSource causeSawbladeDamage(SawbladeEntity shot, Entity shooter)
 	{
-		if(shooter==null)
-			return new TurretDamageSource(Lib.DMG_Sawblade);
-		return new IEDamageSource_Indirect(Lib.DMG_Sawblade, shot, shooter);
+		return maybeTurret(shot, shooter, Lib.DamageTypes.SAWBLADE);
 	}
 
-	public static DamageSource causeTeslaPrimaryDamage()
+	public static DamageSource causeTeslaPrimaryDamage(Level level)
 	{
-		return new IEDamageSource(Lib.DMG_Tesla_prim).bypassArmor();
+		return sources(level).invokeSource(Lib.DamageTypes.TESLA_PRIMARY, null, null);
+	}
+
+	private static DamageSource maybeTurret(Entity shot, @Nullable Entity shooter, TurretDamageType type)
+	{
+		if(shooter==null)
+			return sources(shot).invokeSource(type.turretType(), shot, null);
+		return sources(shot).invokeSource(type.playerType(), shot, shooter);
+	}
+
+	private static DamageSourcesAccess sources(Level level)
+	{
+		return (DamageSourcesAccess)level.damageSources();
+	}
+
+	private static DamageSourcesAccess sources(Entity entity)
+	{
+		return sources(entity.level());
+	}
+
+	private static Holder<DamageType> typeHolder(Level level, ResourceKey<DamageType> typeKey)
+	{
+		final Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+		return registry.getHolderOrThrow(typeKey);
 	}
 }

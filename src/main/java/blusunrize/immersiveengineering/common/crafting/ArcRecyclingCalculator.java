@@ -74,7 +74,7 @@ public class ArcRecyclingCalculator
 			for(RecyclingCalculation valid : iterator.validated)
 				for(ItemStack key : iterator.nonValidated.keySet())
 				{
-					if(ItemStack.isSame(key, valid.stack))
+					if(ItemStack.isSameItem(key, valid.stack))
 						for(RecyclingCalculation nonValid : iterator.nonValidated.get(key))
 							if(nonValid.validateSubcomponent(valid))
 								newlyValid.add(nonValid);
@@ -169,7 +169,7 @@ public class ArcRecyclingCalculator
 		{
 			for(Recipe<?> recipe : recipeList)
 			{
-				RecyclingCalculation calc = getRecycleCalculation(recipe.getResultItem(), recipe);
+				RecyclingCalculation calc = getRecycleCalculation(recipe.getResultItem(tags), recipe);
 				if(calc!=null)
 				{
 					if(calc.isValid())
@@ -218,7 +218,7 @@ public class ArcRecyclingCalculator
 							{
 								boolean b = false;
 								for(ItemStack storedMiss : missingSub.keySet())
-									if(ItemStack.isSame(inputStack, storedMiss))
+									if(ItemStack.isSameItem(inputStack, storedMiss))
 									{
 										missingSub.put(storedMiss, missingSub.get(storedMiss)+inputStack.getCount());
 										b = true;
@@ -235,7 +235,7 @@ public class ArcRecyclingCalculator
 							{
 								boolean b = false;
 								for(ItemStack storedOut : outputs.keySet())
-									if(ItemStack.isSame(brokenDown.getFirst(), storedOut))
+									if(ItemStack.isSameItem(brokenDown.getFirst(), storedOut))
 									{
 										outputs.put(storedOut, outputs.get(storedOut)+brokenDown.getSecond());
 										b = true;
@@ -292,7 +292,7 @@ public class ArcRecyclingCalculator
 			while(it.hasNext())
 			{
 				ItemStack next = it.next();
-				if(ItemStack.isSame(next, calc.stack))
+				if(ItemStack.isSameItem(next, calc.stack))
 				{
 					double queriedAmount = queriedSubcomponents.get(next);
 					for(Map.Entry<ItemStack, Double> e : calc.outputs.entrySet())
@@ -300,7 +300,7 @@ public class ArcRecyclingCalculator
 						double scaledVal = e.getValue()*queriedAmount;
 						boolean b = true;
 						for(ItemStack key : outputs.keySet())
-							if(ItemStack.isSame(key, e.getKey()))
+							if(ItemStack.isSameItem(key, e.getKey()))
 							{
 								outputs.put(key, outputs.get(key)+scaledVal);
 								b = false;

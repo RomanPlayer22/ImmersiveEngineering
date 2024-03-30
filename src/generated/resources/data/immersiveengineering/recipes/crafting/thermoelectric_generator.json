@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "e": {
       "tag": "forge:plates/constantan"
@@ -18,5 +19,6 @@
   ],
   "result": {
     "item": "immersiveengineering:thermoelectric_generator"
-  }
+  },
+  "show_notification": true
 }

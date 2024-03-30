@@ -14,9 +14,8 @@ import blusunrize.immersiveengineering.api.crafting.BlueprintCraftingRecipe;
 import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTab.Output;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -68,15 +67,15 @@ public class EngineersBlueprintItem extends IEBaseItem
 
 
 	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> list)
+	public void fillCreativeTab(Output out)
 	{
 		final Level level = ImmersiveEngineering.proxy.getClientWorld();
-		if(this.allowedIn(tab)&&level!=null)
+		if(level!=null)
 			for(String key : BlueprintCraftingRecipe.getCategoriesWithRecipes(level))
 			{
 				ItemStack stack = new ItemStack(this);
 				ItemNBTHelper.putString(stack, "blueprint", key);
-				list.add(stack);
+				out.accept(stack);
 			}
 	}
 

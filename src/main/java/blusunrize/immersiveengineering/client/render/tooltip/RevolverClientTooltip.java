@@ -10,10 +10,9 @@
 package blusunrize.immersiveengineering.client.render.tooltip;
 
 import blusunrize.immersiveengineering.client.gui.RevolverScreen;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 
 public record RevolverClientTooltip(RevolverServerTooltip data) implements ClientTooltipComponent
 {
@@ -30,12 +29,12 @@ public record RevolverClientTooltip(RevolverServerTooltip data) implements Clien
 	}
 
 	@Override
-	public void renderImage(Font pFont, int pMouseX, int pMouseY, PoseStack pPoseStack, ItemRenderer pItemRenderer, int pBlitOffset)
+	public void renderImage(Font font, int mouseX, int mouseY, GuiGraphics graphics)
 	{
-		pPoseStack.pushPose();
-		pPoseStack.translate(pMouseX, pMouseY, pBlitOffset);
-		pPoseStack.scale(.5f, .5f, 1);
-		RevolverScreen.drawExternalGUI(data.bullets(), data.bulletCount(), pPoseStack);
-		pPoseStack.popPose();
+		graphics.pose().pushPose();
+		graphics.pose().translate(mouseX, mouseY, 0);
+		graphics.pose().scale(.5f, .5f, 1);
+		RevolverScreen.drawExternalGUI(data.bullets(), data.bulletCount(), graphics);
+		graphics.pose().popPose();
 	}
 }

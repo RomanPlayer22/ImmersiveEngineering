@@ -18,7 +18,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.common.ToolAction;
 import net.minecraftforge.common.ToolActions;
 
@@ -28,9 +27,6 @@ import java.util.function.Predicate;
 
 public class GrindingDiskItem extends SawbladeItem
 {
-	private static final Set<Material> materials = ImmutableSet.of(
-			Material.METAL, Material.HEAVY_METAL
-	);
 	private static final Set<ToolAction> TOOL_ACTIONS = ImmutableSet.of(
 			ToolActions.PICKAXE_DIG, ToolActions.AXE_STRIP, ToolActions.AXE_SCRAPE, ToolActions.AXE_WAX_OFF, Lib.WIRECUTTER_DIG
 	);
@@ -71,7 +67,7 @@ public class GrindingDiskItem extends SawbladeItem
 	@Override
 	public Predicate<BlockState> getSawbladeMaterials()
 	{
-		return s -> materials.contains(s.getMaterial())||s.is(IETags.wirecutterHarvestable);
+		return s -> s.is(IETags.grindingDiskHarvestable);
 	}
 
 	@Override

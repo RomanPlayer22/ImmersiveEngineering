@@ -21,7 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -43,10 +43,9 @@ public class SpawnInterdictionHandler
 	}
 
 	@SubscribeEvent
-	public static void onEntitySpawnCheck(LivingSpawnEvent.CheckSpawn event)
+	public static void onEntitySpawnCheck(MobSpawnEvent.FinalizeSpawn event)
 	{
-		if(event.getResult()==Event.Result.ALLOW||event.getResult()==Event.Result.DENY
-				||event.isSpawner())
+		if(event.getResult()==Event.Result.ALLOW||event.getResult()==Event.Result.DENY||event.getSpawner()!=null)
 			return;
 		if(shouldCancel(event.getEntity()))
 			event.setResult(Event.Result.DENY);
@@ -67,7 +66,7 @@ public class SpawnInterdictionHandler
 	{
 		if(entity.getType().getCategory()!=MobCategory.MONSTER)
 			return false;
-		ResourceKey<Level> dimension = entity.level.dimension();
+		ResourceKey<Level> dimension = entity.level().dimension();
 		synchronized(interdictionTiles)
 		{
 			if(!interdictionTiles.containsKey(dimension))

@@ -1,3 +1,11 @@
+/*
+ * BluSunrize
+ * Copyright (c) 2023
+ *
+ * This code is licensed under "Blu's License of Common Sense"
+ * Details can be found in the license file in the root folder of this project
+ */
+
 package blusunrize.immersiveengineering.api.tool.assembler;
 
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +23,7 @@ public class ItemStackRecipeQuery extends RecipeQuery
 	@Override
 	public boolean matchesIgnoringSize(ItemStack stack)
 	{
-		return ItemStack.isSame(this.stack, stack)&&ItemStack.tagMatches(this.stack, stack);
+		return ItemStack.isSameItemSameTags(this.stack, stack);
 	}
 
 	@Override

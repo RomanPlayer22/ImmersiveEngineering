@@ -11,11 +11,10 @@ package blusunrize.immersiveengineering.common.util.compat.jei.mixer;
 import blusunrize.immersiveengineering.api.Lib;
 import blusunrize.immersiveengineering.api.crafting.MixerRecipe;
 import blusunrize.immersiveengineering.client.utils.GuiHelper;
-import blusunrize.immersiveengineering.common.register.IEBlocks;
+import blusunrize.immersiveengineering.common.register.IEMultiblockLogic;
 import blusunrize.immersiveengineering.common.util.compat.jei.IERecipeCategory;
 import blusunrize.immersiveengineering.common.util.compat.jei.JEIHelper;
 import blusunrize.immersiveengineering.common.util.compat.jei.JEIRecipeTypes;
-import com.mojang.blaze3d.vertex.PoseStack;
 import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
@@ -23,8 +22,8 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidType;
 
 import java.util.Arrays;
@@ -39,7 +38,7 @@ public class MixerRecipeCategory extends IERecipeCategory<MixerRecipe>
 	{
 		super(helper, JEIRecipeTypes.MIXER, "block.immersiveengineering.mixer");
 		setBackground(helper.createBlankDrawable(155, 60));
-		setIcon(new ItemStack(IEBlocks.Multiblocks.MIXER));
+		setIcon(IEMultiblockLogic.MIXER.iconStack());
 		ResourceLocation background = new ResourceLocation(Lib.MODID, "textures/gui/mixer.png");
 		tankTexture = helper.createDrawable(background, 68, 8, 74, 60);
 		tankOverlay = helper.drawableBuilder(background, 177, 31, 20, 51).addPadding(-2, 2, -2, 2).build();
@@ -72,11 +71,11 @@ public class MixerRecipeCategory extends IERecipeCategory<MixerRecipe>
 	}
 
 	@Override
-	public void draw(MixerRecipe recipe, IRecipeSlotsView recipeSlotsView, PoseStack transform, double mouseX, double mouseY)
+	public void draw(MixerRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY)
 	{
-		tankTexture.draw(transform, 40, 0);
-		arrowDrawable.draw(transform, 117, 19);
-		GuiHelper.drawSlot(139, 18, 16, 47, transform);
+		tankTexture.draw(graphics, 40, 0);
+		arrowDrawable.draw(graphics, 117, 19);
+		GuiHelper.drawSlot(139, 18, 16, 47, graphics);
 	}
 
 }

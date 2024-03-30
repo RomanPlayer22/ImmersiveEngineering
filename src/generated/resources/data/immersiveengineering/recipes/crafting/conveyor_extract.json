@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "c": {
       "item": "immersiveengineering:conveyor_basic"
@@ -20,5 +21,6 @@
   ],
   "result": {
     "item": "immersiveengineering:conveyor_extract"
-  }
+  },
+  "show_notification": true
 }

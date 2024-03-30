@@ -30,14 +30,14 @@ import blusunrize.immersiveengineering.common.config.IEServerConfig;
 import blusunrize.immersiveengineering.common.network.MessageBlockEntitySync;
 import blusunrize.immersiveengineering.common.register.IEBlocks.MetalDevices;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.CachedRecipe;
 import blusunrize.immersiveengineering.common.util.EnergyHelper;
 import blusunrize.immersiveengineering.common.util.MultiblockCapability;
 import blusunrize.immersiveengineering.common.util.Utils;
 import blusunrize.immersiveengineering.common.util.inventory.IEInventoryHandler;
 import blusunrize.immersiveengineering.common.util.inventory.IIEInventory;
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -281,7 +281,7 @@ public class ClocheBlockEntity extends IEBaseBlockEntity implements IEServerTick
 		ClocheRecipe recipe = cachedRecipe.get();
 		if(recipe==null)
 			return 0;
-		return Mth.clamp(renderGrowth/recipe.getTime(seed, soil), 0, 1);
+		return Mth.clamp(growth/recipe.getTime(seed, soil), 0, 1);
 	}
 
 	protected void sendSyncPacket()
@@ -317,7 +317,7 @@ public class ClocheBlockEntity extends IEBaseBlockEntity implements IEServerTick
 			growth = nbt.getFloat("growth");
 		}
 		renderBB = null;
-		if(descPacket&&level!=null&&!ItemStack.isSame(oldSoil, inventory.get(SLOT_SOIL)))
+		if(descPacket&&level!=null&&!ItemStack.matches(oldSoil, inventory.get(SLOT_SOIL)))
 			markContainingBlockForUpdate(null);
 	}
 
@@ -491,7 +491,7 @@ public class ClocheBlockEntity extends IEBaseBlockEntity implements IEServerTick
 	}
 
 	@Override
-	public BEContainer<ClocheBlockEntity, ?> getContainerType()
+	public ArgContainer<ClocheBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.CLOCHE;
 	}

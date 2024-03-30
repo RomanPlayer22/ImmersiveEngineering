@@ -11,6 +11,7 @@ package blusunrize.immersiveengineering.common.blocks.wooden;
 import blusunrize.immersiveengineering.api.IEProperties;
 import blusunrize.immersiveengineering.api.utils.CapabilityReference;
 import blusunrize.immersiveengineering.api.utils.DirectionalBlockPos;
+import blusunrize.immersiveengineering.api.utils.ItemUtils;
 import blusunrize.immersiveengineering.api.wires.redstone.CapabilityRedstoneNetwork;
 import blusunrize.immersiveengineering.api.wires.redstone.CapabilityRedstoneNetwork.RedstoneBundleConnection;
 import blusunrize.immersiveengineering.common.blocks.IEBaseBlockEntity;
@@ -20,7 +21,7 @@ import blusunrize.immersiveengineering.common.blocks.PlacementLimitation;
 import blusunrize.immersiveengineering.common.blocks.ticking.IEServerTickableBE;
 import blusunrize.immersiveengineering.common.register.IEBlockEntities;
 import blusunrize.immersiveengineering.common.register.IEMenuTypes;
-import blusunrize.immersiveengineering.common.register.IEMenuTypes.BEContainer;
+import blusunrize.immersiveengineering.common.register.IEMenuTypes.ArgContainer;
 import blusunrize.immersiveengineering.common.util.ResettableCapability;
 import blusunrize.immersiveengineering.common.util.inventory.IEInventoryHandler;
 import blusunrize.immersiveengineering.common.util.inventory.IIEInventory;
@@ -133,7 +134,7 @@ public class ItemBatcherBlockEntity extends IEBaseBlockEntity implements IEServe
 
 	protected boolean isFilterMatched(int slot)
 	{
-		return ItemStack.isSameIgnoreDurability(this.filters.get(slot), this.buffers.get(slot))
+		return ItemUtils.isSameIgnoreDurability(this.filters.get(slot), this.buffers.get(slot))
 				&&this.buffers.get(slot).getCount() >= this.filters.get(slot).getCount();
 	}
 
@@ -211,7 +212,7 @@ public class ItemBatcherBlockEntity extends IEBaseBlockEntity implements IEServe
 	}
 
 	@Override
-	public BEContainer<ItemBatcherBlockEntity, ?> getContainerType()
+	public ArgContainer<ItemBatcherBlockEntity, ?> getContainerType()
 	{
 		return IEMenuTypes.ITEM_BATCHER;
 	}
@@ -225,7 +226,7 @@ public class ItemBatcherBlockEntity extends IEBaseBlockEntity implements IEServe
 	@Override
 	public boolean isStackValid(int slot, ItemStack stack)
 	{
-		return ItemStack.isSameIgnoreDurability(this.filters.get(slot), stack);
+		return ItemUtils.isSameIgnoreDurability(this.filters.get(slot), stack);
 	}
 
 	@Override

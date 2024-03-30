@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "B": {
       "item": "immersiveengineering:reinforced_crate"
@@ -14,5 +15,6 @@
   ],
   "result": {
     "item": "immersiveengineering:minecart_reinforcedcrate"
-  }
+  },
+  "show_notification": true
 }

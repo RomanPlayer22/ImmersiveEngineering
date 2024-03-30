@@ -10,6 +10,7 @@ package blusunrize.immersiveengineering.common.util.compat.computers.cctweaked;
 
 import blusunrize.immersiveengineering.common.util.compat.computers.generic.LuaTypeConverter;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
@@ -37,7 +38,7 @@ public class CCLuaTypeConverter extends LuaTypeConverter
 	public Object serialize(ItemStack stack)
 	{
 		Map<String, Object> result = new HashMap<>();
-		result.put("name", getNameOrNull(stack.getItem(), Registry.ITEM));
+		result.put("name", getNameOrNull(stack.getItem(), BuiltInRegistries.ITEM));
 		result.put("count", stack.getCount());
 		result.put("damage", stack.getDamageValue());
 		result.put("maxDamage", stack.getMaxDamage());
@@ -47,7 +48,7 @@ public class CCLuaTypeConverter extends LuaTypeConverter
 	public Object serialize(FluidStack stack)
 	{
 		Map<String, Object> result = new HashMap<>();
-		result.put("name", getNameOrNull(stack.getFluid(), Registry.FLUID));
+		result.put("name", getNameOrNull(stack.getFluid(), BuiltInRegistries.FLUID));
 		result.put("amount", stack.getAmount());
 		return result;
 	}

@@ -22,21 +22,20 @@ import blusunrize.immersiveengineering.common.util.ItemNBTHelper;
 import blusunrize.immersiveengineering.common.util.Utils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Vec3i;
+import net.minecraft.core.*;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -46,8 +45,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static blusunrize.immersiveengineering.api.wires.WireApi.INFOS;
 
@@ -86,7 +85,10 @@ public class FeedthroughBlockEntity extends ImmersiveConnectableBlockEntity impl
 		super.readCustomNBT(nbt, descPacket);
 		reference = WireType.getValue(nbt.getString(WIRE));
 		offset = nbt.getInt(OFFSET);
-		stateForMiddle = NbtUtils.readBlockState(nbt.getCompound(MIDDLE_STATE));
+		HolderGetter<Block> lookup = this.level != null ?
+				this.level.holderLookup(Registries.BLOCK) :
+				BuiltInRegistries.BLOCK.asLookup();
+		stateForMiddle = NbtUtils.readBlockState(lookup, nbt.getCompound(MIDDLE_STATE));
 	}
 
 	@Override
@@ -139,22 +141,13 @@ public class FeedthroughBlockEntity extends ImmersiveConnectableBlockEntity impl
 	}
 
 	@Override
-	public List<ItemStack> getBlockEntityDrop(LootContext context)
+	public void getBlockEntityDrop(LootContext context, Consumer<ItemStack> drop)
 	{
 		WireApi.FeedthroughModelInfo info = INFOS.get(reference);
 		if(offset==0)
-		{
-			LootContext.Builder builder = new LootContext.Builder(context.getLevel())
-					.withOptionalParameter(LootContextParams.TOOL, context.getParamOrNull(LootContextParams.TOOL))
-					.withOptionalParameter(LootContextParams.THIS_ENTITY, context.getParamOrNull(LootContextParams.THIS_ENTITY))
-					.withOptionalParameter(LootContextParams.ORIGIN, context.getParamOrNull(LootContextParams.ORIGIN));
-			return Utils.getDrops(stateForMiddle, builder);
-		}
+			Utils.getDrops(stateForMiddle, context, drop);
 		else
-		{
-			return NonNullList.of(ItemStack.EMPTY,
-					new ItemStack(info.connector().getBlock(), 1));
-		}
+			drop.accept(new ItemStack(info.connector().getBlock()));
 	}
 
 	@Override
@@ -170,7 +163,9 @@ public class FeedthroughBlockEntity extends ImmersiveConnectableBlockEntity impl
 	{
 		final ItemStack stack = ctx.getItemInHand();
 		reference = WireType.getValue(ItemNBTHelper.getString(stack, WIRE));
-		stateForMiddle = NbtUtils.readBlockState(ItemNBTHelper.getTagCompound(stack, MIDDLE_STATE));
+		stateForMiddle = NbtUtils.readBlockState(
+				getLevelNonnull().holderLookup(Registries.BLOCK), ItemNBTHelper.getTagCompound(stack, MIDDLE_STATE)
+		);
 	}
 
 	@Override
