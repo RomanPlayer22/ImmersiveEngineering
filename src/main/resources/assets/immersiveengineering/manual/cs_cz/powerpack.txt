@@ -8,5 +8,6 @@ Pamatuj si že nemůžeš použít <link;charging_station;Nabíjecí stanici> pr
 <&antenna>Napojením §2Nabíjecí antény§r k batůžku, můžeš nabíjet jeho akmulátor při cestách! Jednoduše projdi pod <link;wiring;un-izolovaným drátovým vedením;wire_recipes> aby se připojila anténa.<br>
 Zatímco jseš blízko k drátu, anténa se natáhne a zůstane připojena což pomalu nabíjí akumulátor.<np>
 <&induction>§2Indukční nabíječka§r umožnuje nabít všechny předměty v inventáři místo jen těch v ruce. Kvůli nepoužití drátového nabíjení, toto nabíjení je pomalejší.<np>
+<&magnet>The §2Přenosný elektromagnet§r je navržen pro přitáhnutí předmětů ke hráči, umožnující jejich rychlý sběr. Když se magnet hýbe, spotřebovává energii z nainstalovaného akumulátoru.<np>
 <&tesla>Jak jeho jméno říká, §2Miniaturní teslův transformátor§r je jako jeho <link;tesla_coil;větší bratr>, zařízení které dává šok nepřátelům nablízku. Aktivuje se při napadení, což nahradí trnité brnění elektřinou.
-<br>Protože se napojuje na vrch jako anténa, nelze je obě použít najednou.
+<br>Protože se napojuje na vrch jako Nabíjecí anténa, nelze je oba použít najednou.
