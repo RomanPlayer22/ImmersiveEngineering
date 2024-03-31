@@ -1,0 +1,12 @@
+Slínkové cihly
+Skleníky a kameny
+<&smoker_recipe>
+Umění vypékání cihel nyní neztrácí části dávky, címž vzniká slínek tím že je u ohně.
+
+Ty co chtějí znovu vytvořit starobylý vzhled slínkové fasády, můžou zahřát cihly v §2Troubě§r pro vitrifikaci a spálení cihel, což je promění na §2Slínkové cihly§r.
+<&variants>
+Pro doplnění vzhledu fasád, slínkové cihly lze spojit s terakotou pro vytvoření různých variant pro fasády: §2Slínkové rohové kameny§r and §2Parapety§r.
+<&cut_variants>
+Slínkové cihly také lze tvarovat na schody, půlbloky a zídky.
+
+§2Slínkové stěny§r mají malý kus parapety z pečených cihel na vrchní vrstvě.
