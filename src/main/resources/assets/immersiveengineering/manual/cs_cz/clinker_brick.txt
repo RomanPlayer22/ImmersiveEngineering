@@ -9,4 +9,4 @@ Pro doplnění vzhledu fasád, slínkové cihly lze spojit s terakotou pro vytvo
 <&cut_variants>
 Slínkové cihly také lze tvarovat na schody, půlbloky a zídky.
 
-§2Slínkové stěny§r mají malý kus parapety z pečených cihel na vrchní vrstvě.
+§2Slínkové zídky§r mají malý kus parapety z pečených cihel na vrchní vrstvě.
