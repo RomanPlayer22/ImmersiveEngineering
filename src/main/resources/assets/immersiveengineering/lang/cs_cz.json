@@ -1373,5 +1373,7 @@
   "item.immersiveengineering.shader.name.gaypride": "Kluci milují kluky",
   "item.immersiveengineering.shader.name.lesbianpride": "Dívky milují dívky",
   "item.immersiveengineering.shader.name.bipride": "Miluji je oba",
-  "item.immersiveengineering.shader.name.acepride": "Eso"
+  "item.immersiveengineering.shader.name.acepride": "Eso",
+  "item.immersiveengineering.toolupgrade_drill_fortune": "Kameny-změkčující kyselina",
+  "desc.immersiveengineering.flavour.toolupgrade_drill_fortune": "Zvyšuje spadané předměty z rud"
 }
