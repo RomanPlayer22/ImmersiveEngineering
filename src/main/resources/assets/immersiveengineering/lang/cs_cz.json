@@ -22,6 +22,13 @@
   "entity.immersiveengineering.cart_reinforcedcrate": "Vozík s kovovou bednou",
   "entity.immersiveengineering.cart_woodenbarrel": "Vozík s dřeveným sudem",
   "entity.immersiveengineering.cart_metalbarrel": "Vozík s kovovým sudem",
+  "entity.immersiveengineering.chemthrower_shot": "Kapka chemického vrhače",
+  "entity.immersiveengineering.railgun_shot": "Tyč kolejnicového děla",
+  "entity.immersiveengineering.sawblade": "Pilové ostří",
+  "entity.immersiveengineering.revolver_shot":  "Kulka",
+  "entity.immersiveengineering.revolver_shot_flare": "Světlice",
+  "entity.immersiveengineering.revolver_shot_homing":  "Naváděná kulka",
+  "entity.immersiveengineering.revolver_shot_wolfpack": "Smečkový náboj",
   "block.minecraft.banner.immersiveengineering_hammer.black": "Černé kladivo",
   "block.minecraft.banner.immersiveengineering_hammer.red": "Červené kladivo",
   "block.minecraft.banner.immersiveengineering_hammer.green": "Zelené kladivo",
@@ -1360,5 +1367,11 @@
   "entity.minecraft.villager.gunsmith": "Puškař",
   "item.immersiveengineering.toolupgrade_powerpack_magnet": "Přenosný elektromagnet",
   "subtitle.immersiveengineering.electromagnet": "Elektromagnet hučí",
-  "desc.immersiveengineering.flavour.toolupgrade_powerpack_magnet": "Přitáhni okolní předměty"
+  "desc.immersiveengineering.flavour.toolupgrade_powerpack_magnet": "Přitáhni okolní předměty",
+   "item.immersiveengineering.shader.name.transpride": "Rozbij Cis-tém",
+  "item.immersiveengineering.shader.name.enbypride": "NB",
+  "item.immersiveengineering.shader.name.gaypride": "Kluci milují kluky",
+  "item.immersiveengineering.shader.name.lesbianpride": "Dívky milují dívky",
+  "item.immersiveengineering.shader.name.bipride": "Miluji je oba",
+  "item.immersiveengineering.shader.name.acepride": "Eso"
 }
